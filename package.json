@@ -1,0 +1,23 @@
+{
+  "name": "2800-202610-bby01",
+  "version": "1.0.0",
+  "description": "Team Name: BBY-01\r Team Members: \r - Adam Locke\r - Andrew Ni\r - Jonathan Li\r - Tracee Miasco\r - Maneet\r ## More details to come\r TBA",
+  "homepage": "https://github.com/andn123/2800-202610-BBY01#readme",
+  "bugs": {
+    "url": "https://github.com/andn123/2800-202610-BBY01/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andn123/2800-202610-BBY01.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
