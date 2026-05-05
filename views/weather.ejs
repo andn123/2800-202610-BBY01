@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap Icons (optional) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+</head>
+<body>
+    <div class="container my-5">
+
+  <!-- Title Card -->
+      <h2 class="mb-4 text-center">Weather in <%= weatherData.location.name %></h2>
+
+  <!-- Current Weather -->
+  <div class="row g-3">
+
+    <div class="col-md-6">
+      <div class="card shadow-sm text-center">
+        <div class="card-body">
+          <h5 class="card-title">Current Temperature</h5>
+          <h2 class="text-primary">
+            <%= weatherData.current.temp_c %>°C
+          </h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm text-center">
+        <div class="card-body">
+          <h5 class="card-title">Condition</h5>
+          <h2 class="text-primary">
+            <%= weatherData.current.condition.text %>
+          </h2>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Forecast Section -->
+  <h4 class="mt-3 mb-3 text-center">3-Day Forecast</h4>
+
+  <div class="row g-3">
+
+    <% for (let i = 1; i < weatherData.forecast.forecastday.length; i++) {
+        const day = weatherData.forecast.forecastday[i];
+    %>
+      <div class="col-md-4">
+        <div class="card shadow-sm h-100 text-center">
+
+          <div class="card-body">
+            <h6 class="text-muted">
+                <%= day.date %>
+            (<%=new Date(day.date + "T00:00:00").toLocaleDateString("en-CA", {
+                weekday: "long", 
+                timeZone: "America/Vancouver"
+            }) %>)
+        </h6>
+            <hr>
+
+            <h3 class="text-success">
+              <%= day.day.avgtemp_c %>°C
+            </h3>
+
+          </div>
+
+        </div>
+      </div>
+
+    <% } %>
+
+  </div>
+
+</div>
+<%- include("template/footer") %>

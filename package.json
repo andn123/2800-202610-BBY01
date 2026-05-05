@@ -18,6 +18,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "bootstrap": "^5.3.8",
+    "ejs": "^5.0.2",
     "express": "^5.2.1"
-  }
+  },
+  "keywords": []
 }
