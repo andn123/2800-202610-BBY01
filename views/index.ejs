@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>VanCooler</title>
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <main class="landing-page">
+
+    <section class="hero-section">
+      <div class="hero-content">
+        <p class="hero-tag">Weather-smart event discovery</p>
+
+        <h1>Find events that fit your comfort.</h1>
+
+        <p class="hero-text">
+          VanCooler helps you discover events based on your location, weather, and shade comfort level.
+        </p>
+
+        <div class="hero-buttons">
+          <a href="/events" class="primary-btn">Explore Events</a>
+          <a href="/map" class="secondary-btn">View Map</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature-section">
+      <article class="feature-card">
+        <h2>Location Based</h2>
+        <p>Search for nearby events in your city or area.</p>
+      </article>
+
+      <article class="feature-card">
+        <h2>Shade Level</h2>
+        <p>Choose events based on indoor, outdoor, or mixed shade comfort.</p>
+      </article>
+
+      <article class="feature-card">
+        <h2>Mobile First</h2>
+        <p>Designed for quick event searching directly from your phone.</p>
+      </article>
+    </section>
+
+  </main>
+
+  <%- include("partials/bottom-nav", { currentPage: "home" }) %>
+
+  <script src="/js/client.js"></script>
+</body>
+</html>
