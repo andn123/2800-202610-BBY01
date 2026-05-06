@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- leaflet API start -->
+    <link rel="stylesheet" href="/css/shade.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script> 
+    <!-- leaflet API end -->
+    <title>Document</title>
+</head>
+    <body>
+        <h1>SHADE MAP</h1>
+        <div id="map"></div>
+        
+        <form action="/shademap" method="post">
+            <input type="text" name="lat" placeholder="latitude"/>
+            <input type="text" name="lon" placeholder="longitude"/>
+            <button>submit</button>
+        </form>
+
+        <% if(typeof latitude !== 'undefined' && typeof longitude !== 'undefined' && typeof trees !== 'undefined') { %>
+        <script>
+            const latitude = <%- JSON.stringify(latitude) %>;
+            const longitude = <%- JSON.stringify(longitude) %>;
+            const trees = <%- JSON.stringify(trees) %>;
+            const shelter = <%- JSON.stringify(shelter) %>;
+        </script>
+        <script src="/js/shade.js"></script>
+        <% } %>
+    </body>
+</html>
