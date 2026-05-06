@@ -22,15 +22,19 @@ app.get('/shade', async (req, res) =>{
 })
 
 app.post('/shademap', async (req, res) =>{
-    const trees = await findTrees(req.body.lat, req.body.lon);
-    const shelter = await findShelter(req.body.lat, req.body.lon)
+    if(await isPark(req.body.lat, req.body.lon)){
+        const trees = await findTrees(req.body.lat, req.body.lon);
+        const shelter = await findShelter(req.body.lat, req.body.lon)
 
-    res.render('shade', {
-        latitude: req.body.lat, 
-        longitude: req.body.lon, 
-        trees: trees,
-        shelter: shelter
-    });
+        res.render('shade', {
+            latitude: req.body.lat, 
+            longitude: req.body.lon, 
+            trees: trees,
+            shelter: shelter
+        });
+    } else {
+        res.render('noShade');
+    }
 })
 
 app.listen(3000, () => {
