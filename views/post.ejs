@@ -1,0 +1,34 @@
+<link rel="stylesheet" href="/css/style.css">
+
+<div class="container">
+  <h1>Create a Post</h1>
+
+  <form method="post" action="/post" enctype="multipart/form-data">
+
+    <label class="input-label">Location</label>
+    <input name="location" type="text" placeholder="Enter the location address or name">
+
+    <label class="input-label">Image</label>
+    <input name="image" type="file" accept="image/*">
+
+    <label class="input-label">Description</label>
+    <textarea name="description" placeholder="What activities, details, or notes about this place?" style="width:90%;height:80px;margin-top:5px;"></textarea>
+
+    <label class="input-label">Environment</label>
+    <div class="radio-group">
+      <label><input type="radio" name="environment" value="shaded"> Shaded</label>
+      <label><input type="radio" name="environment" value="sunny"> Sunny</label>
+      <label><input type="radio" name="environment" value="indoors"> Indoors</label>
+    </div>
+
+    <button>Submit Post</button>
+  </form>
+
+  <% if (error) { %>
+    <p class="error"><%= error %></p>
+  <% } %>
+    
+  <% if (success) { %>
+    <p class="success"><%= success %></p>
+  <% } %>
+</div>

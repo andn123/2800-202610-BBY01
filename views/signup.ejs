@@ -1,0 +1,16 @@
+<link rel="stylesheet" href="/css/style.css">
+
+<div class="container">
+  <h1>Create Account</h1>
+
+  <form method="post" action="/signup">
+    <input name="username" type="text" placeholder="Username">
+    <input name="email" type="email" placeholder="Email">
+    <input name="password" type="password" placeholder="Password">
+    <button>Sign Up</button>
+  </form>
+
+  <% if (error) { %>
+    <p class="error"><%= error %></p>
+  <% } %>
+</div>
