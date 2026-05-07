@@ -185,8 +185,11 @@ app.get("/post", (req, res) => {
   res.render("post", {
     error: null,
     success: null,
+    MAPTILER_KEY: process.env.MAPTILER_KEY,
   });
 });
+
+const axios = require("axios");
 
 app.post("/post", upload.single("image"), async (req, res) => {
   if (!req.session || !req.session.authenticated) {
@@ -212,9 +215,20 @@ app.post("/post", upload.single("image"), async (req, res) => {
 
   if (validationResult.error || !imageFile) {
     return res.render("post", {
+      MAPTILER_KEY: process.env.MAPTILER_KEY,
       error: validationResult.error
         ? validationResult.error.message
         : "Image is required",
+      success: null,
+    });
+  }
+
+  let lat = parseFloat(req.body.lat);
+  let lng = parseFloat(req.body.lng);
+
+  if (!lat || !lng) {
+    return res.render("post", {
+      error: "Please select a valid location from the dropdown.",
       success: null,
     });
   }
@@ -225,6 +239,8 @@ app.post("/post", upload.single("image"), async (req, res) => {
     description,
     environment,
     image: imageFile.filename,
+    lat: lat,
+    lng: lng,
     createdAt: new Date(),
   });
 
@@ -276,6 +292,34 @@ app.get("/posts", async (req, res) => {
     totalPages,
     success,
   });
+});
+
+app.get("/map", (req, res) => {
+  res.render("map", {
+    MAPTILER_KEY: process.env.MAPTILER_KEY,
+  });
+});
+
+app.get("/api/posts", async (req, res) => {
+  const posts = await postsCollection
+    .find(
+      {},
+      {
+        projection: {
+          lat: 1,
+          lng: 1,
+          location: 1,
+          description: 1,
+          environment: 1,
+          image: 1,
+          username: 1,
+          createdAt: 1,
+        },
+      },
+    )
+    .toArray();
+
+  res.json(posts);
 });
 
 app.use(express.static(__dirname + "/public"));

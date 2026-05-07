@@ -5,8 +5,23 @@
 
   <form method="post" action="/post" enctype="multipart/form-data">
 
-    <label class="input-label">Location</label>
-    <input name="location" type="text" placeholder="Enter the location address or name">
+  <label class="input-label">Location</label>
+  <input id="locationInput" name="location" type="text" autocomplete="off"
+       placeholder="Enter the location address or name">
+
+  <div id="locationSuggestions"
+      style="
+          border:1px solid #ccc;
+          background:rgb(255, 252, 252);
+          display:none;
+          margin-top:4px;
+          width:100%;
+      ">
+  </div>
+
+    <!-- Hidden fields to store the chosen coordinates -->
+    <input type="hidden" id="latField" name="lat">
+    <input type="hidden" id="lngField" name="lng">
 
     <label class="input-label">Image</label>
     <input name="image" type="file" accept="image/*">
@@ -32,3 +47,9 @@
     <p class="success"><%= success %></p>
   <% } %>
 </div>
+
+<script>
+  window.MAPTILER_KEY = "<%= MAPTILER_KEY %>";
+</script>
+
+<script src="/js/create-post.js"></script>
