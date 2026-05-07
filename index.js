@@ -1,22 +1,102 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
-const apiKey = "8c080acec4b04efe90301909260205";
+const weatherApi = process.env.WEATHER_API;
+const mapApi = process.env.MAP_API;
 
 app.set("view engine", "ejs");
 
-app.use(express.static('public'));
+app.use(express.static("public"));
 app.get("/", (req, res) => {
-  res.render("test");
+  res.render("test", {
+    css: [],
+    js: [],
+  });
+});
+
+app.get("/map", (req, res) => {
+  const locations = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-123.1207, 49.2827], // Vancouver
+        },
+        properties: {
+          name: "Vancouver",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-123.1, 49.25],
+        },
+        properties: {
+          name: "Point 2",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-74.006, 40.7128], // NYC
+        },
+        properties: {
+          name: "New York City",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-71.0589, 42.3601], // Boston
+        },
+        properties: {
+          name: "Boston",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-122.76932, 49.26637], // Vancouver
+        },
+        properties: {
+          name: "Port Coquiland",
+        },
+      },
+    ],
+  };
+
+  res.render("map", {
+    mapApi: mapApi,
+    locations,
+    css: ["map"],
+    js: ["map"],
+  });
 });
 
 app.get("/about", (req, res) => {
-  res.render("about");
-})
+  res.render("about", {
+    css: ["about"],
+    js: ["about"],
+  });
+});
 
 app.get("/weatherapi", async (req, res) => {
-  const city = req.query.city || "Vancouver";
+  const lat = req.query.lat;
+  const lon = req.query.lon;
 
-  const url = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=4&aqi=no&alerts=no`;
+  let query = "Vancouver";
+
+  if (lat && lon) {
+    query = `${lat},${lon}`;
+  }
+
+  const url = `https://api.weatherapi.com/v1/forecast.json?key=${weatherApi}&q=${query}&days=4&aqi=no&alerts=no`;
 
   try {
     const response = await fetch(url);
@@ -26,14 +106,21 @@ app.get("/weatherapi", async (req, res) => {
       throw new Error(data.error?.message || "API Error");
     }
 
-    res.render("weather", {weatherData: data});
-
+    if (!lat || !lon) {
+      res.render("weather", {
+        weatherData: data,
+        css: [],
+        js: [],
+      });
+    } else {
+      res.json(data);
+    }
   } catch (error) {
     console.error("DEBUG ERROR:", error.message);
 
     res.status(500).json({
       error: "Internal Server Error",
-      details: error.message
+      details: error.message,
     });
   }
 });

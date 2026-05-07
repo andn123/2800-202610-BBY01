@@ -31,5 +31,9 @@
     </ul>
   </footer>
 </div>
+
+<% js.forEach(file =>{ %>
+  <script src="/js/<%= file %>.js"></script>
+<% }) %>
 </body>
 </html>
