@@ -22,13 +22,20 @@
         placeholder="Search events, artists, or venues..."
       />
     </section>
-    <select id="sortSelect" class="event-sort">
-  <option value="date-asc">Date: Soonest First</option>
-  <option value="date-desc">Date: Latest First</option>
-  <option value="name-asc">Name: A to Z</option>
-  <option value="name-desc">Name: Z to A</option>
-  <option value="venue-asc">Venue: A to Z</option>
-</select>
+   <div class="sort-dropdown">
+  <button id="sortButton" class="sort-button" type="button">
+    Date: Soonest First
+    <span>⌄</span>
+  </button>
+
+  <div id="sortMenu" class="sort-menu">
+    <button type="button" data-sort="date-asc">Date: Soonest First</button>
+    <button type="button" data-sort="date-desc">Date: Latest First</button>
+    <button type="button" data-sort="name-asc">Name: A to Z</button>
+    <button type="button" data-sort="name-desc">Name: Z to A</button>
+    <button type="button" data-sort="venue-asc">Venue: A to Z</button>
+  </div>
+</div>
 
     <section id="statusBox" class="status-box">
       Loading nearby events...

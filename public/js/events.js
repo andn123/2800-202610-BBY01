@@ -2,7 +2,10 @@ const eventsContainer = document.getElementById("eventsContainer");
 const statusBox = document.getElementById("statusBox");
 const locationText = document.getElementById("locationText");
 const eventSearch = document.getElementById("eventSearch");
-const sortSelect = document.getElementById("sortSelect");
+const sortButton = document.getElementById("sortButton");
+const sortMenu = document.getElementById("sortMenu");
+
+let currentSort = "date-asc";
 
 let allEvents = [];
 
@@ -127,7 +130,24 @@ function showError(message) {
   statusBox.textContent = message;
 }
 eventSearch.addEventListener("input", updateEventList);
-sortSelect.addEventListener("change", updateEventList);
+sortButton.addEventListener("click", () => {
+  sortMenu.classList.toggle("show");
+});
+
+sortMenu.querySelectorAll("button").forEach(button => {
+  button.addEventListener("click", () => {
+    currentSort = button.dataset.sort;
+    sortButton.innerHTML = `${button.textContent} <span>⌄</span>`;
+    sortMenu.classList.remove("show");
+    updateEventList();
+  });
+});
+
+document.addEventListener("click", event => {
+  if (!event.target.closest(".sort-dropdown")) {
+    sortMenu.classList.remove("show");
+  }
+});
 
 async function getCityName(lat, lon) {
   try {
@@ -178,7 +198,7 @@ function updateEventList() {
 }
 
 function sortEvents(events) {
-  const sortValue = sortSelect.value;
+  const sortValue = currentSort;
   const sortedEvents = [...events];
 
   if (sortValue === "date-asc") {
