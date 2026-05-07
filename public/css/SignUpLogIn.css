@@ -560,3 +560,12 @@ body {
         scroll-behavior: auto !important;
     }
 }
+
+#error-message {
+    color: #ef4444;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    text-align: center;
+}

@@ -46,14 +46,19 @@ app.use(session({
 ));
 
 app.get("/", (req, res) => {
-  res.send("Hello" + req.session.username + "! <form action='/logout' method='POST'><button type='submit'>Logout</button></form>");
+  res.send("Hello" + req.session.username + "! <form action='/logout' method='POST'><button type='submit'>Logout</button></form> <form action='/login' method='GET'><button type='submit'>Login</button></form> <form action='/signup' method='GET'><button type='submit'>Sign Up</button></form>");
 });
 
 app.get("/login", (req, res) => {
+  if (req.session.authenticated) {
+    res.redirect('/');
+    return;
+  }
   res.render("SignUpLogIn", {
     title: "Login",
     CSSFiles: ["SignUpLogIn.css"],
     JSFiles: ["SignUpLogIn.js"],
+    errorMessage: ""
   });
 });
 
@@ -67,14 +72,24 @@ app.post("/loggingin", async (req, res) => {
 
   const validationResult = schema.validate({ email, password });
   if (validationResult.error) {
-    res.send('Error: Incorrect inputted format <a href="/login">Go back</a>');
+    res.render("SignUpLogIn", {
+      title: "Login",
+      CSSFiles: ["SignUpLogIn.css"],
+      JSFiles: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Incorrect email or password'
+    });
     return;
   }
 
   const result = await userCollection.find({ email: email }).project({email: 1, username: 1, password: 1, _id: 1}).toArray();
 
   if (result.length != 1) {
-    res.send('Error: Invalid email or password <a href="/login">Go back</a>');
+    res.render("SignUpLogIn", {
+      title: "Login",
+      CSSFiles: ["SignUpLogIn.css"],
+      JSFiles: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid email or password'
+    });
     return;
   }
   if (await bcrypt.compare(password, result[0].password)) {
@@ -85,16 +100,26 @@ app.post("/loggingin", async (req, res) => {
     res.redirect('/');
     return;
   } else {
-    res.send('Error: Invalid email or password <a href="/login">Go back</a>');
+    res.render("SignUpLogIn", {
+      title: "Login",
+      CSSFiles: ["SignUpLogIn.css"],
+      JSFiles: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid email or password'
+    });
     return;
   }
 });
 
 app.get("/signup", (req, res) => {
+  if (req.session.authenticated) {
+    res.redirect('/');
+    return;
+  }
   res.render("signUp", {
     title: "Sign Up",
     CSSFiles: ["SignUpLogIn.css"],
     JSFiles: ["SignUpLogIn.js"],
+    errorMessage: ''
   });
 });
 
@@ -109,8 +134,12 @@ app.post("/signingup", async (req, res) => {
 
   const validationResult = schema.validate({ username, email, password });
   if (validationResult.error) {
-    console.error(validationResult.error.details[0].message); // see exact error
-    res.send(`Error: Incorrect inputted format <a href="/signup">Go back</a>`);
+    res.render("signUp", {
+      title: "Sign Up",
+      CSSFiles: ["SignUpLogIn.css"],
+      JSFiles: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid format for ' + validationResult.error.details[0].context.key
+    });
     return;
   }
 
