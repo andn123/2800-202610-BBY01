@@ -9,5 +9,10 @@
         <script src="/js/shade.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <% } %>
-    </body>
+
+
+  <% js.forEach(file =>{ %>
+    <script src="/js/<%= file %>"></script>
+  <% }) %>
+</body>
 </html>
