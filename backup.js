@@ -18,6 +18,7 @@ const locations = JSON.parse(el.dataset.locations);
 /* =======================
    GLOBAL STATE
 ======================= */
+let savedLocations = [];
 let recentLocations = [];
 let hasInfo = false;
 
@@ -73,7 +74,7 @@ let currentHeight = COLLAPSED;
 if (window.innerWidth <= 768) {
   panel.style.height = COLLAPSED + "px";
 } else {
-  panel.style.height = "100vh";
+  panel.style.height = FULL + "px";
 }
 
 /* =======================
@@ -112,6 +113,7 @@ map.on("load", () => {
 
     let loader = document.getElementById("loading");
     try {
+      const loader = document.getElementById("loading");
       if (loader) loader.style.display = "block";
       const res = await fetch(`/weatherapi?lat=${lat}&lon=${lon}`);
       const data = await res.json();
@@ -121,7 +123,6 @@ map.on("load", () => {
       currentWeather = data;
       currentLocationName = f.properties.name;
 
-      switchToInfo();
       renderWeather(data, currentLocationName);
     } catch (err) {
       console.error(err);
@@ -180,12 +181,10 @@ function renderWeather(data, name) {
 function setPanelHeight(value) {
   if (window.innerWidth <= 768) {
     value = Math.max(COLLAPSED, Math.min(FULL, value));
-    panel.style.height = value + "px";
-    currentHeight = value;
-  } else {
-    panel.style.height = "100vh";
-    currentHeight = value;
   }
+
+  panel.style.height = value + "px";
+  currentHeight = value;
 }
 
 /* =======================
@@ -262,7 +261,7 @@ function checkDevice() {
     enableDrag();
   } else {
     disableDrag();
-    setPanelHeight(100);
+    setPanelHeight(FULL);
   }
 }
 
@@ -308,26 +307,15 @@ function showTab(tab, event) {
       <div>Click a location</div>
           <div id="loading" class="loader"></div>`;
     }
-  } else if (tab === "post") {
-    if (hasInfo) {
-      panelContent.innerHTML = `No posts yet — create one to get started!
-      <div id="loading" class="loader"></div>`;
-    } else {
-      panelContent.innerHTML = `<div>Click a location to see post!</div>
-          <div id="loading" class="loader"></div>`;
-    }
+  } else if (tab === "saved") {
+    panelContent.innerHTML = savedLocations.length
+      ? savedLocations.map((l) => `<p>⭐ ${l}</p>`).join("")
+      : `<p>No saved locations</p>`;
   } else if (tab === "recent") {
     panelContent.innerHTML = recentLocations.length
       ? recentLocations.map((l) => `<p>🕒 ${l.name}</p>`).join("")
       : `<p>No recent locations</p>`;
   }
-}
-
-function switchToInfo() {
-  document
-    .querySelectorAll(".nav-link")
-    .forEach((btn) => btn.classList.remove("active"));
-  document.querySelector(".nav-link").classList.add("active");
 }
 
 /* =======================
@@ -345,47 +333,6 @@ window.addEventListener("resize", () => {
   map.resize();
   checkDevice();
 });
-
-/* =======================
-   FIRST TIME GUIDE
-======================= */
-
-function showGuide() {
-  const guide = document.createElement("div");
-
-  guide.id = "guideTooltip";
-
-  guide.innerHTML = `
-    <div class="guide-box">
-      <h5>👋 Welcome</h5>
-
-      <p>• Click map locations to see weather info</p>
-
-      <p>• Switch tabs to view posts and recent places</p>
-
-      <p>• Drag the panel upward on mobile</p>
-
-      <p>• Switch on the switch to see temperature in °F</p>
-
-      <button id="closeGuide">
-        Got it
-      </button>
-    </div>
-  `;
-
-  document.body.appendChild(guide);
-
-  document.getElementById("closeGuide").addEventListener("click", () => {
-    guide.remove();
-
-    localStorage.setItem("guideSeen", "true");
-  });
-}
-
-/* show only first time */
-if (!localStorage.getItem("guideSeen")) {
-  setTimeout(showGuide, 1000);
-}
 
 /* =======================
    INIT

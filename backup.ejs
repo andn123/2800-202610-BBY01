@@ -22,8 +22,8 @@
               </button>
             </li>
             <li class="nav-item">
-              <button class="nav-link w-100" onclick="showTab('post', event)">
-                Posts
+              <button class="nav-link w-100" onclick="showTab('saved', event)">
+                Saved
               </button>
             </li>
             <li class="nav-item">
@@ -45,6 +45,4 @@
   window.mapApi ="<%- mapApi %>";
     </script>
 
-    <script src="/js/map.js"></script>
-  </body>
-  </html>
+    <%- include("partials/footer", {js: js}) %>
