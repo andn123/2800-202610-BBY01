@@ -5,10 +5,27 @@ require("dotenv").config();
 
 const app = express();
 
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Static files
+app.use(express.static("public"));
+
+// EJS setup
+app.set("view engine", "ejs");
+app.set("views", "./views");
+
+// Routes
 app.get("/", (req, res) => {
   res.send("Hello world");
 });
 
+app.get("/help-center", (req, res) => {
+  res.render("help-center");
+});
+
+// Start server
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
