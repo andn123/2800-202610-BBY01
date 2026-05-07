@@ -9,9 +9,14 @@
 <body>
 
   <main class="landing-page">
-    <section class="hero-section">
-      <div class="hero-overlay"></div>
 
+    <video class="background-video" autoplay muted loop playsinline>
+      <source src="/img/Background.mp4" type="video/mp4">
+    </video>
+
+    <div class="video-overlay"></div>
+
+    <section class="hero-section">
       <div class="hero-content">
         <h1>VanCooler ❄️</h1>
         <p>Stay cool. Go out smart.</p>
@@ -19,6 +24,7 @@
         <a href="/login" class="login-btn">Login / Signup</a>
       </div>
     </section>
+
   </main>
 
   <%- include("partials/bottom-nav") %>
