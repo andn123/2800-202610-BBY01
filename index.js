@@ -1,6 +1,4 @@
 
-
-
 require('./utils.js');
 require('dotenv').config(); 
 const {isPark, findShelter, findTrees} = require("./public/js/shadeServer");
@@ -14,19 +12,15 @@ const { title } = require('node:process');
 const saltRounds = 10;
 const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
-const dns = require("node:dns/promises");
-const multer = require("multer");
-const path = require("path");
-dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 const app = express();
 const port = process.env.PORT || 3000;
 const expireTime = 60 * 60 * 1000; // 1 hour in milliseconds
 
+
+
 app.set("view engine", "ejs");
 app.use(express.static("public"));
-
-
 
 const mongodb_host = process.env.MONGODB_HOST;
 const mongodb_user = process.env.MONGODB_USER;
@@ -39,35 +33,9 @@ const node_session_secret = process.env.NODE_SESSION_SECRET;
 const {database} = include('databaseConnection');
 const userCollection = database.db(mongodb_user_database).collection('users');
 
-const postsCollection = database.db(mongodb_database).collection("posts");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/uploads");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
-  },
-});
-
-const upload = multer({
-  storage: storage,
-  fileFilter: function (req, file, cb) {
-    const allowed = ["image/jpeg", "image/png", "image/jpg"];
-    if (!allowed.includes(file.mimetype)) {
-      return cb(new Error("Only JPG and PNG images allowed"));
-    }
-    cb(null, true);
-  },
-});
 
 var mongoStore = MongoStore.create({
 	mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_session_database}`,
