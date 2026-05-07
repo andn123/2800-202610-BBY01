@@ -21,9 +21,8 @@ function getUserLocation() {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
 
-      locationText.textContent = "Showing events near your current location";
-
-      fetchEvents(lat, lon);
+      getCityName(lat, lon);
+fetchEvents(lat, lon);
     },
     () => {
       showError("Location permission was denied. Please allow location access.");
@@ -149,3 +148,25 @@ eventSearch.addEventListener("input", () => {
 
   displayEvents(filteredEvents);
 });
+async function getCityName(lat, lon) {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+    );
+
+    const data = await response.json();
+
+    const city =
+      data.address.city ||
+      data.address.town ||
+      data.address.village ||
+      data.address.municipality ||
+      data.address.county ||
+      "your area";
+
+    locationText.textContent = `Showing events near ${city}`;
+  } catch (error) {
+    console.error("Error getting city name:", error);
+    locationText.textContent = "Showing events near your location";
+  }
+}
