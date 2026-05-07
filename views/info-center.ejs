@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Info Center</title>
+
+  <link rel="stylesheet" href="/css/info-center.css" />
+</head>
+<body>
+
+  <section class="help-hero">
+    <nav class="help-navbar">
+      <div class="logo">VanCooler</div>
+
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/events">Events</a>
+        <a href="/help-center">Help Center</a>
+      </div>
+    </nav>
+
+    <div class="hero-content">
+      <p class="small-text">Help Center</p>
+      <h1>Hi, how can we help?</h1>
+      <p class="hero-subtitle">
+        Step-by-step tutorials for every feature our app offers.
+      </p>
+
+      <div class="search-box">
+        <input type="text" id="helpSearch" placeholder="Search tutorials..." />
+      </div>
+
+      <div class="support-tags">
+        <span>events</span>
+        <span>location</span>
+        <span>weather</span>
+        <span>account</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="help-container">
+
+    <section class="feature-grid">
+      <a href="#search-events" class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Search Events</h3>
+        <p>Find events near you using your city, location, or search keywords.</p>
+      </a>
+
+      <a href="#change-location" class="feature-card">
+        <div class="feature-icon">📍</div>
+        <h3>Change Location</h3>
+        <p>Manually update your city or address to discover events somewhere else.</p>
+      </a>
+
+      <a href="#sort-events" class="feature-card">
+        <div class="feature-icon">↕️</div>
+        <h3>Sort Events</h3>
+        <p>Organize events by date, name, or other available filters.</p>
+      </a>
+
+      <a href="#weather-events" class="feature-card">
+        <div class="feature-icon">🌦️</div>
+        <h3>Weather-Based Events</h3>
+        <p>Get recommendations based on the current weather conditions.</p>
+      </a>
+
+      <a href="#saved-events" class="feature-card placeholder-card">
+        <div class="feature-icon">⭐</div>
+        <h3>Saved Events</h3>
+        <p>Placeholder tutorial for saved or favourite events.</p>
+      </a>
+
+      <a href="#profile" class="feature-card placeholder-card">
+        <div class="feature-icon">👤</div>
+        <h3>User Profile</h3>
+        <p>Placeholder tutorial for profile and account settings.</p>
+      </a>
+    </section>
+
+    <section class="tutorial-section" id="search-events" data-title="search events">
+      <div class="tutorial-header">
+        <h2>Search for events near you</h2>
+        <span>Events</span>
+      </div>
+
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Open Events</h3>
+          <p>Go to the Events page from the bottom navigation or homepage.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Allow location</h3>
+          <p>Let the app access your location so it can find nearby events.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Use the search bar</h3>
+          <p>Type an event name, artist, city, or keyword into the search bar.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3>View results</h3>
+          <p>The matching events will appear as cards with details and links.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tutorial-section" id="change-location" data-title="change location address city">
+      <div class="tutorial-header">
+        <h2>Change your location manually</h2>
+        <span>Location</span>
+      </div>
+
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Open Events</h3>
+          <p>Go to the Events page where nearby events are displayed.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Find location input</h3>
+          <p>Look for the address or city search field near the top of the page.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Enter address</h3>
+          <p>Type the city or address where you want to search for events.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3>Update results</h3>
+          <p>The app reloads events based on the new location you entered.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tutorial-section" id="sort-events" data-title="sort events filter date">
+      <div class="tutorial-header">
+        <h2>Sort and filter events</h2>
+        <span>Sort</span>
+      </div>
+
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Open Events</h3>
+          <p>Go to the Events page after events have loaded.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Find sort menu</h3>
+          <p>Use the sort dropdown or buttons near the search area.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Choose option</h3>
+          <p>Select how you want to organize the events, such as by date.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3>Check results</h3>
+          <p>The event cards update based on your selected sorting option.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tutorial-section" id="weather-events" data-title="weather indoor outdoor recommendations">
+      <div class="tutorial-header">
+        <h2>Get weather-based recommendations</h2>
+        <span>Weather</span>
+      </div>
+
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Allow location</h3>
+          <p>Give the app permission to check your local weather.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Check weather</h3>
+          <p>The app reads the current weather conditions for your area.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Get suggestions</h3>
+          <p>Indoor or outdoor events are recommended depending on the weather.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3>Pick an event</h3>
+          <p>Choose the event that best fits your plans and conditions.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tutorial-section placeholder-tutorial" id="saved-events" data-title="saved favourite events placeholder">
+      <div class="tutorial-header">
+        <h2>Saved Events</h2>
+        <span>Placeholder</span>
+      </div>
+
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Placeholder step</h3>
+          <p>Your teammate can replace this with their feature instructions.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Placeholder step</h3>
+          <p>Add the second step for this feature here.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Placeholder step</h3>
+          <p>Add the third step for this feature here.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3>Placeholder step</h3>
+          <p>Add the final step for this feature here.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tutorial-section placeholder-tutorial" id="profile" data-title="profile account login signup placeholder">
+      <div class="tutorial-header">
+        <h2>User Profile</h2>
+        <span>Placeholder</span>
+      </div>
+
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Placeholder step</h3>
+          <p>Your teammate can replace this with profile instructions.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Placeholder step</h3>
+          <p>Add login, signup, or profile setup instructions here.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Placeholder step</h3>
+          <p>Add the next step for this feature here.</p>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3>Placeholder step</h3>
+          <p>Add the final step for this feature here.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/js/help-center.js"></script>
+</body>
+</html>

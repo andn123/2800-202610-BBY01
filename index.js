@@ -184,6 +184,9 @@ app.get("/login", (req, res) => {
   });
 });
 
+app.get("/info-center", (req, res) => {
+  res.render("info-center");
+  
 app.post("/loggingin", async (req, res) => {
   const { email, password } = req.body;
   
