@@ -21,8 +21,8 @@ app.get("/", (req, res) => {
   res.send("Hello world");
 });
 
-app.get("/help-center", (req, res) => {
-  res.render("help-center");
+app.get("/info-center", (req, res) => {
+  res.render("info-center");
 });
 
 // Start server
