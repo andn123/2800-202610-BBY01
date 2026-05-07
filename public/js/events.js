@@ -4,6 +4,8 @@ const locationText = document.getElementById("locationText");
 const eventSearch = document.getElementById("eventSearch");
 const sortButton = document.getElementById("sortButton");
 const sortMenu = document.getElementById("sortMenu");
+const addressInput = document.getElementById("addressInput");
+const addressSearchBtn = document.getElementById("addressSearchBtn");
 
 let currentSort = "date-asc";
 
@@ -149,6 +151,14 @@ document.addEventListener("click", event => {
   }
 });
 
+addressSearchBtn.addEventListener("click", searchAddressLocation);
+
+addressInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    searchAddressLocation();
+  }
+});
+
 async function getCityName(lat, lon) {
   try {
     const response = await fetch(
@@ -222,4 +232,45 @@ function sortEvents(events) {
   }
 
   return sortedEvents;
+}
+async function searchAddressLocation() {
+  const address = addressInput.value.trim();
+
+  if (address === "") {
+    showError("Please enter a city or address.");
+    return;
+  }
+
+  try {
+    statusBox.style.display = "block";
+    statusBox.textContent = "Finding location...";
+    eventsContainer.innerHTML = "";
+
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+    );
+
+    const data = await response.json();
+
+    if (data.length === 0) {
+      showError(`Could not find location for "${address}".`);
+      return;
+    }
+
+    const location = data[0];
+
+    const lat = location.lat;
+    const lon = location.lon;
+
+    const displayName = location.display_name.split(",").slice(0, 2).join(",");
+
+    locationText.textContent = `Showing events near ${displayName}`;
+
+    eventSearch.value = "";
+
+    fetchEvents(lat, lon);
+  } catch (error) {
+    console.error("Error searching address:", error);
+    showError("Could not search that location.");
+  }
 }

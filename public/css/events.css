@@ -299,6 +299,14 @@ body {
   .event-action {
     grid-column: 1 / -1;
   }
+  .location-search-box {
+  flex-direction: column;
+}
+
+.address-search-btn {
+  width: 100%;
+  font-size: 16px;
+}
 
   .event-action a {
     width: 100%;
@@ -307,4 +315,44 @@ body {
     font-size: 16px;
     border-radius: 5px;
   }
+}
+.location-search-box {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.address-input {
+  flex: 1;
+  padding: 16px 18px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  font-size: 16px;
+  outline: none;
+  background: white;
+  color: #111;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.address-input:focus {
+  border-color: #0057ff;
+  box-shadow: 0 6px 24px rgba(0, 87, 255, 0.16);
+}
+
+.address-search-btn {
+  padding: 16px 18px;
+  border: none;
+  border-radius: 14px;
+  background: #0057ff;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 87, 255, 0.2);
+}
+
+.address-search-btn:hover {
+  background: #003fd1;
 }
