@@ -18,7 +18,10 @@ app.get("/", (req, res) => {
 });
 
 app.get('/shade', async (req, res) =>{
-    res.render('shade');
+    res.render('shade', {
+        title: "shademap",
+        css: ["shade.css"]
+    });
 })
 
 app.post('/shademap', async (req, res) =>{
@@ -29,6 +32,9 @@ app.post('/shademap', async (req, res) =>{
         const shelter = await findShelter(req.body.lat, req.body.lon)
 
         res.render('shade', {
+            title: "shademap",
+            css: ["shade.css"],
+            js: [],
             latitude: req.body.lat, 
             longitude: req.body.lon, 
             trees: trees,
