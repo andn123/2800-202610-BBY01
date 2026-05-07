@@ -2,6 +2,10 @@ const eventsContainer = document.getElementById("eventsContainer");
 const statusBox = document.getElementById("statusBox");
 const locationText = document.getElementById("locationText");
 
+const eventSearch = document.getElementById("eventSearch");
+
+let allEvents = [];
+
 window.addEventListener("load", () => {
   getUserLocation();
 });
@@ -43,7 +47,8 @@ async function fetchEvents(lat, lon) {
     }
 
     statusBox.style.display = "none";
-    displayEvents(events);
+    allEvents = events;
+displayEvents(allEvents);
   } catch (error) {
     console.error(error);
     showError("Failed to load events.");
@@ -122,3 +127,25 @@ function showError(message) {
   statusBox.style.display = "block";
   statusBox.textContent = message;
 }
+eventSearch.addEventListener("input", () => {
+  const searchValue = eventSearch.value.toLowerCase();
+
+  const filteredEvents = allEvents.filter(event => {
+    return (
+      event.name.toLowerCase().includes(searchValue) ||
+      event.venue.toLowerCase().includes(searchValue) ||
+      event.city.toLowerCase().includes(searchValue)
+    );
+  });
+
+  if (filteredEvents.length === 0) {
+    eventsContainer.innerHTML = `
+      <div class="no-results">
+        No events found for "${eventSearch.value}"
+      </div>
+    `;
+    return;
+  }
+
+  displayEvents(filteredEvents);
+});
