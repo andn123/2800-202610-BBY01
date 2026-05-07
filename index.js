@@ -185,8 +185,13 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/info-center", (req, res) => {
-  res.render("info-center");
-  
+  res.render("info-center",{
+    title: "Info Center",
+    css: ["info-center.css"],
+    js: ["info-center.js"],
+  });
+});
+
 app.post("/loggingin", async (req, res) => {
   const { email, password } = req.body;
   
