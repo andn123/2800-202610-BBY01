@@ -1,0 +1,15 @@
+<link rel="stylesheet" href="/css/style.css">
+
+<div class="container">
+  <h1>Log In</h1>
+
+  <form method="post" action="/login">
+    <input name="email" type="email" placeholder="Email">
+    <input name="password" type="password" placeholder="Password">
+    <button>Log In</button>
+  </form>
+
+  <% if (error) { %>
+    <p class="error"><%= error %></p>
+  <% } %>
+</div>

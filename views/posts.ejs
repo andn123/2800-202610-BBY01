@@ -1,0 +1,122 @@
+<link rel="stylesheet" href="/css/style.css">
+
+<div class="page-container">
+  <% if (success) { %>
+    <div class="alert success-alert">
+      Post submitted successfully!
+    </div>
+
+    <script>
+      setTimeout(function () {
+        document.querySelector(".success-alert").style.display = "none";
+      }, 3000);
+    </script>
+  <% } %>
+  <h1>All Posts</h1>
+
+  <form method="get" action="/posts" class="search-bar">
+    <input 
+      id="searchInput"
+      type="text" 
+      name="search" 
+      placeholder="Search by location or description"
+      value="<%= search %>"
+    >
+
+    <select id="envSelect" name="environment">
+      <option value="">All environments</option>
+      <option value="shaded" <%= env === "shaded" ? "selected" : "" %>>Shaded</option>
+      <option value="sunny" <%= env === "sunny" ? "selected" : "" %>>Sunny</option>
+      <option value="indoors" <%= env === "indoors" ? "selected" : "" %>>Indoors</option>
+    </select>
+  </form>
+
+  <% if (posts.length === 0) { %>
+    <p>No posts found.</p>
+  <% } %>
+
+  <div class="posts-grid">
+    <% posts.forEach(post => { %>
+      <div class="post-card">
+        <img src="/uploads/<%= post.image %>" class="post-image">
+
+        <div class="post-info">
+          <p><strong>User:</strong> <%= post.username %></p>
+          <p><strong>Location:</strong> <%= post.location %></p>
+          <p><strong>Description:</strong> <%= post.description %></p>
+          <p><strong>Environment:</strong> <%= post.environment %></p>
+          <p class="timestamp"><%= post.createdAt.toLocaleString() %></p>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <div class="pagination" id="paginationContainer">
+    <% if (page > 1) { %>
+      <a 
+        href="/posts?page=<%= page - 1 %>&search=<%= search %>&environment=<%= env %>" 
+        class="page-btn"
+      >
+        Previous
+      </a>
+    <% } %>
+
+    <span class="page-number">Page <%= page %> of <%= totalPages %></span>
+
+    <% if (page < totalPages) { %>
+      <a 
+        href="/posts?page=<%= page + 1 %>&search=<%= search %>&environment=<%= env %>" 
+        class="page-btn"
+      >
+        Next
+      </a>
+    <% } %>
+  </div>
+
+</div>
+
+<script>
+    var searchInput = document.getElementById("searchInput");
+    var envSelect = document.getElementById("envSelect");
+    var postsGrid = document.querySelector(".posts-grid");
+    var paginationContainer = document.getElementById("paginationContainer");
+
+    var typingTimer = null;
+
+    function updatePosts() {
+        var search = searchInput.value;
+        var env = envSelect.value;
+
+        var url = "/posts?search=" + encodeURIComponent(search) + "&environment=" + env;
+
+        fetch(url)
+            .then(function(response) {
+                return response.text();
+            })
+            .then(function(html) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, "text/html");
+
+                // Replace posts
+                var newGrid = doc.querySelector(".posts-grid");
+                postsGrid.innerHTML = newGrid.innerHTML;
+
+                // Replace pagination
+                var newPagination = doc.querySelector("#paginationContainer");
+                if (newPagination) {
+                    paginationContainer.innerHTML = newPagination.innerHTML;
+                } else {
+                    paginationContainer.innerHTML = "";
+                }
+            });
+    }
+
+    searchInput.addEventListener("input", function () {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(updatePosts, 200);
+    });
+
+    envSelect.addEventListener("change", function () {
+        updatePosts();
+    });
+</script>

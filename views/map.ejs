@@ -1,4 +1,41 @@
+
 <%- include("partials/header", {css: css}) %>
+    <main class="page-layout">
+      <div class="top-bar">
+        <div class="legend-section">
+          <h3>Environment Legend</h3>
+          <div class="legend-row">
+            <div class="legend-item">
+              <span class="dot sunny"></span>
+              Sunny
+            </div>
+            <div class="legend-item">
+              <span class="dot shaded"></span>
+              Shaded
+            </div>
+            <div class="legend-item">
+              <span class="dot indoors"></span>
+              Indoors
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <button onclick="filterMarkers('all')">Show All</button>
+          <button onclick="filterMarkers('sunny')" class="sunny-btn">
+            Sunny
+          </button>
+          <button onclick="filterMarkers('shaded')" class="shaded-btn">
+            Shaded
+          </button>
+          <button onclick="filterMarkers('indoors')" class="indoors-btn">
+            Indoors
+          </button>
+          <button id="toggleMarkers" class="toggle-btn">Hide Markers</button>
+        </div>
+      </div>
+
+    </main>
 
     <div class="map-layout">
       <!-- MAP -->
@@ -47,4 +84,4 @@
 
     <script src="/js/map.js"></script>
   </body>
-  </html>
+</html>
