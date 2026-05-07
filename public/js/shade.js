@@ -1,36 +1,52 @@
-//vancouver cords latitude:49.xxxx longitude:-123.xxxx 
+//vancouver cords latitude:49.xxxxxx longitude:-123.xxxxxx
+
+const overpassAPI = "https://overpass-api.de/api/interpreter?data="; //is this needed here
 
 /* START OF LEAFLET API MAP*/
-console.log(latitude, longitude);
-console.log(trees);
-console.log(shelter);
+const map = L.map('map', {
+    zoomControl: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    touchZoom: false,
+    boxZoom: false,
+    keyboard: false
+}).setView([ latitude, longitude], 18);
+map.panBy([0,150], { animate: false });
 
-const map = L.map('map').setView([ latitude, longitude], 40);
+const radius = 10;
+const treeArr = [];
+const shelterArr = [];
+//const amenitiesArr = [];
 
 /*Takes this tilelayer and adds it to map above. */
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    attribution: '&copy; CARTO',
     subdomains: 'abcd'
 }).addTo(map)
 
-/* Start of creating markers */
+/* Start of markers */
 const greenIcon = L.icon({
     iconUrl: '/img/shade/tree2.png',
-    iconSize: [32, 32],
-    iconAnchor: [16,32],
-    popupAnchor: [0, -32]
+    iconSize: [24, 24],
+    iconAnchor: [12,24],
+    popupAnchor: [0, -24],
+    className: 'no-pointer'
 })
+
 // in public trees 0:lon, 1:lat
 // in leaflet, it uses lat first
+console.log(trees.length);
 trees.forEach(tree => {
-    L.marker([
+    const marker = L.marker([
         tree.geom.geometry.coordinates[1], 
         tree.geom.geometry.coordinates[0]], 
         {icon: greenIcon}
     ).addTo(map);
-});
 
+    treeArr.push({lat: tree.geom.geometry.coordinates[1], lng: tree.geom.geometry.coordinates[0]})
+});
+//console.log(markers);
 const shelterIcon = L.icon({
     iconUrl: '/img/shade/shelter.png',
     iconSize: [24, 24],
@@ -43,36 +59,65 @@ if(shelter !== null) {
         shelter.center.lon],
         {icon: shelterIcon}
     ).addTo(map);
-}
 
-/* End of creating markers */
+    shelterArr.push({lat: shelter.center.lat, lng: shelter.center.lon})
+}
+/* End of markers */
+
+/*start of features */
+function shadeScore(trees, shelter){
+    if(shelter > 0) {
+        return "high";
+    } else if (trees > 10){
+        return "high";
+    } else if (trees > 2){
+        return "medium";
+    } else {
+        return "low";
+    }
+}
+map.on('click', function(e){
+    let treeCount = 0;
+    let shelterCount = 0;
+
+    const circle = L.circle(e.latlng, {
+        radius: radius,
+        color: 'green',
+        fillColor: 'green',
+        fillOpacity: 0.2
+    }).addTo(map);
+    console.log(circle.getElement())
+    setTimeout(() => {
+        circle.getElement().classList.add('circle-fade');
+    
+        setTimeout(() => {
+            circle.remove();
+        }, 1000);
+    }, 1000);
+
+    treeArr.forEach(tree =>{
+        const distance = e.latlng.distanceTo(L.latLng(tree.lat, tree.lng)); //this is comparing to all trees in park
+        if(distance <= radius){
+            treeCount++;
+        }
+    });
+
+    shelterArr.forEach(shelter => {
+        const distance = e.latlng.distanceTo(L.latLng(shelter.lat, shelter.lng));
+        if(distance <= radius){
+            shelterCount++;
+        }
+        
+    });
+
+    document.getElementById('shadevalue').textContent = shadeScore(treeCount, shelterCount);
+    document.getElementById('treesvalue').textContent = treeCount;
+    if(shelterCount == 0){
+        document.getElementById('sheltervalue').textContent = "none";
+    } else{
+        document.getElementById('sheltervalue').textContent = shelter.tags.shelter_type;
+    }
+});
+/*end of features */
 
 /* END OF LEAFLET API MAP */
-
-
-
-
-
-
-
-/* 
-OpenStreetMap
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap'
-}).addTo(map);
-
-CARTO Voyager
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-    subdomains: 'abcd'
-}).addTo(map)
-
-CartoDBlight
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-    subdomains: 'abcd'
-}).addTo(map);
-*/

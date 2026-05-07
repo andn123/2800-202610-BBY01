@@ -1,40 +1,56 @@
-<!-- ONLY PARKS ARE ALLOWED IN SHADEMAP FOR NOW -->
+<%- include("partials/header") %> 
+        <div class="container-fluid position-relative px-0">
+            <div id="map"></div> 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- leaflet API start -->
-    <link rel="stylesheet" href="/css/shade.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""></script> 
-    <!-- leaflet API end -->
-    <title>shade</title>
-</head>
-    <body>
-        <h1>SHADE MAP UNAVAILABLE</h1>
-        <div id="map"></div>
+            <div class="shade-card card shadow rounded-4 p-3 position-absolute start-0 end-0 m-3">
         
-        <form action="/shademap" method="post">
-            <input type="text" name="lat" placeholder="latitude"/>
-            <input type="text" name="lon" placeholder="longitude"/>
-            <button>submit</button>
-        </form>
+                <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-success-subtle rounded-circle p-2">
+                        <img src="/img/shade/leaf.png" width="28">
+                        </div>
+                        <h5 class="mb-0 fw-bold">
+                            <% if(typeof parkName !== 'undefined') { %>
+                                <%= parkName %>
+                            <% } else { %>
+                                unavailable
+                            <% } %>
+                        </h5>
+                    </div>
+                </div>
 
-        <% if(typeof latitude !== 'undefined' && typeof longitude !== 'undefined' && typeof trees !== 'undefined') { %>
-        <script>
-            const latitude = <%- JSON.stringify(latitude) %>;
-            const longitude = <%- JSON.stringify(longitude) %>;
-            const trees = <%- JSON.stringify(trees) %>;
-            const shelter = <%- JSON.stringify(shelter) %>;
-        </script>
-        <script src="/js/shade.js"></script>
-        <% } %>
-    </body>
-</html>
+                <div class="card-body d-flex justify-content-between text-center px-2">
+
+                    <div class="d-flex flex-column align-items-center">
+                        <img src="/img/shade/cloudy.png" width="28">
+                        <small class="text-muted mt-1">Shade Score</small>
+                        <span class="fw-bold text-warning" id="shadevalue">n/a</span>
+                    </div>
+
+                    <div class="vr"></div>
+
+                    <div class="d-flex flex-column align-items-center">
+                        <img src="/img/shade/gazebo.png" width="28">
+                        <small class="text-muted mt-1">Shelter</small>
+                        <span class="fw-bold" id="sheltervalue">n/a</span>
+                    </div>
+
+                    <div class="vr"></div>
+
+                    <div class="d-flex flex-column align-items-center">
+                        <img src="/img/shade/tree1.png" width="28">
+                        <small class="text-muted mt-1">Trees Nearby</small>
+                        <span class="fw-bold" id="treesvalue">n/a</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="fixed-bottom">
+                <form action="/shademap" method="post">
+                    <input type="text" name="lat" placeholder="latitude"/>
+                    <input type="text" name="lon" placeholder="longitude"/>
+                    <button>submit</button>
+                </form>
+            </footer>            
+        </div>
+<%- include("partials/footer") %> 

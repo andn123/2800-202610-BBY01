@@ -18,11 +18,13 @@ app.get("/", (req, res) => {
 });
 
 app.get('/shade', async (req, res) =>{
-    res.render('shade')
+    res.render('shade');
 })
 
 app.post('/shademap', async (req, res) =>{
-    if(await isPark(req.body.lat, req.body.lon)){
+    const park = await isPark(req.body.lat, req.body.lon);
+    if(park.boolean){
+        const parkName = park.name;
         const trees = await findTrees(req.body.lat, req.body.lon);
         const shelter = await findShelter(req.body.lat, req.body.lon)
 
@@ -30,13 +32,14 @@ app.post('/shademap', async (req, res) =>{
             latitude: req.body.lat, 
             longitude: req.body.lon, 
             trees: trees,
-            shelter: shelter
+            shelter: shelter,
+            parkName: parkName
         });
     } else {
         res.render('noShade');
     }
 })
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+app.listen(3018, () => {
+  console.log("Server running on port 3018");
 });
