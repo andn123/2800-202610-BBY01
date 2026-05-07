@@ -45,6 +45,10 @@ app.use(session({
 }
 ));
 
+app.set("view engine", "ejs");
+
+app.use(express.static("public"));
+
 app.get("/", (req, res) => {
   res.send("Hello" + req.session.username + "! <form action='/logout' method='POST'><button type='submit'>Logout</button></form> <form action='/login' method='GET'><button type='submit'>Login</button></form> <form action='/signup' method='GET'><button type='submit'>Sign Up</button></form>");
 });
@@ -153,8 +157,11 @@ app.post("/signingup", async (req, res) => {
 app.post("/logout", (req, res) => {
   req.session.destroy();
   res.redirect('/login');
+    res.render("index", {
+        currentPage: "home"
+    });
 });
 
 app.listen(3000, () => {
-  console.log("Server running on port 3000");
+    console.log("Server running on port 3000");
 });
