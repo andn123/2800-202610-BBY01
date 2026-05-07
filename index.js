@@ -54,7 +54,7 @@ app.get("/login", (req, res) => {
     res.redirect('/');
     return;
   }
-  res.render("SignUpLogIn", {
+  res.render("LogIn", {
     title: "Login",
     CSSFiles: ["SignUpLogIn.css"],
     JSFiles: ["SignUpLogIn.js"],
@@ -72,7 +72,7 @@ app.post("/loggingin", async (req, res) => {
 
   const validationResult = schema.validate({ email, password });
   if (validationResult.error) {
-    res.render("SignUpLogIn", {
+    res.render("LogIn", {
       title: "Login",
       CSSFiles: ["SignUpLogIn.css"],
       JSFiles: ["SignUpLogIn.js"],
@@ -84,7 +84,7 @@ app.post("/loggingin", async (req, res) => {
   const result = await userCollection.find({ email: email }).project({email: 1, username: 1, password: 1, _id: 1}).toArray();
 
   if (result.length != 1) {
-    res.render("SignUpLogIn", {
+    res.render("LogIn", {
       title: "Login",
       CSSFiles: ["SignUpLogIn.css"],
       JSFiles: ["SignUpLogIn.js"],
@@ -100,7 +100,7 @@ app.post("/loggingin", async (req, res) => {
     res.redirect('/');
     return;
   } else {
-    res.render("SignUpLogIn", {
+    res.render("LogIn", {
       title: "Login",
       CSSFiles: ["SignUpLogIn.css"],
       JSFiles: ["SignUpLogIn.js"],
