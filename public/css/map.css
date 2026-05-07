@@ -252,6 +252,32 @@ body {
   transform: translateY(-1px);
 }
 
+.circle-marker {
+    width: 20px;
+    height: 20px;
+    background-color: #3182bd;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    /* Optional: add box-shadow for a better look */
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    animation: locationPulse 2s ease-out infinite;
+}
+
+@keyframes locationPulse{
+  0% {
+    box-shadow: 0 0 0 0px rgba(49, 130, 189, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 15px rgba(49, 130, 189, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0px rgba(49, 130, 189, 0);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

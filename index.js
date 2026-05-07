@@ -1,88 +1,123 @@
-require("dotenv").config();
+require('./utils.js');
+require('dotenv').config(); 
 const express = require("express");
-const app = express();
+const session = require('express-session');
+const MongoStore = require("connect-mongo").default;
+require("dotenv").config();
+const bcrypt = require('bcrypt');
+const Joi = require('joi');
+const { title } = require('node:process');
+const saltRounds = 10;
 const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
+
+const app = express();
+const port = process.env.PORT || 3000;
+const expireTime = 60 * 60 * 1000; // 1 hour in milliseconds
+
+app.set("view engine", "ejs");
+app.use(express.static("public"));
+
+const mongodb_host = process.env.MONGODB_HOST;
+const mongodb_user = process.env.MONGODB_USER;
+const mongodb_password = process.env.MONGODB_PASSWORD;
+const mongodb_user_database = process.env.MONGODB_USER_DATABASE;
+const mongodb_session_database = process.env.MONGODB_SESSION_DATABASE;
+const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
+const node_session_secret = process.env.NODE_SESSION_SECRET;
+
+const {database} = include('databaseConnection');
+const userCollection = database.db(mongodb_user_database).collection('users');
+
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+var mongoStore = MongoStore.create({
+	mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_session_database}`,
+	crypto: {
+		secret: mongodb_session_secret
+	},
+});
+
+app.use(session({ 
+  secret: node_session_secret,
+	store: mongoStore, //default is memory store 
+	saveUninitialized: false, 
+	resave: true
+}
+));
 
 app.set("view engine", "ejs");
 
 app.use(express.static("public"));
-app.get("/", (req, res) => {
-  res.render("test", {
-    css: [],
-    js: [],
-  });
-});
 
-app.get("/map", (req, res) => {
-  const locations = {
-    type: "FeatureCollection",
-    features: [
-      {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [-123.1207, 49.2827], // Vancouver
-        },
-        properties: {
-          name: "Vancouver",
-        },
-      },
-      {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [-123.1, 49.25],
-        },
-        properties: {
-          name: "Point 2",
-        },
-      },
-      {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [-74.006, 40.7128], // NYC
-        },
-        properties: {
-          name: "New York City",
-        },
-      },
-      {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [-71.0589, 42.3601], // Boston
-        },
-        properties: {
-          name: "Boston",
-        },
-      },
-      {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [-122.76932, 49.26637], // Vancouver
-        },
-        properties: {
-          name: "Port Coquiland",
-        },
-      },
-    ],
-  };
+app.get("/map", async(req, res) => {
+  const apiKey = process.env.TICKETMASTER_API_KEY;
 
-  res.render("map", {
+  const url = `https://app.ticketmaster.com/discovery/v2/events.json?latlong=49.2827,-123.1207&radius=100&unit=km&size=200&sort=date,asc&apikey=${apiKey}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    const events = data._embedded?.events || [];
+
+    // convert to geojson
+    const locations = {
+      type: "FeatureCollection",
+
+      features: events
+        .filter((event) => {
+          const venue = event._embedded?.venues?.[0];
+
+          return venue?.location;
+        })
+
+        .map((event) => {
+          const venue = event._embedded.venues[0];
+
+          return {
+            type: "Feature",
+
+            geometry: {
+              type: "Point",
+
+              coordinates: [
+                parseFloat(venue.location.longitude),
+                parseFloat(venue.location.latitude),
+              ],
+            },
+
+            properties: {
+              name: event.name,
+              venue: venue.name,
+              city: venue.city?.name,
+              date: event.dates?.start?.localDate,
+              image: event.images?.[0]?.url,
+            },
+          };
+        }),
+    };
+
+    res.render("map", {
     mapApi: mapApi,
     locations,
-    css: ["map"],
-    js: ["map"],
+    title : "Map",
+    css: ["map.css"],
+    js: ["map.js"],
   });
+  } catch (err) {
+    console.error(err);
+    res.send("Error fetching events");
+  }
 });
 
 app.get("/about", (req, res) => {
   res.render("about", {
-    css: ["about"],
-    js: ["about"],
+    title: "About",
+    css: ["about.css"],
+    js: ["about.js"],
   });
 });
 
@@ -109,8 +144,9 @@ app.get("/weatherapi", async (req, res) => {
     if (!lat || !lon) {
       res.render("weather", {
         weatherData: data,
-        css: [],
-        js: [],
+        title: "Weather",
+        css: ["weather.css"],
+        js: ["weather.js"],
       });
     } else {
       res.json(data);
@@ -125,6 +161,123 @@ app.get("/weatherapi", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.render("index", {
+    currentPage: "home",
+    authenticated: req.session.authenticated,
+    username: req.session.username
+  });
+});
+
+app.get("/login", (req, res) => {
+  if (req.session.authenticated) {
+    res.redirect('/');
+    return;
+  }
+  res.render("LogIn", {
+    title: "Login",
+    css: ["SignUpLogIn.css"],
+    js: ["SignUpLogIn.js"],
+    errorMessage: ""
+  });
+});
+
+app.post("/loggingin", async (req, res) => {
+  const { email, password } = req.body;
+  
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required()
+  });
+
+  const validationResult = schema.validate({ email, password });
+  if (validationResult.error) {
+    res.render("LogIn", {
+      title: "Login",
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Incorrect email or password'
+    });
+    return;
+  }
+
+  const result = await userCollection.find({ email: email }).project({email: 1, username: 1, password: 1, _id: 1}).toArray();
+
+  if (result.length != 1) {
+    res.render("LogIn", {
+      title: "Login",
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid email or password'
+    });
+    return;
+  }
+  if (await bcrypt.compare(password, result[0].password)) {
+    req.session.authenticated = true;
+    req.session.email = email;
+    req.session.username = result[0].username;
+    req.session.cookie.maxAge = expireTime;
+    res.redirect('/');
+    return;
+  } else {
+    res.render("LogIn", {
+      title: "Login",
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid email or password'
+    });
+    return;
+  }
+});
+
+app.get("/signup", (req, res) => {
+  if (req.session.authenticated) {
+    res.redirect('/');
+    return;
+  }
+  res.render("signUp", {
+    title: "Sign Up",
+    css: ["SignUpLogIn.css"],
+    js: ["SignUpLogIn.js"],
+    errorMessage: ''
+  });
+});
+
+app.post("/signingup", async (req, res) => {
+  const { username, email, password } = req.body;
+  
+  const schema = Joi.object({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required()
+  });
+
+  const validationResult = schema.validate({ username, email, password });
+  if (validationResult.error) {
+    res.render("signUp", {
+      title: "Sign Up",
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid format for ' + validationResult.error.details[0].context.key
+    });
+    return;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  await userCollection.insertOne({username: username, email: email, password: hashedPassword });
+
+  const html = 'Created user successfully! <a href="/login">Login here</a>';
+  res.send(html);
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy();
+  res.redirect('/login');
+    res.render("index", {
+        currentPage: "home"
+    });
+});
+
 app.listen(3000, () => {
-  console.log("Server running on port 3000");
+    console.log("Server running on port 3000");
 });
