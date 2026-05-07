@@ -55,7 +55,8 @@ app.use(session({
 app.get('/shade', async (req, res) =>{
     res.render('shade', {
         title: "shademap",
-        css: ["shade.css"]
+        css: ["shade.css"],
+        js: []
     });
 })
 
