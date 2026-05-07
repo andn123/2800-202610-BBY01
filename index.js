@@ -6,6 +6,7 @@ const MongoStore = require("connect-mongo").default;
 require("dotenv").config();
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
+const { title } = require('node:process');
 const saltRounds = 10;
 const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
@@ -111,15 +112,17 @@ app.get("/map", (req, res) => {
   res.render("map", {
     mapApi: mapApi,
     locations,
-    css: ["map"],
-    js: ["map"],
+    title : "Map",
+    css: ["map.css"],
+    js: ["map.js"],
   });
 });
 
 app.get("/about", (req, res) => {
   res.render("about", {
-    css: ["about"],
-    js: ["about"],
+    title: "About",
+    css: ["about.css"],
+    js: ["about.js"],
   });
 });
 
@@ -146,8 +149,9 @@ app.get("/weatherapi", async (req, res) => {
     if (!lat || !lon) {
       res.render("weather", {
         weatherData: data,
-        css: [],
-        js: [],
+        title: "Weather",
+        css: ["weather.css"],
+        js: ["weather.js"],
       });
     } else {
       res.json(data);
@@ -177,8 +181,8 @@ app.get("/login", (req, res) => {
   }
   res.render("LogIn", {
     title: "Login",
-    CSSFiles: ["SignUpLogIn.css"],
-    JSFiles: ["SignUpLogIn.js"],
+    css: ["SignUpLogIn.css"],
+    js: ["SignUpLogIn.js"],
     errorMessage: ""
   });
 });
@@ -195,8 +199,8 @@ app.post("/loggingin", async (req, res) => {
   if (validationResult.error) {
     res.render("LogIn", {
       title: "Login",
-      CSSFiles: ["SignUpLogIn.css"],
-      JSFiles: ["SignUpLogIn.js"],
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
       errorMessage: 'Error: Incorrect email or password'
     });
     return;
@@ -207,8 +211,8 @@ app.post("/loggingin", async (req, res) => {
   if (result.length != 1) {
     res.render("LogIn", {
       title: "Login",
-      CSSFiles: ["SignUpLogIn.css"],
-      JSFiles: ["SignUpLogIn.js"],
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
       errorMessage: 'Error: Invalid email or password'
     });
     return;
@@ -223,8 +227,8 @@ app.post("/loggingin", async (req, res) => {
   } else {
     res.render("LogIn", {
       title: "Login",
-      CSSFiles: ["SignUpLogIn.css"],
-      JSFiles: ["SignUpLogIn.js"],
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
       errorMessage: 'Error: Invalid email or password'
     });
     return;
@@ -238,8 +242,8 @@ app.get("/signup", (req, res) => {
   }
   res.render("signUp", {
     title: "Sign Up",
-    CSSFiles: ["SignUpLogIn.css"],
-    JSFiles: ["SignUpLogIn.js"],
+    css: ["SignUpLogIn.css"],
+    js: ["SignUpLogIn.js"],
     errorMessage: ''
   });
 });
@@ -257,8 +261,8 @@ app.post("/signingup", async (req, res) => {
   if (validationResult.error) {
     res.render("signUp", {
       title: "Sign Up",
-      CSSFiles: ["SignUpLogIn.css"],
-      JSFiles: ["SignUpLogIn.js"],
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
       errorMessage: 'Error: Invalid format for ' + validationResult.error.details[0].context.key
     });
     return;
