@@ -1,5 +1,7 @@
+
 require('./utils.js');
 require('dotenv').config(); 
+const {isPark, findShelter, findTrees} = require("./public/js/shadeServer");
 const express = require("express");
 const session = require('express-session');
 const MongoStore = require("connect-mongo").default;
@@ -14,6 +16,8 @@ const mapApi = process.env.MAP_API;
 const app = express();
 const port = process.env.PORT || 3000;
 const expireTime = 60 * 60 * 1000; // 1 hour in milliseconds
+
+
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
@@ -47,6 +51,35 @@ app.use(session({
 	resave: true
 }
 ));
+
+app.get('/shade', async (req, res) =>{
+    res.render('shade', {
+        title: "shademap",
+        css: ["shade.css"]
+    });
+})
+
+app.post('/shademap', async (req, res) =>{
+    const park = await isPark(req.body.lat, req.body.lon);
+    if(park.boolean){
+        const parkName = park.name;
+        const trees = await findTrees(req.body.lat, req.body.lon);
+        const shelter = await findShelter(req.body.lat, req.body.lon)
+
+        res.render('shade', {
+            title: "shademap",
+            css: ["shade.css"],
+            js: [],
+            latitude: req.body.lat, 
+            longitude: req.body.lon, 
+            trees: trees,
+            shelter: shelter,
+            parkName: parkName
+        });
+    } else {
+        res.render('noShade');
+    }
+})
 
 app.get("/map", (req, res) => {
   const locations = {
