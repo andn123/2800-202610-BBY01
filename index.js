@@ -1,14 +1,48 @@
-require("./utils.js");
-require("dotenv").config();
 
+
+
+require('./utils.js');
+require('dotenv').config(); 
+const {isPark, findShelter, findTrees} = require("./public/js/shadeServer");
 const express = require("express");
-const session = require("express-session");
+const session = require('express-session');
 const MongoStore = require("connect-mongo").default;
-const bcrypt = require("bcrypt");
-const Joi = require("joi");
+require("dotenv").config();
+const bcrypt = require('bcrypt');
+const Joi = require('joi');
+const { title } = require('node:process');
+const saltRounds = 10;
+const weatherApi = process.env.WEATHER_API;
+const mapApi = process.env.MAP_API;
 const dns = require("node:dns/promises");
 const multer = require("multer");
 const path = require("path");
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
+const app = express();
+const port = process.env.PORT || 3000;
+const expireTime = 60 * 60 * 1000; // 1 hour in milliseconds
+
+app.set("view engine", "ejs");
+app.use(express.static("public"));
+
+
+
+const mongodb_host = process.env.MONGODB_HOST;
+const mongodb_user = process.env.MONGODB_USER;
+const mongodb_password = process.env.MONGODB_PASSWORD;
+const mongodb_user_database = process.env.MONGODB_USER_DATABASE;
+const mongodb_session_database = process.env.MONGODB_SESSION_DATABASE;
+const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
+const node_session_secret = process.env.NODE_SESSION_SECRET;
+
+const {database} = include('databaseConnection');
+const userCollection = database.db(mongodb_user_database).collection('users');
+
+const postsCollection = database.db(mongodb_database).collection("posts");
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -35,305 +69,353 @@ const upload = multer({
   },
 });
 
-const saltRounds = 12;
-dns.setServers(["1.1.1.1", "8.8.8.8"]);
-
-const app = express();
-app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: false }));
-
-const mongodb_host = process.env.MONGODB_HOST;
-const mongodb_user = process.env.MONGODB_USER;
-const mongodb_password = process.env.MONGODB_PASSWORD;
-const mongodb_database = process.env.MONGODB_DATABASE;
-const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
-const node_session_secret = process.env.NODE_SESSION_SECRET;
-
-const { database } = include("databaseConnection");
-const userCollection = database.db(mongodb_database).collection("users");
-const postsCollection = database.db(mongodb_database).collection("posts");
-
-let mongoStore = MongoStore.create({
-  mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}`,
-  crypto: { secret: mongodb_session_secret },
+var mongoStore = MongoStore.create({
+	mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_session_database}`,
+	crypto: {
+		secret: mongodb_session_secret
+	},
 });
 
-const expireTime = 60 * 60 * 1000; // 1 hour
+app.use(session({ 
+  secret: node_session_secret,
+	store: mongoStore, //default is memory store 
+	saveUninitialized: false, 
+	resave: true
+}
+));
 
-app.use(
-  session({
-    secret: node_session_secret,
-    store: mongoStore,
-    resave: true,
-    saveUninitialized: false,
-    cookie: { maxAge: expireTime },
-  }),
-);
+app.get('/shade', async (req, res) =>{
+    res.render('shade', {
+        title: "shademap",
+        css: ["shade.css"],
+        js: []
+    });
+})
 
-app.get("/", (req, res) => {
-  if (req.session && req.session.authenticated) {
-    return res.redirect("/members");
+app.post('/shademap', async (req, res) =>{
+    const park = await isPark(req.body.lat, req.body.lon);
+    if(park.boolean){
+        const parkName = park.name;
+        const trees = await findTrees(req.body.lat, req.body.lon);
+        const shelter = await findShelter(req.body.lat, req.body.lon)
+
+        res.render('shade', {
+            title: "shademap",
+            css: ["shade.css"],
+            js: [],
+            latitude: req.body.lat, 
+            longitude: req.body.lon, 
+            trees: trees,
+            shelter: shelter,
+            parkName: parkName
+        });
+    } else {
+        res.render('noShade');
+    }
+})
+
+app.get("/map", (req, res) => {
+  const locations = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-123.1207, 49.2827], // Vancouver
+        },
+        properties: {
+          name: "Vancouver",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-123.1, 49.25],
+        },
+        properties: {
+          name: "Point 2",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-74.006, 40.7128], // NYC
+        },
+        properties: {
+          name: "New York City",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-71.0589, 42.3601], // Boston
+        },
+        properties: {
+          name: "Boston",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-122.76932, 49.26637], // Vancouver
+        },
+        properties: {
+          name: "Port Coquiland",
+        },
+      },
+    ],
+  };
+
+  res.render("map", {
+    mapApi: mapApi,
+    locations,
+    title : "Map",
+    css: ["map.css"],
+    js: ["map.js"],
+  });
+});
+
+app.get("/about", (req, res) => {
+  res.render("about", {
+    title: "About",
+    css: ["about.css"],
+    js: ["about.js"],
+  });
+});
+
+app.get("/weatherapi", async (req, res) => {
+  const lat = req.query.lat;
+  const lon = req.query.lon;
+
+  let query = "Vancouver";
+
+  if (lat && lon) {
+    query = `${lat},${lon}`;
   }
-  res.render("home");
+
+  const url = `https://api.weatherapi.com/v1/forecast.json?key=${weatherApi}&q=${query}&days=4&aqi=no&alerts=no`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || "API Error");
+    }
+
+    if (!lat || !lon) {
+      res.render("weather", {
+        weatherData: data,
+        title: "Weather",
+        css: ["weather.css"],
+        js: ["weather.js"],
+      });
+    } else {
+      res.json(data);
+    }
+  } catch (error) {
+    console.error("DEBUG ERROR:", error.message);
+
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.message,
+    });
+  }
+});
+
+// Home route
+app.get("/", (req, res) => {
+  res.render("index", {
+    currentPage: "home",
+    authenticated: req.session.authenticated,
+    username: req.session.username
+  });
 });
 
 app.get("/login", (req, res) => {
-  if (req.session && req.session.authenticated) {
-    return res.redirect("/members");
+  if (req.session.authenticated) {
+    res.redirect('/');
+    return;
   }
-  res.render("login", { error: null });
+  res.render("LogIn", {
+    title: "Login",
+    css: ["SignUpLogIn.css"],
+    js: ["SignUpLogIn.js"],
+    errorMessage: ""
+  });
 });
 
-app.post("/login", async (req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
+app.get("/info-center", (req, res) => {
+  res.render("info-center",{
+    title: "Info Center",
+    css: ["info-center.css"],
+    js: ["info-center.js"],
+  });
+});
 
+app.post("/loggingin", async (req, res) => {
+  const { email, password } = req.body;
+  
   const schema = Joi.object({
-    email: Joi.string().max(50).required(),
-    password: Joi.string().min(5).max(100).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required()
   });
 
   const validationResult = schema.validate({ email, password });
   if (validationResult.error) {
-    return res.render("login", { error: validationResult.error.message });
-  }
-
-  const result = await userCollection
-    .find({ email })
-    .project({ username: 1, email: 1, password: 1 })
-    .toArray();
-
-  if (result.length !== 1) {
-    return res.render("login", { error: "User not found." });
-  }
-
-  if (!(await bcrypt.compare(password, result[0].password))) {
-    return res.render("login", {
-      error: "Invalid email/password combination.",
+    res.render("LogIn", {
+      title: "Login",
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Incorrect email or password'
     });
+    return;
   }
 
-  req.session.authenticated = true;
-  req.session.username = result[0].username;
-  req.session.cookie.maxAge = expireTime;
+  const result = await userCollection.find({ email: email }).project({email: 1, username: 1, password: 1, _id: 1}).toArray();
 
-  res.redirect("/members");
+  if (result.length != 1) {
+    res.render("LogIn", {
+      title: "Login",
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid email or password'
+    });
+    return;
+  }
+  if (await bcrypt.compare(password, result[0].password)) {
+    req.session.authenticated = true;
+    req.session.email = email;
+    req.session.username = result[0].username;
+    req.session.cookie.maxAge = expireTime;
+    res.redirect('/');
+    return;
+  } else {
+    res.render("LogIn", {
+      title: "Login",
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid email or password'
+    });
+    return;
+  }
 });
 
 app.get("/signup", (req, res) => {
-  if (req.session && req.session.authenticated) {
-    return res.redirect("/members");
+  if (req.session.authenticated) {
+    res.redirect('/');
+    return;
   }
-  res.render("signup", { error: null });
+  res.render("signUp", {
+    title: "Sign Up",
+    css: ["SignUpLogIn.css"],
+    js: ["SignUpLogIn.js"],
+    errorMessage: ''
+  });
 });
 
-app.post("/signup", async (req, res) => {
-  let username = req.body.username;
-  let email = req.body.email;
-  let password = req.body.password;
-
+app.post("/signingup", async (req, res) => {
+  const { username, email, password } = req.body;
+  
   const schema = Joi.object({
-    username: Joi.string().min(1).max(50).required(),
-    email: Joi.string().max(50).required(),
-    password: Joi.string().min(5).max(100).required(),
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required()
   });
 
   const validationResult = schema.validate({ username, email, password });
   if (validationResult.error) {
-    return res.render("signup", { error: validationResult.error.message });
+    res.render("signUp", {
+      title: "Sign Up",
+      css: ["SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid format for ' + validationResult.error.details[0].context.key
+    });
+    return;
   }
 
-  const existingUser = await userCollection.findOne({ email });
-  if (existingUser) {
-    return res.render("signup", { error: "Email already exists." });
-  }
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  await userCollection.insertOne({username: username, email: email, password: hashedPassword });
 
-  let hashedPassword = await bcrypt.hash(password, saltRounds);
-  await userCollection.insertOne({
-    username: username,
-    email: email,
-    password: hashedPassword,
-  });
-
-  req.session.authenticated = true;
-  req.session.username = username;
-  req.session.cookie.maxAge = expireTime;
-
-  res.redirect("/members");
+  const html = 'Created user successfully! <a href="/login">Login here</a>';
+  res.send(html);
 });
 
-app.get("/members", (req, res) => {
-  if (!req.session || !req.session.authenticated) {
-    return res.redirect("/login");
-  }
-
-  res.render("members", {
-    username: req.session.username,
-  });
-});
-
-app.get("/logout", (req, res) => {
+app.post("/logout", (req, res) => {
   req.session.destroy();
-  res.redirect("/login");
+  res.redirect('/login');
+    res.render("index", {
+        currentPage: "home"
+    });
 });
 
-app.get("/post", (req, res) => {
-  if (!req.session || !req.session.authenticated) {
-    return res.redirect("/login");
-  }
-
-  res.render("post", {
-    error: null,
-    success: null,
-    MAPTILER_KEY: process.env.MAPTILER_KEY,
-  });
+// Events page route
+app.get("/events", (req, res) => {
+  res.render("events");
 });
 
-const axios = require("axios");
+// Ticketmaster API route
+app.get("/api/events", async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
 
-app.post("/post", upload.single("image"), async (req, res) => {
-  if (!req.session || !req.session.authenticated) {
-    return res.redirect("/login");
-  }
+    if (!lat || !lon) {
+      return res.status(400).json({
+        error: "Latitude and longitude are required."
+      });
+    }
 
-  let location = req.body.location;
-  let description = req.body.description;
-  let environment = req.body.environment;
-  let imageFile = req.file;
+    const apiKey = process.env.TICKETMASTER_API_KEY;
 
-  const schema = Joi.object({
-    location: Joi.string().min(1).required(),
-    description: Joi.string().min(1).required(),
-    environment: Joi.string().valid("shaded", "sunny", "indoors").required(),
-  });
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "Ticketmaster API key is missing in .env file."
+      });
+    }
 
-  const validationResult = schema.validate({
-    location,
-    description,
-    environment,
-  });
+    const url =
+      "https://app.ticketmaster.com/discovery/v2/events.json" +
+      `?apikey=${apiKey}` +
+      `&latlong=${lat},${lon}` +
+      `&radius=50` +
+      `&unit=km` +
+      `&size=10` +
+      `&sort=date,asc`;
 
-  if (validationResult.error || !imageFile) {
-    return res.render("post", {
-      MAPTILER_KEY: process.env.MAPTILER_KEY,
-      error: validationResult.error
-        ? validationResult.error.message
-        : "Image is required",
-      success: null,
+    const response = await fetch(url);
+    const data = await response.json();
+
+    const events = data._embedded?.events || [];
+
+    const formattedEvents = events.map((event) => {
+      const dateInfo = event.dates?.start || {};
+      const venue = event._embedded?.venues?.[0];
+
+      return {
+        name: event.name,
+        url: event.url,
+        date: dateInfo.localDate,
+        time: dateInfo.localTime,
+        city: venue?.city?.name || "Unknown city",
+        venue: venue?.name || "Unknown venue"
+      };
+    });
+
+    res.json(formattedEvents);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({
+      error: "Failed to fetch events."
     });
   }
-
-  let lat = parseFloat(req.body.lat);
-  let lng = parseFloat(req.body.lng);
-
-  if (!lat || !lng) {
-    return res.render("post", {
-      error: "Please select a valid location from the dropdown.",
-      success: null,
-    });
-  }
-
-  await postsCollection.insertOne({
-    username: req.session.username,
-    location,
-    description,
-    environment,
-    image: imageFile.filename,
-    lat: lat,
-    lng: lng,
-    createdAt: new Date(),
-  });
-
-  res.redirect("/posts?success=1");
 });
 
-app.get("/posts", async (req, res) => {
-  if (!req.session || !req.session.authenticated) {
-    return res.redirect("/login");
-  }
-
-  const search = req.query.search || "";
-  const safeSearch = escapeRegex(search);
-  const env = req.query.environment || "";
-  const page = parseInt(req.query.page) || 1;
-  const success = req.query.success === "1";
-  const limit = 9; // 3 rows of 3 cards
-  const skip = (page - 1) * limit;
-
-  let query = {};
-
-  if (search) {
-    query.$or = [
-      { location: { $regex: safeSearch, $options: "i" } },
-      { description: { $regex: safeSearch, $options: "i" } },
-    ];
-  }
-
-  if (env) {
-    query.environment = env;
-  }
-
-  const totalPosts = await postsCollection.countDocuments(query);
-
-  const posts = await postsCollection
-    .find(query)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .toArray();
-
-  const totalPages = Math.max(1, Math.ceil(totalPosts / limit));
-
-  res.render("posts", {
-    posts,
-    search,
-    env,
-    page,
-    totalPages,
-    success,
-  });
-});
-
-app.get("/map", (req, res) => {
-  res.render("map", {
-    MAPTILER_KEY: process.env.MAPTILER_KEY,
-  });
-});
-
-app.get("/api/posts", async (req, res) => {
-  const posts = await postsCollection
-    .find(
-      {},
-      {
-        projection: {
-          lat: 1,
-          lng: 1,
-          location: 1,
-          description: 1,
-          environment: 1,
-          image: 1,
-          username: 1,
-          createdAt: 1,
-        },
-      },
-    )
-    .toArray();
-
-  res.json(posts);
-});
-
-app.use(express.static(__dirname + "/public"));
-
-app.use((req, res) => {
-  res.status(404).send("Page not found - 404");
-});
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Internal server error" });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
+// Start server
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });

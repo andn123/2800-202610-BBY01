@@ -1,17 +1,5 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Map</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css"
-      rel="stylesheet"
-    />
-    <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
-    <link rel="stylesheet" href="/css/map.css" />
-  </head>
 
-  <body>
+<%- include("partials/header", {css: css}) %>
     <main class="page-layout">
       <div class="top-bar">
         <div class="legend-section">
@@ -47,18 +35,51 @@
         </div>
       </div>
 
-      <div class="map-wrapper">
-        <div id="map"></div>
-        <div id="sidePanel" class="side-panel closed">
-          <button class="close-btn" onclick="closePanel()">×</button>
-          <h2>Post Details</h2>
-          <div id="panelContent"></div>
-        </div>
-      </div>
     </main>
 
+    <div class="map-layout">
+      <!-- MAP -->
+      <div id="map" data-locations='<%- JSON.stringify(locations) %>'></div>
+
+      <!-- PANEL -->
+      <div class="side-panel" id="panelBox">
+        <div class="handle"></div>
+
+        <!-- HEADER -->
+        <div class="d-flex flex-column border-bottom">
+
+          <!-- Tabs -->
+          <ul class="nav nav-tabs w-100 nav-fill">
+            <li class="nav-item">
+              <button
+                class="nav-link active w-100"
+                onclick="showTab('info', event)"
+              >
+                Info
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link w-100" onclick="showTab('post', event)">
+                Posts
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link w-100" onclick="showTab('recent', event)">
+                Recent
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- CONTENT -->
+        <div id="panel" class="panel-content">
+          <div>Click a location</div>
+          <div id="loading" class="loader"></div>
+        </div>
+      </div>
+    </div>
     <script>
-      window.MAPTILER_KEY = "<%= MAPTILER_KEY %>";
+  window.mapApi ="<%- mapApi %>";
     </script>
 
     <script src="/js/map.js"></script>
