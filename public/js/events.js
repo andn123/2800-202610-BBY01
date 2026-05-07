@@ -1,8 +1,8 @@
 const eventsContainer = document.getElementById("eventsContainer");
 const statusBox = document.getElementById("statusBox");
 const locationText = document.getElementById("locationText");
-
 const eventSearch = document.getElementById("eventSearch");
+const sortSelect = document.getElementById("sortSelect");
 
 let allEvents = [];
 
@@ -47,7 +47,7 @@ async function fetchEvents(lat, lon) {
 
     statusBox.style.display = "none";
     allEvents = events;
-displayEvents(allEvents);
+updateEventList();
   } catch (error) {
     console.error(error);
     showError("Failed to load events.");
@@ -126,28 +126,9 @@ function showError(message) {
   statusBox.style.display = "block";
   statusBox.textContent = message;
 }
-eventSearch.addEventListener("input", () => {
-  const searchValue = eventSearch.value.toLowerCase();
+eventSearch.addEventListener("input", updateEventList);
+sortSelect.addEventListener("change", updateEventList);
 
-  const filteredEvents = allEvents.filter(event => {
-    return (
-      event.name.toLowerCase().includes(searchValue) ||
-      event.venue.toLowerCase().includes(searchValue) ||
-      event.city.toLowerCase().includes(searchValue)
-    );
-  });
-
-  if (filteredEvents.length === 0) {
-    eventsContainer.innerHTML = `
-      <div class="no-results">
-        No events found for "${eventSearch.value}"
-      </div>
-    `;
-    return;
-  }
-
-  displayEvents(filteredEvents);
-});
 async function getCityName(lat, lon) {
   try {
     const response = await fetch(
@@ -169,4 +150,56 @@ async function getCityName(lat, lon) {
     console.error("Error getting city name:", error);
     locationText.textContent = "Showing events near your location";
   }
+}
+
+function updateEventList() {
+  const searchValue = eventSearch.value.toLowerCase();
+
+  let filteredEvents = allEvents.filter(event => {
+    return (
+      event.name.toLowerCase().includes(searchValue) ||
+      event.venue.toLowerCase().includes(searchValue) ||
+      event.city.toLowerCase().includes(searchValue)
+    );
+  });
+
+  filteredEvents = sortEvents(filteredEvents);
+
+  if (filteredEvents.length === 0) {
+    eventsContainer.innerHTML = `
+      <div class="no-results">
+        No events found for "${eventSearch.value}"
+      </div>
+    `;
+    return;
+  }
+
+  displayEvents(filteredEvents);
+}
+
+function sortEvents(events) {
+  const sortValue = sortSelect.value;
+  const sortedEvents = [...events];
+
+  if (sortValue === "date-asc") {
+    sortedEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+  }
+
+  if (sortValue === "date-desc") {
+    sortedEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  if (sortValue === "name-asc") {
+    sortedEvents.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  if (sortValue === "name-desc") {
+    sortedEvents.sort((a, b) => b.name.localeCompare(a.name));
+  }
+
+  if (sortValue === "venue-asc") {
+    sortedEvents.sort((a, b) => a.venue.localeCompare(b.venue));
+  }
+
+  return sortedEvents;
 }
