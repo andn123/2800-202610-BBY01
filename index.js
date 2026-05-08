@@ -140,6 +140,9 @@ app.get("/map", async (req, res) => {
       title: "Map",
       css: ["map.css"],
       js: ["map.js"],
+      navbar: true,
+  currentPage: "map"
+
     });
   } catch (err) {
     console.error(err);
@@ -189,6 +192,8 @@ app.get("/about", (req, res) => {
     title: "About",
     css: ["about.css", "style.css"],
     js: ["about.js"],
+     navbar: true,
+    currentPage: "about"
   });
 });
 
@@ -218,6 +223,7 @@ app.get("/weatherapi", async (req, res) => {
         title: "Weather",
         css: ["weather.css", "style.css"],
         js: ["weather.js"],
+         navbar: true,
       });
     } else {
       res.json(data);
@@ -267,6 +273,8 @@ app.get("/info-center", (req, res) => {
     title: "Info Center",
     css: ["info-center.css", "style.css"],
     js: ["info-center.js"],
+     navbar: true,
+  currentPage: "info-center"
   });
 });
 
@@ -379,10 +387,13 @@ res.redirect("/dashboard");
 });
 
 app.post("/logout", (req, res) => {
-  req.session.destroy();
-  res.redirect("/login");
-  res.render("index", {
-    currentPage: "home",
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Logout error:", err);
+      return res.redirect("/dashboard");
+    }
+
+    res.redirect("/login");
   });
 });
 
@@ -533,10 +544,13 @@ app.get("/events", (req, res) => {
     res.redirect("/login");
     return;
   }
+
   res.render("events", {
     title: "Events",
     css: ["events.css", "style.css"],
     js: ["events.js"],
+    navbar: true,
+    currentPage: "events"
   });
 });
 

@@ -1,22 +1,22 @@
-       <% if(typeof navbar !== "undefined" && navbar === true){ %>} 
-        <nav class="bottom-nav">
-          <a href="/map" class="nav-item">
-            <img src="/img/map.png" alt="Map">
-          </a>
+       <% if (typeof navbar !== "undefined" && navbar === true) { %>
+  <nav class="bottom-nav">
+    <a href="/map" class="nav-item <%= currentPage === 'map' ? 'active' : '' %>">
+      <img src="/img/map.png" alt="Map">
+    </a>
 
-          <a href="/events" class="nav-item">
-            <img src="/img/ticket.png" alt="Events">
-          </a>
+    <a href="/events" class="nav-item <%= currentPage === 'events' ? 'active' : '' %>">
+      <img src="/img/ticket.png" alt="Events">
+    </a>
 
-          <a href="/post" class="nav-item">
-            <img src="/img/post.png" alt="Home">
-          </a>
+    <a href="/post" class="nav-item <%= currentPage === 'post' ? 'active' : '' %>">
+      <img src="/img/post.png" alt="Post">
+    </a>
 
-          <a href="/dashboard" class="nav-item">
-            <img src="/img/user.png" alt="Dashboard">
-          </a>
-        </nav>
-        <% } %>
+    <a href="/dashboard" class="nav-item <%= currentPage === 'dashboard' ? 'active' : '' %>">
+      <img src="/img/user.png" alt="Dashboard">
+    </a>
+  </nav>
+<% } %>
                 
         <% if(typeof parkName !== 'undefined') { %>
         <script>
@@ -31,8 +31,10 @@
         <% } %>
 
 
-  <% js.forEach(file =>{ %>
+  <% if (typeof js !== "undefined" && Array.isArray(js)) { %>
+  <% js.forEach(file => { %>
     <script src="/js/<%= file %>"></script>
   <% }) %>
+<% } %>
 </body>
 </html>
