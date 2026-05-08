@@ -1,5 +1,40 @@
 <%- include('partials/header', { title: title, css: css }) %>
 <body>
+  <% if (typeof guideMode !== "undefined" && guideMode === true) { %>
+  <div class="tutorial-overlay" id="eventsTutorial">
+    <div class="tutorial-card">
+      <button class="tutorial-close" id="closeTutorial">×</button>
+
+      <h2>Welcome to Events</h2>
+
+      <p>
+        This page helps you find indoor events near your current location.
+      </p>
+
+      <div class="tutorial-step">
+        <span>1</span>
+        <p>Allow location access so we can find events near you.</p>
+      </div>
+
+      <div class="tutorial-step">
+        <span>2</span>
+        <p>Use the search bar to look for concerts, sports, festivals, or other events.</p>
+      </div>
+
+      <div class="tutorial-step">
+        <span>3</span>
+        <p>Use sorting to organize events by date or name.</p>
+      </div>
+
+      <div class="tutorial-step">
+        <span>4</span>
+        <p>You can turn off Guide Mode anytime from the dashboard.</p>
+      </div>
+
+      <button class="tutorial-btn" id="gotItTutorial">Got it</button>
+    </div>
+  </div>
+<% } %>
 <main class="events-page">
     <section class="events-header">
       <h1>Events Near You</h1>
@@ -47,3 +82,34 @@
   </main>
 
   <%- include('partials/footer', { js: js }) %>
+  <!-- Events Guide Overlay -->
+<div id="eventsGuideOverlay" class="events-guide-overlay hidden">
+  <div class="events-guide-card">
+    <button id="closeEventsGuide" class="events-guide-close">×</button>
+
+    <h2>Events Page Guide</h2>
+    <p>This page helps you find events near your current location.</p>
+
+    <div class="guide-step">
+      <h3>1. Search Events</h3>
+      <p>Use the search bar to look for artists, venues, or event names.</p>
+    </div>
+
+    <div class="guide-step">
+      <h3>2. Sort Results</h3>
+      <p>Use the dropdown to sort events by date, name, or relevance.</p>
+    </div>
+
+    <div class="guide-step">
+      <h3>3. Change Location</h3>
+      <p>Enter a city or address to find events somewhere else.</p>
+    </div>
+
+    <div class="guide-step">
+      <h3>4. Find Tickets</h3>
+      <p>Press the ticket button to open the event ticket page.</p>
+    </div>
+
+    <button id="gotItEventsGuide" class="events-guide-btn">Got it</button>
+  </div>
+</div>
