@@ -199,6 +199,9 @@ app.get("/weatherapi", async (req, res) => {
 // Home route
 app.get("/", (req, res) => {
   res.render("index", {
+    title: "Home",
+    css: ["style.css", 'home.css'],
+    js: ["home.js"],
     currentPage: "home",
     authenticated: req.session.authenticated,
     username: req.session.username
