@@ -1,33 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VanCooler</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VanCooler</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <main class="landing-page">
+      <video class="background-video" autoplay muted loop playsinline>
+        <source src="/img/Background.mp4" type="video/mp4" />
+      </video>
 
-  <main class="landing-page">
+      <div class="video-overlay"></div>
 
-    <video class="background-video" autoplay muted loop playsinline>
-      <source src="/img/Background.mp4" type="video/mp4">
-    </video>
+      <section class="hero-section">
+        <div class="hero-content">
+          <h1>VanCooler ❄️</h1>
+          <p>Stay cool. Go out smart.</p>
 
-    <div class="video-overlay"></div>
+          <a href="/login" class="login-btn">Login / Signup</a>
+          <br /><br /><br />
+          <p>First time user?</p>
+          <a href="/info-center" class="login-btn">Start Guide</a>
+        </div>
+      </section>
+    </main>
 
-    <section class="hero-section">
-      <div class="hero-content">
-        <h1>VanCooler ❄️</h1>
-        <p>Stay cool. Go out smart.</p>
-
-        <a href="/login" class="login-btn">Login / Signup</a>
-      </div>
-    </section>
-
-  </main>
-
-  <%- include("partials/footer") %>
-
-</body>
+    <%- include("partials/footer") %>
+  </body>
 </html>
