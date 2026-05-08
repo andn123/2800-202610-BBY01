@@ -361,8 +361,12 @@ app.post("/signingup", async (req, res) => {
     password: hashedPassword,
   });
 
-  const html = 'Created user successfully! <a href="/login">Login here</a>';
-  res.send(html);
+  req.session.authenticated = true;
+req.session.email = email;
+req.session.username = username;
+req.session.cookie.maxAge = expireTime;
+
+res.redirect("/dashboard");
 });
 
 app.post("/logout", (req, res) => {
