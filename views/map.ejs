@@ -5,27 +5,37 @@
   <!-- MAP WRAPPER (FIXED) -->
   <div class="map-wrapper">
 
-    <!-- LEGEND / FILTERS -->
-    <div class="map-legend">
-
-      <button onclick="filterMarkers('all')">
-        All
-      </button>
-
-      <button onclick="filterMarkers('sunny')">
-        ☀️ Sunny
-      </button>
-
-      <button onclick="filterMarkers('shaded')">
-        🌳 Shaded
-      </button>
-
-      <button onclick="filterMarkers('indoors')">
-        🏠 Indoors
-      </button>
-      <button onclick="filterMarkers('none')">🎉 Other</button> 
-
+  <!-- LEGEND / FILTERS -->
+  <div class="map-legend">
+    <div class="legend-card">
+      <!-- DOT LEGEND -->
+      <div class="dot-legend">
+      <div class="legend-item">
+        <span class="legend-dot sunny-dot"></span> Sunny
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot shaded-dot"></span> Shaded
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot indoors-dot"></span> Indoors
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot other-dot"></span> Other
+      </div>
     </div>
+
+    <!-- FILTER BUTTONS -->
+    <div class="legend-buttons">
+      <button onclick="filterMarkers('all')">All</button>
+      <button onclick="filterMarkers('sunny')">☀️ Sunny</button>
+      <button onclick="filterMarkers('shaded')">🌳 Shaded</button>
+      <button onclick="filterMarkers('indoors')">🏠 Indoors</button>
+      <button onclick="filterMarkers('none')">🎉 Other</button>
+    </div>
+
+  </div>
+
+</div>
 
     <!-- MAP -->
     <div
