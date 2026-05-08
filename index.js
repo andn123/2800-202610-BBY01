@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 require("./utils.js");
 require("dotenv").config();
 require("./utils.js");
@@ -10,6 +11,19 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const Joi = require("joi");
 const { title } = require("node:process");
+=======
+
+require('./utils.js');
+require('dotenv').config(); 
+const {isPark, findShelter, findTrees} = require("./public/js/shadeServer");
+const express = require("express");
+const session = require('express-session');
+const MongoStore = require("connect-mongo").default;
+require("dotenv").config();
+const bcrypt = require('bcrypt');
+const Joi = require('joi');
+const { title } = require('node:process');
+>>>>>>> dev
 const saltRounds = 10;
 const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
@@ -17,6 +31,7 @@ const mapApi = process.env.MAP_API;
 const app = express();
 const port = process.env.PORT || 3000;
 const expireTime = 60 * 60 * 1000; // 1 hour in milliseconds
+<<<<<<< HEAD
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
@@ -54,9 +69,15 @@ app.use(
 );
 
 app.set("view engine", "ejs");
+=======
+>>>>>>> dev
 
+
+
+app.set("view engine", "ejs");
 app.use(express.static("public"));
 
+<<<<<<< HEAD
 app.get("/map", async (req, res) => {
   const apiKey = process.env.TICKETMASTER_API_KEY;
 
@@ -216,12 +237,155 @@ app.get("/map", async (req, res) => {
     console.error(err);
     res.send("Error fetching events");
   }
+=======
+const mongodb_host = process.env.MONGODB_HOST;
+const mongodb_user = process.env.MONGODB_USER;
+const mongodb_password = process.env.MONGODB_PASSWORD;
+const mongodb_user_database = process.env.MONGODB_USER_DATABASE;
+const mongodb_session_database = process.env.MONGODB_SESSION_DATABASE;
+const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
+const node_session_secret = process.env.NODE_SESSION_SECRET;
+
+const {database} = include('databaseConnection');
+const userCollection = database.db(mongodb_user_database).collection('users');
+
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+var mongoStore = MongoStore.create({
+	mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_session_database}`,
+	crypto: {
+		secret: mongodb_session_secret
+	},
+});
+
+app.use(session({ 
+  secret: node_session_secret,
+	store: mongoStore, //default is memory store 
+	saveUninitialized: false, 
+	resave: true
+}
+));
+
+app.get('/shade', async (req, res) =>{
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
+    res.render('shade', {
+        title: "shademap",
+        css: ["shade.css", 'style.css'],
+        js: []
+    });
+})
+
+app.post('/shademap', async (req, res) =>{
+    const park = await isPark(req.body.lat, req.body.lon);
+    if(park.boolean){
+        const parkName = park.name;
+        const trees = await findTrees(req.body.lat, req.body.lon);
+        const shelter = await findShelter(req.body.lat, req.body.lon)
+
+        res.render('shade', {
+            title: "shademap",
+            css: ["shade.css", 'style.css'],
+            js: [],
+            latitude: req.body.lat, 
+            longitude: req.body.lon, 
+            trees: trees,
+            shelter: shelter,
+            parkName: parkName
+        });
+    } else {
+        res.render('noShade');
+    }
+})
+
+app.get("/map", (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
+
+  const locations = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-123.1207, 49.2827], // Vancouver
+        },
+        properties: {
+          name: "Vancouver",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-123.1, 49.25],
+        },
+        properties: {
+          name: "Point 2",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-74.006, 40.7128], // NYC
+        },
+        properties: {
+          name: "New York City",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-71.0589, 42.3601], // Boston
+        },
+        properties: {
+          name: "Boston",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [-122.76932, 49.26637], // Vancouver
+        },
+        properties: {
+          name: "Port Coquiland",
+        },
+      },
+    ],
+  };
+
+  res.render("map", {
+    mapApi: mapApi,
+    locations,
+    title : "Map",
+    css: ["map.css", 'style.css'],
+    js: ["map.js"],
+  });
+>>>>>>> dev
 });
 
 app.get("/about", (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
   res.render("about", {
     title: "About",
+<<<<<<< HEAD
     css: ["about.css"],
+=======
+    css: ["about.css", 'style.css'],
+>>>>>>> dev
     js: ["about.js"],
   });
 });
@@ -250,7 +414,11 @@ app.get("/weatherapi", async (req, res) => {
       res.render("weather", {
         weatherData: data,
         title: "Weather",
+<<<<<<< HEAD
         css: ["weather.css"],
+=======
+        css: ["weather.css", 'style.css'],
+>>>>>>> dev
         js: ["weather.js"],
       });
     } else {
@@ -266,6 +434,7 @@ app.get("/weatherapi", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 app.get("/", (req, res) => {
   res.render("index", {
     currentPage: "home",
@@ -404,6 +573,154 @@ app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
 
+=======
+// Home route
+app.get("/", (req, res) => {
+  res.render("index", {
+    title: "Home",
+    css: ["style.css", 'home.css'],
+    js: ["home.js"],
+    currentPage: "home",
+    authenticated: req.session.authenticated,
+    username: req.session.username
+  });
+});
+
+app.get("/login", (req, res) => {
+  if (req.session.authenticated) {
+    res.redirect('/');
+    return;
+  }
+  res.render("LogIn", {
+    title: "Login",
+    css: ["style.css", "SignUpLogIn.css"],
+    js: ["SignUpLogIn.js"],
+    errorMessage: ""
+  });
+});
+
+app.get("/info-center", (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
+  res.render("info-center",{
+    title: "Info Center",
+    css: ["info-center.css", 'style.css'],
+    js: ["info-center.js"],
+  });
+});
+
+app.post("/loggingin", async (req, res) => {
+  const { email, password } = req.body;
+  
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required()
+  });
+
+  const validationResult = schema.validate({ email, password });
+  if (validationResult.error) {
+    res.render("LogIn", {
+      title: "Login",
+      css: ["style.css", "SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Incorrect email or password'
+    });
+    return;
+  }
+
+  const result = await userCollection.find({ email: email }).project({email: 1, username: 1, password: 1, _id: 1}).toArray();
+
+  if (result.length != 1) {
+    res.render("LogIn", {
+      title: "Login",
+      css: ["style.css", "SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid email or password'
+    });
+    return;
+  }
+  if (await bcrypt.compare(password, result[0].password)) {
+    req.session.authenticated = true;
+    req.session.email = email;
+    req.session.username = result[0].username;
+    req.session.cookie.maxAge = expireTime;
+    res.redirect('/');
+    return;
+  } else {
+    res.render("LogIn", {
+      title: "Login",
+      css: ["style.css", "SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid email or password'
+    });
+    return;
+  }
+});
+
+app.get("/signup", (req, res) => {
+  if (req.session.authenticated) {
+    res.redirect('/');
+    return;
+  }
+  res.render("signUp", {
+    title: "Sign Up",
+    css: ["style.css", "SignUpLogIn.css"],
+    js: ["SignUpLogIn.js"],
+    errorMessage: ''
+  });
+});
+
+app.post("/signingup", async (req, res) => {
+  const { username, email, password } = req.body;
+  
+  const schema = Joi.object({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required()
+  });
+
+  const validationResult = schema.validate({ username, email, password });
+  if (validationResult.error) {
+    res.render("signUp", {
+      title: "Sign Up",
+      css: ["style.css", "SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: 'Error: Invalid format for ' + validationResult.error.details[0].context.key
+    });
+    return;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  await userCollection.insertOne({username: username, email: email, password: hashedPassword });
+
+  const html = 'Created user successfully! <a href="/login">Login here</a>';
+  res.send(html);
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy();
+  res.redirect('/login');
+    res.render("index", {
+        currentPage: "home"
+    });
+});
+
+// Events page route
+app.get("/events", (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
+  res.render("events", {
+    title: "Events",
+    css: ["events.css", 'style.css'],
+    js: ["events.js"]
+  });
+});
+
+>>>>>>> dev
 // Ticketmaster API route
 app.get("/api/events", async (req, res) => {
   try {
@@ -411,7 +728,11 @@ app.get("/api/events", async (req, res) => {
 
     if (!lat || !lon) {
       return res.status(400).json({
+<<<<<<< HEAD
         error: "Latitude and longitude are required.",
+=======
+        error: "Latitude and longitude are required."
+>>>>>>> dev
       });
     }
 
@@ -419,7 +740,11 @@ app.get("/api/events", async (req, res) => {
 
     if (!apiKey) {
       return res.status(500).json({
+<<<<<<< HEAD
         error: "Ticketmaster API key is missing in .env file.",
+=======
+        error: "Ticketmaster API key is missing in .env file."
+>>>>>>> dev
       });
     }
 
@@ -447,7 +772,11 @@ app.get("/api/events", async (req, res) => {
         date: dateInfo.localDate,
         time: dateInfo.localTime,
         city: venue?.city?.name || "Unknown city",
+<<<<<<< HEAD
         venue: venue?.name || "Unknown venue",
+=======
+        venue: venue?.name || "Unknown venue"
+>>>>>>> dev
       };
     });
 
@@ -455,7 +784,11 @@ app.get("/api/events", async (req, res) => {
   } catch (error) {
     console.error("Error fetching events:", error);
     res.status(500).json({
+<<<<<<< HEAD
       error: "Failed to fetch events.",
+=======
+      error: "Failed to fetch events."
+>>>>>>> dev
     });
   }
 });
@@ -463,4 +796,8 @@ app.get("/api/events", async (req, res) => {
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> dev

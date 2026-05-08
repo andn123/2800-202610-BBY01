@@ -1,0 +1,19 @@
+body {
+    min-height: 100vh;
+}
+#map { 
+    height: 100vh; 
+}
+
+.no-pointer { pointer-events: none; }
+
+.circle-fade {
+    transition: stroke-opacity 1s, fill-opacity 1s;
+    stroke-opacity: 0;
+    fill-opacity: 0;
+}
+
+.shade-card{
+    z-index: 1000;
+    bottom: 80px;
+}

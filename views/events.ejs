@@ -1,0 +1,49 @@
+<%- include('partials/header', { title: title, css: css }) %>
+<body>
+<main class="events-page">
+    <section class="events-header">
+      <h1>Events Near You</h1>
+      <p id="locationText">Finding your location...</p>
+
+      <input 
+        type="text" 
+        id="eventSearch" 
+        class="event-search" 
+        placeholder="Search events, artists, or venues..."
+      />
+    </section>
+   <div class="sort-dropdown">
+  <button id="sortButton" class="sort-button" type="button">
+    Date: Soonest First
+    <span>⌄</span>
+  </button>
+
+  <div id="sortMenu" class="sort-menu">
+    <button type="button" data-sort="date-asc">Date: Soonest First</button>
+    <button type="button" data-sort="date-desc">Date: Latest First</button>
+    <button type="button" data-sort="name-asc">Name: A to Z</button>
+    <button type="button" data-sort="name-desc">Name: Z to A</button>
+    <button type="button" data-sort="venue-asc">Venue: A to Z</button>
+  </div>
+</div>
+<div class="location-search-box">
+  <input
+    type="text"
+    id="addressInput"
+    class="address-input"
+    placeholder="Enter a city or address..."
+  />
+
+  <button id="addressSearchBtn" class="address-search-btn" type="button">
+    Change Location
+  </button>
+</div>
+
+    <section id="statusBox" class="status-box">
+      Loading nearby events...
+    </section>
+
+    <section id="eventsContainer" class="events-container"></section>
+  </main>
+
+  <%- include('partials/footer', { js: js }) %>
