@@ -399,6 +399,7 @@ app.get("/api/events", async (req, res) => {
         time: dateInfo.localTime,
         city: venue?.city?.name || "Unknown city",
         venue: venue?.name || "Unknown venue"
+        navbar: true,
       };
     });
 
