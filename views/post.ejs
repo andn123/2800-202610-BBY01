@@ -1,0 +1,55 @@
+<link rel="stylesheet" href="/css/post.css">
+
+<div class="container">
+  <h1>Create a Post</h1>
+
+  <form method="post" action="/post" enctype="multipart/form-data">
+
+  <label class="input-label">Location</label>
+  <input id="locationInput" name="location" type="text" autocomplete="off"
+       placeholder="Enter the location address or name">
+
+  <div id="locationSuggestions"
+      style="
+          border:1px solid #ccc;
+          background:rgb(255, 252, 252);
+          display:none;
+          margin-top:4px;
+          width:100%;
+      ">
+  </div>
+
+    <!-- Hidden fields to store the chosen coordinates -->
+    <input type="hidden" id="latField" name="lat">
+    <input type="hidden" id="lngField" name="lng">
+
+    <label class="input-label">Image</label>
+    <input name="image" type="file" accept="image/*">
+
+    <label class="input-label">Description</label>
+    <textarea name="description" placeholder="What activities, details, or notes about this place?" style="width:90%;height:80px;margin-top:5px;"></textarea>
+
+    <label class="input-label">Environment</label>
+    <div class="radio-group">
+      <label><input type="radio" name="environment" value="shaded"> Shaded</label>
+      <label><input type="radio" name="environment" value="sunny"> Sunny</label>
+      <label><input type="radio" name="environment" value="indoors"> Indoors</label>
+    </div>
+
+    <button>Submit Post</button>
+  </form>
+
+  <% if (error) { %>
+    <p class="error"><%= error %></p>
+  <% } %>
+    
+  <% if (success) { %>
+    <p class="success"><%= success %></p>
+  <% } %>
+</div>
+
+<script>
+  window.mapApi = "<%= mapApi %>";
+</script>
+
+<script src="/js/create-post.js"></script>
