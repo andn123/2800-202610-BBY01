@@ -55,7 +55,7 @@ app.use(session({
 app.get('/shade', async (req, res) =>{
     res.render('shade', {
         title: "shademap",
-        css: ["shade.css"],
+        css: ["shade.css", 'style.css'],
         js: []
     });
 })
@@ -69,7 +69,7 @@ app.post('/shademap', async (req, res) =>{
 
         res.render('shade', {
             title: "shademap",
-            css: ["shade.css"],
+            css: ["shade.css", 'style.css'],
             js: [],
             latitude: req.body.lat, 
             longitude: req.body.lon, 
@@ -143,7 +143,7 @@ app.get("/map", (req, res) => {
     mapApi: mapApi,
     locations,
     title : "Map",
-    css: ["map.css"],
+    css: ["map.css", 'style.css'],
     js: ["map.js"],
   });
 });
@@ -151,7 +151,7 @@ app.get("/map", (req, res) => {
 app.get("/about", (req, res) => {
   res.render("about", {
     title: "About",
-    css: ["about.css"],
+    css: ["about.css", 'style.css'],
     js: ["about.js"],
   });
 });
@@ -180,7 +180,7 @@ app.get("/weatherapi", async (req, res) => {
       res.render("weather", {
         weatherData: data,
         title: "Weather",
-        css: ["weather.css"],
+        css: ["weather.css", 'style.css'],
         js: ["weather.js"],
       });
     } else {
@@ -212,7 +212,7 @@ app.get("/login", (req, res) => {
   }
   res.render("LogIn", {
     title: "Login",
-    css: ["SignUpLogIn.css"],
+    css: ["style.css", "SignUpLogIn.css"],
     js: ["SignUpLogIn.js"],
     errorMessage: ""
   });
@@ -221,7 +221,7 @@ app.get("/login", (req, res) => {
 app.get("/info-center", (req, res) => {
   res.render("info-center",{
     title: "Info Center",
-    css: ["info-center.css"],
+    css: ["info-center.css", 'style.css'],
     js: ["info-center.js"],
   });
 });
@@ -238,7 +238,7 @@ app.post("/loggingin", async (req, res) => {
   if (validationResult.error) {
     res.render("LogIn", {
       title: "Login",
-      css: ["SignUpLogIn.css"],
+      css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: 'Error: Incorrect email or password'
     });
@@ -250,7 +250,7 @@ app.post("/loggingin", async (req, res) => {
   if (result.length != 1) {
     res.render("LogIn", {
       title: "Login",
-      css: ["SignUpLogIn.css"],
+      css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: 'Error: Invalid email or password'
     });
@@ -266,7 +266,7 @@ app.post("/loggingin", async (req, res) => {
   } else {
     res.render("LogIn", {
       title: "Login",
-      css: ["SignUpLogIn.css"],
+      css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: 'Error: Invalid email or password'
     });
@@ -281,7 +281,7 @@ app.get("/signup", (req, res) => {
   }
   res.render("signUp", {
     title: "Sign Up",
-    css: ["SignUpLogIn.css"],
+    css: ["style.css", "SignUpLogIn.css"],
     js: ["SignUpLogIn.js"],
     errorMessage: ''
   });
@@ -300,7 +300,7 @@ app.post("/signingup", async (req, res) => {
   if (validationResult.error) {
     res.render("signUp", {
       title: "Sign Up",
-      css: ["SignUpLogIn.css"],
+      css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: 'Error: Invalid format for ' + validationResult.error.details[0].context.key
     });
@@ -324,7 +324,11 @@ app.post("/logout", (req, res) => {
 
 // Events page route
 app.get("/events", (req, res) => {
-  res.render("events");
+  res.render("events", {
+    title: "Events",
+    css: ["events.css", 'style.css'],
+    js: ["events.js"]
+  });
 });
 
 // Ticketmaster API route

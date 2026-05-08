@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Events Near You</title>
-
-  <link rel="stylesheet" href="/css/events.css" />
-</head>
-<body>
+<%- include('partials/header', { title: title, css: css }) %>
 <body>
 <main class="events-page">
     <section class="events-header">
@@ -56,7 +46,4 @@
     <section id="eventsContainer" class="events-container"></section>
   </main>
 
-  <script src="/js/events.js"></script>
-</body>
-</body>
-</html>
+  <%- include('partials/footer', { js: js }) %>
