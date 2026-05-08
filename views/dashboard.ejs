@@ -1,0 +1,112 @@
+<main class="dashboard">
+
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <button class="menu-btn" aria-label="Open menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="guide-toggle-wrap">
+        <span>Guide Mode</span>
+
+        <label class="switch">
+          <input type="checkbox" id="guideToggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Main Profile + Weather Area -->
+    <section class="profile-weather-section">
+
+      <div class="profile-img-wrap">
+        <img 
+          src="<%= user.profileImage || '/img/mountain-profile.jpg' %>" 
+          alt="Profile image" 
+          class="profile-img"
+        />
+      </div>
+
+      <!-- Weather location from API -->
+      <p class="location" id="weatherLocation">Loading location...</p>
+
+      <!-- User name from MongoDB -->
+      <h1 class="user-name"><%= user.name %></h1>
+
+      <!-- Weather from API -->
+      <div class="weather-main">
+        <span class="temperature" id="weatherTemp">--°C</span>
+        <span class="sun-icon" id="weatherIcon">🌤️</span>
+      </div>
+
+      <p class="condition">
+        <span id="weatherCondition">Loading weather...</span>
+      </p>
+
+      <div class="forecast-row" id="forecastRow">
+        <div class="forecast-item">
+          <span>Loading forecast...</span>
+        </div>
+      </div>
+
+      <a href="/logout" class="logout-btn">Logout</a>
+
+    </section>
+
+    <!-- Dashboard Cards -->
+    <section class="dashboard-cards">
+
+      <a href="/events" class="dashboard-card">
+        <div class="card-icon bars-icon">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div class="card-content">
+          <h2>Your Activity</h2>
+          <p>View saved plans, recent activity, and dashboard updates.</p>
+        </div>
+
+        <span class="card-arrow">›</span>
+      </a>
+
+      <a href="/events" class="dashboard-card">
+        <div class="card-icon">🎟️</div>
+
+        <div class="card-content">
+          <h2>Events Near You</h2>
+          <p>Find indoor events based on your current location.</p>
+        </div>
+
+        <span class="card-arrow">›</span>
+      </a>
+
+      <a href="/weatherapi" class="dashboard-card">
+        <div class="card-icon">🌦️</div>
+
+        <div class="card-content">
+          <h2>Weather</h2>
+          <p>Check the forecast before making plans.</p>
+        </div>
+
+        <span class="card-arrow">›</span>
+      </a>
+
+      <a href="/help" class="dashboard-card">
+        <div class="card-icon">📘</div>
+
+        <div class="card-content">
+          <h2>Help Center</h2>
+          <p>Learn how to use the app features.</p>
+        </div>
+
+        <span class="card-arrow">›</span>
+      </a>
+
+    </section>
+
+  </main>
+<script src="/js/dashboard.js"></script>

@@ -410,6 +410,91 @@ app.get("/api/events", async (req, res) => {
     });
   }
 });
+app.get("/api/dashboard-weather", async (req, res) => {
+  const lat = req.query.lat;
+  const lon = req.query.lon;
+
+  let query = "Vancouver";
+
+  if (lat && lon) {
+    query = `${lat},${lon}`;
+  }
+
+  const url = `https://api.weatherapi.com/v1/forecast.json?key=${weatherApi}&q=${query}&days=4&aqi=no&alerts=no`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || "Weather API Error");
+    }
+
+    res.json({
+      city: data.location?.name || "Vancouver",
+      region: data.location?.region || "BC",
+      country: data.location?.country || "Canada",
+      temperature: Math.round(data.current?.temp_c),
+      condition: data.current?.condition?.text || "Weather unavailable",
+      icon: data.current?.condition?.icon || "",
+      forecast: data.forecast?.forecastday?.map((day) => {
+        return {
+          date: day.date,
+          maxTemp: Math.round(day.day.maxtemp_c),
+          minTemp: Math.round(day.day.mintemp_c),
+          condition: day.day.condition?.text || "",
+          icon: day.day.condition?.icon || ""
+        };
+      }) || []
+    });
+
+  } catch (error) {
+    console.error("Dashboard weather error:", error.message);
+
+    res.status(500).json({
+      error: "Dashboard weather failed",
+      details: error.message
+    });
+  }
+});
+app.get("/dashboard", async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.redirect("/login");
+    }
+
+    const user = await User.findById(req.session.userId).lean();
+
+    if (!user) {
+      return res.redirect("/login");
+    }
+
+    res.render("dashboard", {
+      title: "Dashboard",
+      css: ["dashboard.css", "style.css"],
+      js: ["dashboard.js"],
+      user: {
+        name: user.name,
+        email: user.email,
+        profileImage: user.profileImage || "/img/mountain-profile.jpg"
+      }
+    });
+
+  } catch (err) {
+    console.error("Dashboard error:", err);
+    res.status(500).send("Error loading dashboard");
+  }
+});
+app.get("/dashboard", (req, res) => {
+  res.render("dashboard", {
+    title: "Dashboard",
+    user: {
+      name: req.session?.name || "User",
+      profileImage: "/img/mountain-profile.jpg"
+    }
+  });
+});
+
 
 // Start server
 app.listen(port, () => {
