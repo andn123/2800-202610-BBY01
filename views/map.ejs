@@ -1,47 +1,99 @@
 <%- include("partials/header", {css: css}) %>
 
-    <div class="map-layout">
-      <!-- MAP -->
-      <div id="map" data-locations='<%- JSON.stringify(locations) %>'></div>
+<div class="map-layout">
 
-      <!-- PANEL -->
-      <div class="side-panel" id="panelBox">
-        <div class="handle"></div>
+  <!-- MAP WRAPPER (FIXED) -->
+  <div class="map-wrapper">
 
-        <!-- HEADER -->
-        <div class="d-flex flex-column border-bottom">
-
-          <!-- Tabs -->
-          <ul class="nav nav-tabs w-100 nav-fill">
-            <li class="nav-item">
-              <button
-                class="nav-link active w-100"
-                onclick="showTab('info', event)"
-              >
-                Info
-              </button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link w-100" onclick="showTab('post', event)">
-                Posts
-              </button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link w-100" onclick="showTab('recent', event)">
-                Recent
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <!-- CONTENT -->
-        <div id="panel" class="panel-content">
-          <div>Click a location</div>
-          <div id="loading" class="loader"></div>
-        </div>
+  <!-- LEGEND / FILTERS -->
+  <div class="map-legend">
+    <div class="legend-card">
+      <!-- DOT LEGEND -->
+      <div class="dot-legend">
+      <div class="legend-item">
+        <span class="legend-dot sunny-dot"></span> Sunny
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot shaded-dot"></span> Shaded
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot indoors-dot"></span> Indoors
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot other-dot"></span> Other
       </div>
     </div>
-    <script>
-  window.mapApi ="<%- mapApi %>";
-    </script>
-<%- include('partials/footer', { js: js }) %>
+
+    <!-- FILTER BUTTONS -->
+    <div class="legend-buttons">
+      <button onclick="filterMarkers('all')">All</button>
+      <button onclick="filterMarkers('sunny')">☀️ Sunny</button>
+      <button onclick="filterMarkers('shaded')">🌳 Shaded</button>
+      <button onclick="filterMarkers('indoors')">🏠 Indoors</button>
+      <button onclick="filterMarkers('none')">🎉 Other</button>
+    </div>
+
+  </div>
+
+</div>
+
+    <!-- MAP -->
+    <div
+      id="map"
+      data-locations="<%= encodeURIComponent(JSON.stringify(locations)) %>"
+      data-posts="<%= encodeURIComponent(JSON.stringify(posts)) %>"
+    ></div>
+
+  </div>
+
+  <!-- PANEL (UNCHANGED) -->
+  <div class="side-panel" id="panelBox">
+
+    <div class="handle"></div>
+
+    <div class="d-flex flex-column border-bottom">
+
+      <ul class="nav nav-tabs w-100 nav-fill">
+
+        <li class="nav-item">
+          <button class="nav-link active w-100" onclick="showTab('info', event)">
+            Info
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-link w-100" onclick="showTab('post', event)">
+            Posts
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-link w-100" onclick="showTab('recent', event)">
+            Recent
+          </button>
+        </li>
+
+      </ul>
+
+    </div>
+
+    <div id="panel" class="panel-content">
+
+      <div>Click a location</div>
+
+      <div id="loading" class="loader"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  window.mapApi = "<%- mapApi %>";
+</script>
+
+<script src="/js/test.js"></script>
+
+</body>
+</html>
