@@ -457,44 +457,24 @@ app.get("/api/dashboard-weather", async (req, res) => {
     });
   }
 });
-app.get("/dashboard", async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.redirect("/login");
-    }
-
-    const user = await User.findById(req.session.userId).lean();
-
-    if (!user) {
-      return res.redirect("/login");
-    }
-
-    res.render("dashboard", {
-      title: "Dashboard",
-      css: ["dashboard.css", "style.css"],
-      js: ["dashboard.js"],
-      user: {
-        name: user.name,
-        email: user.email,
-        profileImage: user.profileImage || "/img/mountain-profile.jpg"
-      }
-    });
-
-  } catch (err) {
-    console.error("Dashboard error:", err);
-    res.status(500).send("Error loading dashboard");
-  }
-});
 app.get("/dashboard", (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+
   res.render("dashboard", {
     title: "Dashboard",
+    css: ["dashboard.css", "style.css"],
+    js: ["dashboard.js"],
+    navbar: true,
     user: {
-      name: req.session?.name || "User",
+      name: req.session.username || "User",
+      email: req.session.email || "",
       profileImage: "/img/mountain-profile.jpg"
     }
   });
 });
-
 
 // Start server
 app.listen(port, () => {
