@@ -1,53 +1,85 @@
 <%- include("partials/header", {css: css}) %>
 
+<<<<<<< Updated upstream
     <div class="map-layout">
       <!-- MAP -->
       <div
   id="map"
   data-locations="<%= encodeURIComponent(JSON.stringify(locations)) %>"
 ></div>
+=======
+<div class="map-layout">
+>>>>>>> Stashed changes
 
-      <!-- PANEL -->
-      <div class="side-panel" id="panelBox">
-        <div class="handle"></div>
+  <!-- MAP WRAPPER (FIXED) -->
+  <div class="map-wrapper">
 
-        <!-- HEADER -->
-        <div class="d-flex flex-column border-bottom">
+    <!-- LEGEND / FILTERS -->
+    <div class="map-legend">
+  <button onclick="filterMarkers('all')">All</button>
+  <button onclick="filterMarkers('sunny')">☀️ Sunny</button>
+  <button onclick="filterMarkers('shaded')">🌳 Shaded</button>
+  <button onclick="filterMarkers('indoors')">🏠 Indoors</button>
+  <button onclick="filterMarkers('none')">🎉 Events</button>  <!-- ✅ NEW -->
+</div>
 
-          <!-- Tabs -->
-          <ul class="nav nav-tabs w-100 nav-fill">
-            <li class="nav-item">
-              <button
-                class="nav-link active w-100"
-                onclick="showTab('info', event)"
-              >
-                Info
-              </button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link w-100" onclick="showTab('post', event)">
-                Posts
-              </button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link w-100" onclick="showTab('recent', event)">
-                Recent
-              </button>
-            </li>
-          </ul>
-        </div>
+    <!-- MAP -->
+    <div
+      id="map"
+      data-locations="<%= encodeURIComponent(JSON.stringify(locations)) %>"
+      data-posts="<%= encodeURIComponent(JSON.stringify(posts)) %>"
+    ></div>
 
-        <!-- CONTENT -->
-        <div id="panel" class="panel-content">
-          <div>Click a location</div>
-          <div id="loading" class="loader"></div>
-        </div>
-      </div>
+  </div>
+
+  <!-- PANEL (UNCHANGED) -->
+  <div class="side-panel" id="panelBox">
+
+    <div class="handle"></div>
+
+    <div class="d-flex flex-column border-bottom">
+
+      <ul class="nav nav-tabs w-100 nav-fill">
+
+        <li class="nav-item">
+          <button class="nav-link active w-100" onclick="showTab('info', event)">
+            Info
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-link w-100" onclick="showTab('post', event)">
+            Posts
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-link w-100" onclick="showTab('recent', event)">
+            Recent
+          </button>
+        </li>
+
+      </ul>
+
     </div>
-    <script>
-  window.mapApi ="<%- mapApi %>";
-    </script>
 
-    <script src="/js/map.js"></script>
-  </body>
-  </html>
+    <div id="panel" class="panel-content">
+
+      <div>Click a location</div>
+
+      <div id="loading" class="loader"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  window.mapApi = "<%- mapApi %>";
+</script>
+
+<script src="/js/map.js"></script>
+
+</body>
+</html>
