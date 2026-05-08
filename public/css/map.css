@@ -377,6 +377,71 @@ body {
 }
 
 /* =======================
+   DOT LEGEND
+======================= */
+.legend-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  padding: 14px 18px;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: fit-content;
+}
+
+/* Dot legend layout */
+.dot-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+/* Colors */
+.sunny-dot { background: #FFD700; }
+.shaded-dot { background: #228B22; }
+.indoors-dot { background: #1E90FF; }
+.other-dot { background: #666667; }
+
+/* Filter buttons inside legend */
+.legend-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.legend-buttons button {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: 0.2s ease;
+}
+
+.legend-buttons button:hover {
+  transform: translateY(-2px);
+}
+
+/* =======================
    MOBILE
 ======================= */
 @media (max-width: 768px) {

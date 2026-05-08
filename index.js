@@ -384,7 +384,6 @@ app.get("/post", (req, res) => {
     mapApi: mapApi,
   });
 });
-
 const axios = require("axios");
 
 app.post("/post", upload.single("image"), async (req, res) => {
