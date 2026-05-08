@@ -53,6 +53,10 @@ app.use(session({
 ));
 
 app.get('/shade', async (req, res) =>{
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
     res.render('shade', {
         title: "shademap",
         css: ["shade.css", 'style.css'],
@@ -83,6 +87,11 @@ app.post('/shademap', async (req, res) =>{
 })
 
 app.get("/map", (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
+
   const locations = {
     type: "FeatureCollection",
     features: [
@@ -149,6 +158,10 @@ app.get("/map", (req, res) => {
 });
 
 app.get("/about", (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
   res.render("about", {
     title: "About",
     css: ["about.css", 'style.css'],
@@ -222,6 +235,10 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/info-center", (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
   res.render("info-center",{
     title: "Info Center",
     css: ["info-center.css", 'style.css'],
@@ -327,6 +344,10 @@ app.post("/logout", (req, res) => {
 
 // Events page route
 app.get("/events", (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
   res.render("events", {
     title: "Events",
     css: ["events.css", 'style.css'],
