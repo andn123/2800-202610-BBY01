@@ -274,3 +274,24 @@ async function searchAddressLocation() {
     showError("Could not search that location.");
   }
 }
+function firstTimeMode() {
+  const tutorial = document.getElementById("eventsTutorial");
+  const closeBtn = document.getElementById("closeTutorial");
+  const gotItBtn = document.getElementById("gotItTutorial");
+
+  if (!tutorial) return;
+
+  function closeTutorial() {
+    tutorial.style.display = "none";
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeTutorial);
+  }
+
+  if (gotItBtn) {
+    gotItBtn.addEventListener("click", closeTutorial);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", firstTimeMode);

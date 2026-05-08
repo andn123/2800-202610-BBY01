@@ -307,8 +307,12 @@ app.post("/loggingin", async (req, res) => {
     req.session.email = email;
     req.session.username = result[0].username;
     req.session.cookie.maxAge = expireTime;
-    res.redirect("/");
-    return;
+    if (typeof req.session.guideMode === "undefined") {
+    req.session.guideMode = true;
+  }
+
+  res.redirect("/dashboard");
+  return;
   } else {
     res.render("LogIn", {
       title: "Login",
@@ -366,6 +370,9 @@ app.post("/signingup", async (req, res) => {
 req.session.email = email;
 req.session.username = username;
 req.session.cookie.maxAge = expireTime;
+
+// First-time users start with Guide Mode on
+req.session.guideMode = true;
 
 res.redirect("/dashboard");
 });
@@ -645,11 +652,27 @@ app.get("/dashboard", (req, res) => {
     css: ["dashboard.css", "style.css"],
     js: ["dashboard.js"],
     navbar: true,
+    guideMode: req.session.guideMode !== false,
     user: {
       name: req.session.username || "User",
       email: req.session.email || "",
       profileImage: "/img/mountain-profile.jpg"
     }
+  });
+});
+app.post("/guide-mode", (req, res) => {
+  if (!req.session.authenticated) {
+    return res.status(401).json({
+      success: false,
+      message: "Not logged in"
+    });
+  }
+
+  req.session.guideMode = req.body.guideMode === true;
+
+  res.json({
+    success: true,
+    guideMode: req.session.guideMode
   });
 });
 

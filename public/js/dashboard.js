@@ -114,3 +114,30 @@ if ("geolocation" in navigator) {
 } else {
   fetchDashboardWeather(); // fallback Vancouver
 }
+document.addEventListener("DOMContentLoaded", () => {
+  const guideToggle = document.getElementById("guideToggle");
+
+  if (!guideToggle) return;
+
+  guideToggle.addEventListener("change", async () => {
+    try {
+      const response = await fetch("/guide-mode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          guideMode: guideToggle.checked
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        console.error("Guide mode update failed:", data.message);
+      }
+    } catch (error) {
+      console.error("Guide mode error:", error);
+    }
+  });
+});
