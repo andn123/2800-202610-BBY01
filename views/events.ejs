@@ -82,3 +82,34 @@
   </main>
 
   <%- include('partials/footer', { js: js }) %>
+  <!-- Events Guide Overlay -->
+<div id="eventsGuideOverlay" class="events-guide-overlay hidden">
+  <div class="events-guide-card">
+    <button id="closeEventsGuide" class="events-guide-close">×</button>
+
+    <h2>Events Page Guide</h2>
+    <p>This page helps you find events near your current location.</p>
+
+    <div class="guide-step">
+      <h3>1. Search Events</h3>
+      <p>Use the search bar to look for artists, venues, or event names.</p>
+    </div>
+
+    <div class="guide-step">
+      <h3>2. Sort Results</h3>
+      <p>Use the dropdown to sort events by date, name, or relevance.</p>
+    </div>
+
+    <div class="guide-step">
+      <h3>3. Change Location</h3>
+      <p>Enter a city or address to find events somewhere else.</p>
+    </div>
+
+    <div class="guide-step">
+      <h3>4. Find Tickets</h3>
+      <p>Press the ticket button to open the event ticket page.</p>
+    </div>
+
+    <button id="gotItEventsGuide" class="events-guide-btn">Got it</button>
+  </div>
+</div>
