@@ -240,6 +240,7 @@ app.get("/", (req, res) => {
     currentPage: "home",
     authenticated: req.session.authenticated,
     username: req.session.username,
+    navbar: true
   });
 });
 
