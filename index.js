@@ -3,7 +3,7 @@ require("dotenv").config();
 const { isPark, findShelter, findTrees } = require("./public/js/shadeServer");
 const express = require("express");
 const session = require("express-session");
-const MongoStore = require("connect-mongo").default;
+const MongoStore = require("connect-mongo");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
 const Joi = require("joi");
