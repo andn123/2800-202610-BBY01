@@ -240,7 +240,7 @@ app.get("/", (req, res) => {
     currentPage: "home",
     authenticated: req.session.authenticated,
     username: req.session.username,
-    navbar: true
+    navbar: true,
   });
 });
 
@@ -258,10 +258,6 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/info-center", (req, res) => {
-  if (!req.session.authenticated) {
-    res.redirect("/login");
-    return;
-  }
   res.render("info-center", {
     title: "Info Center",
     css: ["info-center.css", "style.css"],
@@ -308,11 +304,11 @@ app.post("/loggingin", async (req, res) => {
     req.session.username = result[0].username;
     req.session.cookie.maxAge = expireTime;
     if (typeof req.session.guideMode === "undefined") {
-    req.session.guideMode = true;
-  }
+      req.session.guideMode = true;
+    }
 
-  res.redirect("/dashboard");
-  return;
+    res.redirect("/dashboard");
+    return;
   } else {
     res.render("LogIn", {
       title: "Login",
@@ -367,14 +363,14 @@ app.post("/signingup", async (req, res) => {
   });
 
   req.session.authenticated = true;
-req.session.email = email;
-req.session.username = username;
-req.session.cookie.maxAge = expireTime;
+  req.session.email = email;
+  req.session.username = username;
+  req.session.cookie.maxAge = expireTime;
 
-// First-time users start with Guide Mode on
-req.session.guideMode = true;
+  // First-time users start with Guide Mode on
+  req.session.guideMode = true;
 
-res.redirect("/dashboard");
+  res.redirect("/dashboard");
 });
 
 app.post("/logout", (req, res) => {
@@ -396,7 +392,6 @@ app.get("/post", (req, res) => {
     mapApi: mapApi,
   });
 });
-
 
 const axios = require("axios");
 
@@ -582,7 +577,7 @@ app.get("/api/events", async (req, res) => {
         date: dateInfo.localDate,
         time: dateInfo.localTime,
         city: venue?.city?.name || "Unknown city",
-venue: venue?.name || "Unknown venue",
+        venue: venue?.name || "Unknown venue",
       };
     });
 
@@ -621,23 +616,23 @@ app.get("/api/dashboard-weather", async (req, res) => {
       temperature: Math.round(data.current?.temp_c),
       condition: data.current?.condition?.text || "Weather unavailable",
       icon: data.current?.condition?.icon || "",
-      forecast: data.forecast?.forecastday?.map((day) => {
-        return {
-          date: day.date,
-          maxTemp: Math.round(day.day.maxtemp_c),
-          minTemp: Math.round(day.day.mintemp_c),
-          condition: day.day.condition?.text || "",
-          icon: day.day.condition?.icon || ""
-        };
-      }) || []
+      forecast:
+        data.forecast?.forecastday?.map((day) => {
+          return {
+            date: day.date,
+            maxTemp: Math.round(day.day.maxtemp_c),
+            minTemp: Math.round(day.day.mintemp_c),
+            condition: day.day.condition?.text || "",
+            icon: day.day.condition?.icon || "",
+          };
+        }) || [],
     });
-
   } catch (error) {
     console.error("Dashboard weather error:", error.message);
 
     res.status(500).json({
       error: "Dashboard weather failed",
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -656,15 +651,15 @@ app.get("/dashboard", (req, res) => {
     user: {
       name: req.session.username || "User",
       email: req.session.email || "",
-      profileImage: "/img/mountain-profile.jpg"
-    }
+      profileImage: "/img/mountain-profile.jpg",
+    },
   });
 });
 app.post("/guide-mode", (req, res) => {
   if (!req.session.authenticated) {
     return res.status(401).json({
       success: false,
-      message: "Not logged in"
+      message: "Not logged in",
     });
   }
 
@@ -672,7 +667,7 @@ app.post("/guide-mode", (req, res) => {
 
   res.json({
     success: true,
-    guideMode: req.session.guideMode
+    guideMode: req.session.guideMode,
   });
 });
 
