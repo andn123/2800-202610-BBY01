@@ -3,7 +3,7 @@ require("dotenv").config();
 const { isPark, findShelter, findTrees } = require("./public/js/shadeServer");
 const express = require("express");
 const session = require("express-session");
-const MongoStore = require("connect-mongo").default;
+const MongoStore = require("connect-mongo");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
 const Joi = require("joi");
@@ -11,9 +11,40 @@ const { title } = require("node:process");
 const saltRounds = 10;
 const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
+const multer = require("multer");
+
 const app = express();
 const port = process.env.PORT || 3000;
 const expireTime = 60 * 60 * 1000; // 1 hour in milliseconds
+
+// Added these two lines otherwise I cannot connect to the database - Andrew
+const dns = require("node:dns/promises");
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/uploads");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: function (req, file, cb) {
+    const allowed = ["image/jpeg", "image/png", "image/jpg"];
+    if (!allowed.includes(file.mimetype)) {
+      return cb(new Error("Only JPG and PNG images allowed"));
+    }
+    cb(null, true);
+  },
+});
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
@@ -340,6 +371,146 @@ app.post("/logout", (req, res) => {
   res.render("index", {
     currentPage: "home",
   });
+});
+
+app.get("/post", (req, res) => {
+  if (!req.session || !req.session.authenticated) {
+    return res.redirect("/login");
+  }
+
+  res.render("post", {
+    error: null,
+    success: null,
+    mapApi: mapApi,
+  });
+});
+
+const axios = require("axios");
+
+app.post("/post", upload.single("image"), async (req, res) => {
+  if (!req.session || !req.session.authenticated) {
+    return res.redirect("/login");
+  }
+
+  let location = req.body.location;
+  let description = req.body.description;
+  let environment = req.body.environment;
+  let imageFile = req.file;
+
+  const schema = Joi.object({
+    location: Joi.string().min(1).required(),
+    description: Joi.string().min(1).required(),
+    environment: Joi.string().valid("shaded", "sunny", "indoors").required(),
+  });
+
+  const validationResult = schema.validate({
+    location,
+    description,
+    environment,
+  });
+
+  if (validationResult.error || !imageFile) {
+    return res.render("post", {
+      mapApi: mapApi,
+      error: validationResult.error
+        ? validationResult.error.message
+        : "Image is required",
+      success: null,
+    });
+  }
+
+  let lat = parseFloat(req.body.lat);
+  let lng = parseFloat(req.body.lng);
+
+  if (!lat || !lng) {
+    return res.render("post", {
+      mapApi: mapApi,
+      error: "Please select a valid location from the dropdown.",
+      success: null,
+    });
+  }
+
+  await postsCollection.insertOne({
+    username: req.session.username,
+    location,
+    description,
+    environment,
+    image: imageFile.filename,
+    lat: lat,
+    lng: lng,
+    createdAt: new Date(),
+  });
+
+  res.redirect("/posts?success=1");
+});
+
+app.get("/posts", async (req, res) => {
+  if (!req.session || !req.session.authenticated) {
+    return res.redirect("/login");
+  }
+
+  const search = req.query.search || "";
+  const safeSearch = escapeRegex(search);
+  const env = req.query.environment || "";
+  const page = parseInt(req.query.page) || 1;
+  const success = req.query.success === "1";
+  const limit = 9; // 3 rows of 3 cards
+  const skip = (page - 1) * limit;
+
+  let query = {};
+
+  if (search) {
+    query.$or = [
+      { location: { $regex: safeSearch, $options: "i" } },
+      { description: { $regex: safeSearch, $options: "i" } },
+    ];
+  }
+
+  if (env) {
+    query.environment = env;
+  }
+
+  const totalPosts = await postsCollection.countDocuments(query);
+
+  const posts = await postsCollection
+    .find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .toArray();
+
+  const totalPages = Math.max(1, Math.ceil(totalPosts / limit));
+
+  res.render("posts", {
+    posts,
+    search,
+    env,
+    page,
+    totalPages,
+    success,
+  });
+});
+
+app.get("/api/posts", async (req, res) => {
+  const posts = await postsCollection
+    .find(
+      {},
+      {
+        projection: {
+          lat: 1,
+          lng: 1,
+          location: 1,
+          description: 1,
+          environment: 1,
+          image: 1,
+          username: 1,
+          createdAt: 1,
+        },
+      },
+    )
+    .toArray();
+
+  res.json(posts);
 });
 
 // Events page route
