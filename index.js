@@ -189,6 +189,7 @@ app.get("/about", (req, res) => {
     title: "About",
     css: ["about.css", "style.css"],
     js: ["about.js"],
+    navbar: true
   });
 });
 
@@ -267,6 +268,7 @@ app.get("/info-center", (req, res) => {
     title: "Info Center",
     css: ["info-center.css", "style.css"],
     js: ["info-center.js"],
+    navbar: true
   });
 });
 
