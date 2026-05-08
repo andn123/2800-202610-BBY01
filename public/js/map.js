@@ -35,12 +35,7 @@ map.addControl(new maplibregl.NavigationControl());
 
 const el = document.getElementById("map");
 const locations = JSON.parse(decodeURIComponent(el.dataset.locations));
-<<<<<<< Updated upstream
-console.log(locations);
-=======
 const posts = JSON.parse(decodeURIComponent(el.dataset.posts));
-console.log(posts);
->>>>>>> Stashed changes
 
 /* =======================
    GLOBAL STATE
@@ -64,9 +59,12 @@ navigator.geolocation.getCurrentPosition((position) => {
     zoom: 14,
   });
 
-<<<<<<< Updated upstream
-  new maplibregl.Marker({ element: circle }).setLngLat([lon, lat]).setPopup(new maplibregl.Popup({ offset: 25 }).setHTML("Your current location")).addTo(map)
-=======
+  new maplibregl.Marker({ element: circle })
+    .setLngLat([lon, lat])
+    .setPopup(
+      new maplibregl.Popup({ offset: 25 }).setHTML("Your current location"),
+    )
+    .addTo(map);
   const el = document.createElement("div");
   el.className = "circle-marker";
 
@@ -78,7 +76,6 @@ navigator.geolocation.getCurrentPosition((position) => {
     .setLngLat([lon, lat])
     .setPopup(popup)
     .addTo(map);
->>>>>>> Stashed changes
 });
 
 /* =======================

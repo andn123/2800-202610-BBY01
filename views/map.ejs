@@ -1,27 +1,31 @@
 <%- include("partials/header", {css: css}) %>
 
-<<<<<<< Updated upstream
-    <div class="map-layout">
-      <!-- MAP -->
-      <div
-  id="map"
-  data-locations="<%= encodeURIComponent(JSON.stringify(locations)) %>"
-></div>
-=======
 <div class="map-layout">
->>>>>>> Stashed changes
 
   <!-- MAP WRAPPER (FIXED) -->
   <div class="map-wrapper">
 
     <!-- LEGEND / FILTERS -->
     <div class="map-legend">
-  <button onclick="filterMarkers('all')">All</button>
-  <button onclick="filterMarkers('sunny')">☀️ Sunny</button>
-  <button onclick="filterMarkers('shaded')">🌳 Shaded</button>
-  <button onclick="filterMarkers('indoors')">🏠 Indoors</button>
-  <button onclick="filterMarkers('none')">🎉 Events</button>  <!-- ✅ NEW -->
-</div>
+
+      <button onclick="filterMarkers('all')">
+        All
+      </button>
+
+      <button onclick="filterMarkers('sunny')">
+        ☀️ Sunny
+      </button>
+
+      <button onclick="filterMarkers('shaded')">
+        🌳 Shaded
+      </button>
+
+      <button onclick="filterMarkers('indoors')">
+        🏠 Indoors
+      </button>
+      <button onclick="filterMarkers('none')">🎉 Other</button> 
+
+    </div>
 
     <!-- MAP -->
     <div
@@ -62,7 +66,6 @@
       </ul>
 
     </div>
-<<<<<<< HEAD
 
     <div id="panel" class="panel-content">
 
@@ -80,13 +83,7 @@
   window.mapApi = "<%- mapApi %>";
 </script>
 
-<script src="/js/map.js"></script>
+<script src="/js/test.js"></script>
 
 </body>
 </html>
-=======
-    <script>
-  window.mapApi ="<%- mapApi %>";
-    </script>
-<%- include('partials/footer', { js: js }) %>
->>>>>>> dev
