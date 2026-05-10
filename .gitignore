@@ -1,8 +1,5 @@
 /node_modules
 package-lock.json
-<<<<<<< Updated upstream
-.env
-=======
 .env
 diff
 test.css
@@ -10,4 +7,3 @@ test.js
 backup.css
 backup.ejs
 backup.js
->>>>>>> Stashed changes
