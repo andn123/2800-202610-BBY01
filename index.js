@@ -3,7 +3,7 @@ require("dotenv").config();
 const { isPark, findShelter, findTrees } = require("./public/js/shadeServer");
 const express = require("express");
 const session = require("express-session");
-const MongoStore = require("connect-mongo").default;
+const MongoStore = require("connect-mongo");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
 const Joi = require("joi");
@@ -20,6 +20,18 @@ const expireTime = 60 * 60 * 1000; // 1 hour in milliseconds
 // Added these two lines otherwise I cannot connect to the database - Andrew
 const dns = require("node:dns/promises");
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
+const mongodb_host = process.env.MONGODB_HOST;
+const mongodb_user = process.env.MONGODB_USER;
+const mongodb_password = process.env.MONGODB_PASSWORD;
+const mongodb_user_database = process.env.MONGODB_USER_DATABASE;
+const mongodb_session_database = process.env.MONGODB_SESSION_DATABASE;
+const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
+const node_session_secret = process.env.NODE_SESSION_SECRET;
+const mongodb_database = process.env.MONGODB_DATABASE;
+const { database } = include("databaseConnection");
+const userCollection = database.db(mongodb_user_database).collection("users");
+const postsCollection = database.db(mongodb_database).collection("posts");
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -46,24 +58,6 @@ const upload = multer({
   },
 });
 
-app.set("view engine", "ejs");
-app.use(express.static("public"));
-
-const mongodb_host = process.env.MONGODB_HOST;
-const mongodb_user = process.env.MONGODB_USER;
-const mongodb_password = process.env.MONGODB_PASSWORD;
-const mongodb_user_database = process.env.MONGODB_USER_DATABASE;
-const mongodb_session_database = process.env.MONGODB_SESSION_DATABASE;
-const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
-const node_session_secret = process.env.NODE_SESSION_SECRET;
-const mongodb_database = process.env.MONGODB_DATABASE;
-const { database } = include("databaseConnection");
-const userCollection = database.db(mongodb_user_database).collection("users");
-const postsCollection = database.db(mongodb_database).collection("posts");
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
 var mongoStore = MongoStore.create({
   mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_session_database}`,
   crypto: {
@@ -79,8 +73,24 @@ app.use(
     resave: true,
   }),
 );
+
 app.set("view engine", "ejs");
 app.use(express.static("public"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Home route
+app.get("/", (req, res) => {
+  res.render("index", {
+    title: "Home",
+    css: ["style.css", "home.css"],
+    js: ["home.js"],
+    currentPage: "home",
+    authenticated: req.session.authenticated,
+    username: req.session.username,
+    navbar: false
+  });
+});
 
 app.get("/map", async (req, res) => {
   const apiKey = process.env.TICKETMASTER_API_KEY;
@@ -139,12 +149,15 @@ app.get("/map", async (req, res) => {
       title: "Map",
       css: ["map.css"],
       js: ["map.js"],
+      navbar: false
     });
   } catch (err) {
     console.error(err);
     res.send("Error fetching events");
   }
 });
+
+//development page.
 app.get("/shade", async (req, res) => {
   if (!req.session.authenticated) {
     res.redirect("/login");
@@ -154,30 +167,39 @@ app.get("/shade", async (req, res) => {
     title: "shademap",
     css: ["shade.css", "style.css"],
     js: [],
+    firstTime: true,
+    navbar: false
   });
 });
 
-app.post("/shademap", async (req, res) => {
-  const park = await isPark(req.body.lat, req.body.lon);
-  if (park.boolean) {
-    const parkName = park.name;
-    const trees = await findTrees(req.body.lat, req.body.lon);
-    const shelter = await findShelter(req.body.lat, req.body.lon);
-
-    res.render("shade", {
-      title: "shademap",
-      css: ["shade.css", "style.css"],
-      js: [],
-      latitude: req.body.lat,
-      longitude: req.body.lon,
-      trees: trees,
-      shelter: shelter,
-      parkName: parkName,
-    });
-  } else {
-    res.render("noShade");
-  }
-});
+//change to app.post to use development page.
+app.get('/shademap', async (req, res) =>{
+    const park = await isPark(req.query.lat, req.query.lon);
+    if(park.boolean){
+        const result = await userCollection.findOne(
+          {email: req.session.email},
+          {projection: { _id: 0, firstTimeMode: 1 } }
+        );
+        const parkName = park.name;
+        const trees = await findTrees(req.query.lat, req.query.lon);
+        const shelter = await findShelter(req.query.lat, req.query.lon);
+  
+        res.render('shade', {
+            title: "shademap",
+            css: ["shade.css", 'style.css'],
+            js: [],
+            firstTime: result.firstTimeMode,
+            latitude: req.query.lat, 
+            longitude: req.query.lon, 
+            trees: trees,
+            shelter: shelter,
+            parkName: parkName,
+            navbar: false
+        });
+    } else {
+        res.render('noShade');
+    }
+})
 
 app.get("/about", (req, res) => {
   if (!req.session.authenticated) {
@@ -188,6 +210,7 @@ app.get("/about", (req, res) => {
     title: "About",
     css: ["about.css", "style.css"],
     js: ["about.js"],
+    navbar: true
   });
 });
 
@@ -217,6 +240,7 @@ app.get("/weatherapi", async (req, res) => {
         title: "Weather",
         css: ["weather.css", "style.css"],
         js: ["weather.js"],
+        navbar: true
       });
     } else {
       res.json(data);
@@ -231,19 +255,6 @@ app.get("/weatherapi", async (req, res) => {
   }
 });
 
-// Home route
-app.get("/", (req, res) => {
-  res.render("index", {
-    title: "Home",
-    css: ["style.css", "home.css"],
-    js: ["home.js"],
-    currentPage: "home",
-    authenticated: req.session.authenticated,
-    username: req.session.username,
-    navbar: true,
-  });
-});
-
 app.get("/login", (req, res) => {
   if (req.session.authenticated) {
     res.redirect("/");
@@ -254,6 +265,7 @@ app.get("/login", (req, res) => {
     css: ["style.css", "SignUpLogIn.css"],
     js: ["SignUpLogIn.js"],
     errorMessage: "",
+    navbar: false
   });
 });
 
@@ -262,6 +274,7 @@ app.get("/info-center", (req, res) => {
     title: "Info Center",
     css: ["info-center.css", "style.css"],
     js: ["info-center.js"],
+    navbar: false
   });
 });
 
@@ -280,6 +293,7 @@ app.post("/loggingin", async (req, res) => {
       css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: "Error: Incorrect email or password",
+      navbar: false
     });
     return;
   }
@@ -315,6 +329,7 @@ app.post("/loggingin", async (req, res) => {
       css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: "Error: Invalid email or password",
+      navbar: false
     });
     return;
   }
@@ -330,6 +345,7 @@ app.get("/signup", (req, res) => {
     css: ["style.css", "SignUpLogIn.css"],
     js: ["SignUpLogIn.js"],
     errorMessage: "",
+    navbar: false
   });
 });
 
@@ -351,6 +367,7 @@ app.post("/signingup", async (req, res) => {
       errorMessage:
         "Error: Invalid format for " +
         validationResult.error.details[0].context.key,
+      navbar: false
     });
     return;
   }
@@ -367,6 +384,7 @@ app.post("/signingup", async (req, res) => {
       css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: `Error: That ${conflictField} is already in use.`,
+      navbar: false
     });
     return;
   }
@@ -394,6 +412,7 @@ app.post("/logout", (req, res) => {
   res.redirect("/login");
   res.render("index", {
     currentPage: "home",
+    navbar: false
   });
 });
 
