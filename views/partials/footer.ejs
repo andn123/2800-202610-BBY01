@@ -1,3 +1,4 @@
+       <% if(typeof navbar !== "undefined" && navbar === true){ %>} 
         <nav class="bottom-nav">
           <a href="/map" class="nav-item">
             <img src="/img/map.png" alt="Map">
@@ -11,10 +12,11 @@
             <img src="/img/post.png" alt="Home">
           </a>
 
-          <a href="/login" class="nav-item">
-            <img src="/img/user.png" alt="Login">
+          <a href="/dashboard" class="nav-item">
+            <img src="/img/user.png" alt="Dashboard">
           </a>
         </nav>
+        <% } %>
                 
         <% if(typeof parkName !== 'undefined') { %>
         <script>
