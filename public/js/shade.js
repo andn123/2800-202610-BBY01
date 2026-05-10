@@ -1,7 +1,5 @@
 //vancouver cords latitude:49.xxxxxx longitude:-123.xxxxxx
 
-const overpassAPI = "https://overpass-api.de/api/interpreter?data="; //is this needed here
-
 /* START OF LEAFLET API MAP*/
 const map = L.map("map", {
   zoomControl: false,
@@ -134,6 +132,27 @@ map.on("click", function (e) {
       shelter.tags.shelter_type;
   }
 });
+
+shelterArr.forEach((shelter) => {
+  const distance = e.latlng.distanceTo(L.latLng(shelter.lat, shelter.lng));
+  if (distance <= radius) {
+    shelterCount++;
+  }
+});
+
+document.getElementById("firstTimeView")?.style.setProperty("display", "none");
+document.getElementById("view").style.display = "block";
+document.getElementById("shadevalue").textContent = shadeScore(
+  treeCount,
+  shelterCount,
+);
+document.getElementById("treesvalue").textContent = treeCount;
+if (shelterCount == 0) {
+  document.getElementById("sheltervalue").textContent = "none";
+} else {
+  document.getElementById("sheltervalue").textContent =
+    shelter.tags.shelter_type;
+}
 /*end of features */
 
 /* END OF LEAFLET API MAP */

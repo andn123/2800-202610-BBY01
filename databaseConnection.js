@@ -7,9 +7,7 @@ const mongodb_database = process.env.MONGODB_DATABASE;
 
 const MongoClient = require("mongodb").MongoClient;
 
-const atlasURI =
-  `mongodb+srv://${mongodb_user}:${mongodb_password}` +
-  `@${mongodb_host}/${mongodb_database}`;
+const atlasURI = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}`;
 
 var database = new MongoClient(atlasURI, {});
 

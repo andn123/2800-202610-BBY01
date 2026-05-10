@@ -17,3 +17,24 @@ body {
     z-index: 1000;
     bottom: 80px;
 }
+
+#view {
+    display: none;
+}
+
+#backBtn {
+    z-index: 1000;
+    background: white;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+#backBtn:hover {
+    transform: translateY(-1px);
+}
+
+.back-arrow {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}

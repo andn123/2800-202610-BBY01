@@ -1,9 +1,13 @@
 /node_modules
 package-lock.json
 .env
+<<<<<<< HEAD
 diff
 test.css
 test.js
 backup.css
 backup.ejs
 backup.js
+=======
+diff
+>>>>>>> dev
