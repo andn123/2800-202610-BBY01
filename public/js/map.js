@@ -22,6 +22,26 @@ let selectedLat = null;
 let selectedLon = null;
 
 /* =======================
+   SHADE FUNCTIONS AND LOGIC
+======================= */
+async function isPark(lat, lng){
+    const parksPolygonAPI = "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/parks-polygon-representation/records";
+    const parkQuery = new URLSearchParams({
+        select: "park_name,geom",
+        where: `intersects(geom, geom'POINT(${lng} ${lat})')`,
+        limit: "1"
+    });
+    const res = await fetch(`${parksPolygonAPI}?${parkQuery}`);
+    const data = await res.json();
+
+    if (data.total_count == 0){
+        return false;
+    } else {
+        return true;
+    }
+}
+
+/* =======================
    MAP INIT
 ======================= */
 const map = new maplibregl.Map({
@@ -88,7 +108,7 @@ document.addEventListener("change", (e) => {
     localStorage.setItem("tempUnit", unit);
 
     if (currentWeather) {
-      renderWeather(currentWeather, currentLocationName);
+      renderWeather(currentWeather, currentLocationName, selectedLat, selectedLon);
     }
   }
 });
@@ -155,7 +175,7 @@ map.on("load", () => {
 
       switchToInfo();
 
-      renderWeather(data, currentLocationName);
+      renderWeather(data, currentLocationName, selectedLat, selectedLon);
     } catch (err) {
       console.error(err);
     } finally {
@@ -167,7 +187,7 @@ map.on("load", () => {
 /* =======================
    RENDER WEATHER
 ======================= */
-function renderWeather(data, name) {
+async function renderWeather(data, name, selectedLat, selectedLon) {
   const tempC = data.current.temp_c;
   const feelsC = data.current.feelslike_c;
 
@@ -177,34 +197,74 @@ function renderWeather(data, name) {
 
   const symbol = unit === "C" ? "°C" : "°F";
 
-  document.getElementById("panel").innerHTML = `
-    <div class="weather-card">
+  if(await isPark(selectedLat, selectedLon)) {
+      console.log("renderWeather.isPark(): if statement runs");
+      document.getElementById("panel").innerHTML = `
+      <div class="weather-card">
+        <h4 class="fw-bold text-center">${name}</h4>
 
-      <h4 class="fw-bold text-center">${name}</h4>
+        <div class="form-check form-switch m-0 temp-toggle">
+          <input class="form-check-input" type="checkbox" id="tempSwitch"
+            ${unit === "F" ? "checked" : ""}>
+          <label class="form-check-label" for="tempSwitch">
+            <span class="label-c">°C</span>
+            <span class="label-f">°F</span>
+          </label>
+        </div>
 
-      <div class="form-check form-switch m-0 temp-toggle">
-        <input class="form-check-input" type="checkbox" id="tempSwitch"
-          ${unit === "F" ? "checked" : ""}>
-        <label class="form-check-label" for="tempSwitch">
-          <span class="label-c">°C</span>
-          <span class="label-f">°F</span>
-        </label>
+        <div class="temp">
+          🌡️ ${temp.toFixed(1)}${symbol}
+          <small class="text-muted">(Feels like ${feels.toFixed(1)}${symbol})</small>
+        </div>
+
+        <div class="details">
+          🌤️ ${data.current.condition.text}<br>
+          💨 Wind: ${data.current.wind_kph} km/h<br>
+          💧 Humidity: ${data.current.humidity}%
+        </div>
+        <br>
+        <button id="toShadeMap" class="btn explore-btn w-100 position-relative">
+          <img src="/img/shade/leaf.png" class="leaf-icon position-absolute top-50 start-0 translate-middle-y ms-3">
+          <span>Explore Park</span>
+          <span class="position-absolute top-50 end-0 translate-middle-y me-3 arrow">
+            ›
+          </span>
+        </button>
       </div>
+      <div id="loading" class="loader"></div>
+      `;
+      document.getElementById('toShadeMap').addEventListener('click', () =>{
+          location.href = `/shademap?lat=${selectedLat}&lon=${selectedLon}`;
+      });
+  } else {
+    console.log("renderWeather(): else runs");
+    document.getElementById("panel").innerHTML = `
+      <div class="weather-card">
+        <h4 class="fw-bold text-center">${name}</h4>
 
-      <div class="temp">
-        🌡️ ${temp.toFixed(1)}${symbol}
-        <small class="text-muted">(Feels like ${feels.toFixed(1)}${symbol})</small>
+        <div class="form-check form-switch m-0 temp-toggle">
+          <input class="form-check-input" type="checkbox" id="tempSwitch"
+            ${unit === "F" ? "checked" : ""}>
+          <label class="form-check-label" for="tempSwitch">
+            <span class="label-c">°C</span>
+            <span class="label-f">°F</span>
+          </label>
+        </div>
+
+        <div class="temp">
+          🌡️ ${temp.toFixed(1)}${symbol}
+          <small class="text-muted">(Feels like ${feels.toFixed(1)}${symbol})</small>
+        </div>
+
+        <div class="details">
+          🌤️ ${data.current.condition.text}<br>
+          💨 Wind: ${data.current.wind_kph} km/h<br>
+          💧 Humidity: ${data.current.humidity}%
+        </div>
       </div>
-
-      <div class="details">
-        🌤️ ${data.current.condition.text}<br>
-        💨 Wind: ${data.current.wind_kph} km/h<br>
-        💧 Humidity: ${data.current.humidity}%
-      </div>
-
-    </div>
-    <div id="loading" class="loader"></div>
-  `;
+      <div id="loading" class="loader"></div>
+    `;
+  }
 }
 
 /* =======================
@@ -335,7 +395,7 @@ function showTab(tab, event) {
 
   if (tab === "info") {
     if (hasInfo) {
-      renderWeather(currentWeather, currentLocationName);
+      renderWeather(currentWeather, currentLocationName, selectedLat, selectedLon);
     } else {
       panelContent.innerHTML = `
         <div>Click a location</div>
@@ -563,7 +623,7 @@ async function loadMarkers(data) {
 
         switchToInfo();
 
-        renderWeather(weatherData, currentLocationName);
+        renderWeather(weatherData, currentLocationName, selectedLat, selectedLon);
       } catch (err) {
         console.error(err);
       } finally {

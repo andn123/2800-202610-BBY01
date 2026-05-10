@@ -1,0 +1,57 @@
+<div id="firstTimeView" class="shade-card card shadow rounded-4 p-3 position-absolute start-0 end-0 m-3 border-0">
+        <div class="card-body text-center">
+            <div class="bg-success-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+            style="width:80px; height:80px;">
+            <img src="/img/shade/leaf.png" width="40">
+        </div>
+
+        <h5 class="fw-bold mb-3">
+            Press a spot to check details
+        </h5>
+        <span class="text-muted fs-5 mb-0">
+            See shade score, shelter info, and nearby trees.
+        </span>
+    </div>
+</div>    
+
+<div id="view" class="shade-card card shadow rounded-4 p-3 position-absolute start-0 end-0 m-3 border-0">
+    <div class="card-header border-0 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <div class="bg-success-subtle rounded-circle p-2">
+            <img src="/img/shade/leaf.png" width="28">
+            </div>
+            <h5 class="mb-0 fw-bold">
+                <% if(typeof parkName !== 'undefined') { %>
+                    <%= parkName %>
+                <% } else { %>
+                    unavailable
+                <% } %>
+            </h5>
+        </div>
+    </div>
+
+    <div class="card-body d-flex justify-content-between text-center px-2">
+
+        <div class="d-flex flex-column align-items-center">
+            <img src="/img/shade/cloudy.png" width="28">
+            <small class="text-muted mt-1">Shade Score</small>
+            <span class="fw-bold text-warning" id="shadevalue">n/a</span>
+        </div>
+
+        <div class="vr"></div>
+
+        <div class="d-flex flex-column align-items-center">
+            <img src="/img/shade/gazebo.png" width="28">
+            <small class="text-muted mt-1">Shelter</small>
+            <span class="fw-bold" id="sheltervalue">n/a</span>
+        </div>
+
+        <div class="vr"></div>
+
+        <div class="d-flex flex-column align-items-center">
+            <img src="/img/shade/tree1.png" width="28">
+            <small class="text-muted mt-1">Trees Nearby</small>
+            <span class="fw-bold" id="treesvalue">n/a</span>
+        </div>
+    </div>
+</div>
