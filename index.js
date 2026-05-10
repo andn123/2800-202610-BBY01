@@ -355,6 +355,22 @@ app.post("/signingup", async (req, res) => {
     return;
   }
 
+  // Check if email or username is already taken
+  const existingUser = await userCollection.findOne({
+    $or: [{ email: email }, { username: username }],
+  });
+
+  if (existingUser) {
+    const conflictField = existingUser.email === email ? "email" : "username";
+    res.render("signUp", {
+      title: "Sign Up",
+      css: ["style.css", "SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage: `Error: That ${conflictField} is already in use.`,
+    });
+    return;
+  }
+
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   await userCollection.insertOne({
     username: username,
