@@ -137,6 +137,7 @@ app.get("/map", async (req, res) => {
       mapApi: mapApi,
       locations,
       title: "Map",
+      navbar: false,
       css: ["map.css"],
       js: ["map.js"],
     });

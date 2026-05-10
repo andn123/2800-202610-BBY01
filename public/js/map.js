@@ -447,20 +447,22 @@ function showGuide() {
 
   guide.innerHTML = `
     <div class="guide-box">
-      <h5>👋 Welcome</h5>
+  <h5><b>👋 Welcome to VanCooler Map!</b></h5><br>
 
-      <p>• Click map locations to see weather info</p>
+  <p>📍 Click a location marker to view weather details and post information</p>
 
-      <p>• Switch tabs to view posts and recent places</p>
+  <p>🧭 Use the filter buttons to display only the locations you want</p>
 
-      <p>• Drag the panel upward on mobile</p>
+  <p>📝 Browse community uploads and recommendations in the Posts tab</p>
 
-      <p>• Switch on the switch to see temperature in °F</p>
+  <p>📱 Drag the information panel upward for a better mobile view</p>
 
-      <button id="closeGuide">
-        Got it
-      </button>
-    </div>
+  <p>🌡️ Turn on the temperature switch to view weather in °F</p>
+
+  <button id="closeGuide">
+    Got it
+  </button>
+</div>
   `;
 
   document.body.appendChild(guide);

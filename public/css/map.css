@@ -266,7 +266,7 @@ body {
 }
 
 .guide-box {
-  width: 400px;
+  width: 500px;
   background: white;
   border-radius: 24px;
   padding: 24px;
@@ -414,10 +414,18 @@ body {
 }
 
 /* Colors */
-.sunny-dot { background: #FFD700; }
-.shaded-dot { background: #228B22; }
-.indoors-dot { background: #1E90FF; }
-.other-dot { background: #666667; }
+.sunny-dot {
+  background: #ffd700;
+}
+.shaded-dot {
+  background: #228b22;
+}
+.indoors-dot {
+  background: #1e90ff;
+}
+.other-dot {
+  background: #666667;
+}
 
 /* Filter buttons inside legend */
 .legend-buttons {
@@ -433,7 +441,7 @@ body {
   background: #fff;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: 0.2s ease;
 }
 
