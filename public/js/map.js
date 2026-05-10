@@ -20,6 +20,7 @@ const ENV_COLORS = {
 let currentPosts = [];
 let selectedLat = null;
 let selectedLon = null;
+let isMobile = window.innerWidth <= 768;
 
 /* =======================
    MAP INIT
@@ -64,17 +65,6 @@ navigator.geolocation.getCurrentPosition((position) => {
     .setPopup(
       new maplibregl.Popup({ offset: 25 }).setHTML("Your current location"),
     )
-    .addTo(map);
-  const el = document.createElement("div");
-  el.className = "circle-marker";
-
-  const popup = new maplibregl.Popup({ offset: 10 }).setHTML(
-    "Your current location",
-  );
-
-  new maplibregl.Marker({ element: el })
-    .setLngLat([lon, lat])
-    .setPopup(popup)
     .addTo(map);
 });
 
@@ -211,7 +201,7 @@ function renderWeather(data, name) {
    PANEL HEIGHT
 ======================= */
 function setPanelHeight(value) {
-  if (window.innerWidth <= 768) {
+  if (isMobile) {
     value = Math.max(COLLAPSED, Math.min(FULL, value));
     panel.style.height = value + "px";
     currentHeight = value;
@@ -224,7 +214,6 @@ function setPanelHeight(value) {
 /* =======================
    DRAG SYSTEM (MOBILE ONLY)
 ======================= */
-let isMobile = window.innerWidth <= 768;
 
 let startY = 0;
 let startHeight = 0;
@@ -288,8 +277,6 @@ function mouseDown(e) {
    DEVICE CHECK
 ======================= */
 function checkDevice() {
-  isMobile = window.innerWidth <= 768;
-
   if (isMobile) {
     setPanelHeight(COLLAPSED);
     enableDrag();
