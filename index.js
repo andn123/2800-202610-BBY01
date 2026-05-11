@@ -550,7 +550,8 @@ app.get("/events", (req, res) => {
     css: ["events.css", "style.css"],
     js: ["events.js"],
     navbar: true,
-    currentPage: "events"
+    currentPage: "events",
+    guideMode: req.session.guideMode !== false
   });
 });
 
