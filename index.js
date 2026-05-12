@@ -705,7 +705,7 @@ app.get("/dashboard", async (req, res) => {
     res.status(500).send("Server error loading dashboard");
   }
 });
-});
+
 app.post("/guide-mode", async (req, res) => {
   try {
     if (!req.session.authenticated) {
