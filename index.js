@@ -317,7 +317,6 @@ app.post("/loggingin", async (req, res) => {
     req.session.email = email;
     req.session.username = result[0].username;
     req.session.cookie.maxAge = expireTime;
-    }
 
     res.redirect("/dashboard");
     return;
