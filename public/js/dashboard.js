@@ -141,3 +141,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+const changeProfileBtn = document.getElementById("changeProfileBtn");
+const profilePicker = document.getElementById("profilePicker");
+const currentProfileImage = document.getElementById("currentProfileImage");
+const profileOptions = document.querySelectorAll(".profile-option");
+
+if (changeProfileBtn && profilePicker) {
+  changeProfileBtn.addEventListener("click", () => {
+    profilePicker.classList.toggle("show");
+  });
+}
+
+profileOptions.forEach((option) => {
+  option.addEventListener("click", async () => {
+    const profileImage = option.dataset.image;
+
+    try {
+      const response = await fetch("/profile-picture", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ profileImage }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        console.error("Profile picture update failed:", data.message);
+        return;
+      }
+
+      currentProfileImage.src = data.profileImage;
+
+      profileOptions.forEach((btn) => {
+        btn.classList.remove("selected");
+      });
+
+      option.classList.add("selected");
+      profilePicker.classList.remove("show");
+    } catch (err) {
+      console.error("Profile picture error:", err);
+    }
+  });
+});
