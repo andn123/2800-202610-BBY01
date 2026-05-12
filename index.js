@@ -317,8 +317,6 @@ app.post("/loggingin", async (req, res) => {
     req.session.email = email;
     req.session.username = result[0].username;
     req.session.cookie.maxAge = expireTime;
-    if (typeof req.session.guideMode === "undefined") {
-      req.session.guideMode = true;
     }
 
     res.redirect("/dashboard");
@@ -391,10 +389,11 @@ app.post("/signingup", async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   await userCollection.insertOne({
-    username: username,
-    email: email,
-    password: hashedPassword,
-  });
+  username: username,
+  email: email,
+  password: hashedPassword,
+  firstTimeMode: true,
+});
 
   req.session.authenticated = true;
   req.session.email = email;
@@ -671,39 +670,70 @@ app.get("/api/dashboard-weather", async (req, res) => {
     });
   }
 });
-app.get("/dashboard", (req, res) => {
-  if (!req.session.authenticated) {
-    res.redirect("/login");
-    return;
-  }
+app.get("/dashboard", async (req, res) => {
+  try {
+    if (!req.session.authenticated) {
+      res.redirect("/login");
+      return;
+    }
 
-  res.render("dashboard", {
-    title: "Dashboard",
-    css: ["dashboard.css", "style.css"],
-    js: ["dashboard.js"],
-    navbar: true,
-    guideMode: req.session.guideMode !== false,
-    user: {
-      name: req.session.username || "User",
-      email: req.session.email || "",
-      profileImage: "/img/mountain-profile.jpg",
-    },
-  });
+    const user = await userCollection.findOne({
+      email: req.session.email,
+    });
+
+    if (!user) {
+      req.session.destroy();
+      return res.redirect("/login");
+    }
+
+    const firstTimeMode = user.firstTimeMode !== false;
+
+    res.render("dashboard", {
+      title: "Dashboard",
+      css: ["dashboard.css", "style.css"],
+      js: ["dashboard.js"],
+      navbar: true,
+      guideMode: firstTimeMode,
+      user: {
+        name: user.username || "User",
+        email: user.email || "",
+        profileImage: user.profileImage || "/img/mountain-profile.jpg",
+        firstTimeMode: firstTimeMode,
+      },
+    });
+  } catch (err) {
+    console.error("Dashboard error:", err);
+    res.status(500).send("Server error loading dashboard");
+  }
 });
-app.post("/guide-mode", (req, res) => {
-  if (!req.session.authenticated) {
-    return res.status(401).json({
+});
+app.post("/guide-mode", async (req, res) => {
+  try {
+    if (!req.session.authenticated) {
+      return res.status(401).json({
+        success: false,
+        message: "Not logged in",
+      });
+    }
+
+    const firstTimeMode = req.body.firstTimeMode === true;
+
+    await userCollection.updateOne(
+      { email: req.session.email },
+      { $set: { firstTimeMode: firstTimeMode } }
+    );
+
+    res.json({
+      success: true,
+      firstTimeMode: firstTimeMode,
+    });
+  } catch (err) {
+    console.error("Guide mode update error:", err);
+    res.status(500).json({
       success: false,
-      message: "Not logged in",
+      message: "Server error updating guide mode",
     });
   }
-
-  req.session.guideMode = req.body.guideMode === true;
-
-  res.json({
-    success: true,
-    guideMode: req.session.guideMode,
-  });
 });
 
 // Start server

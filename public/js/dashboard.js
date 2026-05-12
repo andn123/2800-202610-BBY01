@@ -1,10 +1,38 @@
-const guideToggle = document.querySelector("#guideToggle");
+document.addEventListener("DOMContentLoaded", () => {
+  const guideToggle = document.getElementById("guideToggle");
 
-if (guideToggle) {
-  guideToggle.addEventListener("change", () => {
-    document.body.classList.toggle("guide-mode", guideToggle.checked);
+  if (!guideToggle) return;
+
+  // Make the page match the toggle state when dashboard first loads
+  document.body.classList.toggle("guide-mode", guideToggle.checked);
+
+  guideToggle.addEventListener("change", async () => {
+    const firstTimeMode = guideToggle.checked;
+
+    // Update page styling immediately
+    document.body.classList.toggle("guide-mode", firstTimeMode);
+
+    try {
+      const response = await fetch("/guide-mode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          firstTimeMode: firstTimeMode
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        console.error("Guide mode update failed:", data.message);
+      }
+    } catch (error) {
+      console.error("Guide mode error:", error);
+    }
   });
-}
+});
 
 const menuButton = document.querySelector(".menu-btn");
 
@@ -114,30 +142,3 @@ if ("geolocation" in navigator) {
 } else {
   fetchDashboardWeather(); // fallback Vancouver
 }
-document.addEventListener("DOMContentLoaded", () => {
-  const guideToggle = document.getElementById("guideToggle");
-
-  if (!guideToggle) return;
-
-  guideToggle.addEventListener("change", async () => {
-    try {
-      const response = await fetch("/guide-mode", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          guideMode: guideToggle.checked
-        })
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        console.error("Guide mode update failed:", data.message);
-      }
-    } catch (error) {
-      console.error("Guide mode error:", error);
-    }
-  });
-});
