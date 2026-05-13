@@ -274,7 +274,7 @@ async function searchAddressLocation() {
     showError("Could not search that location.");
   }
 }
-function firstTimeMode() {
+function setupEventsTutorial() {
   const tutorial = document.getElementById("eventsTutorial");
   const closeBtn = document.getElementById("closeTutorial");
   const gotItBtn = document.getElementById("gotItTutorial");
@@ -294,27 +294,4 @@ function firstTimeMode() {
   }
 }
 
-
-document.addEventListener("DOMContentLoaded", () => {
-  const eventsGuideOverlay = document.getElementById("eventsGuideOverlay");
-  const closeEventsGuide = document.getElementById("closeEventsGuide");
-  const gotItEventsGuide = document.getElementById("gotItEventsGuide");
-
-  const guideMode = localStorage.getItem("guideMode");
-
-  if (guideMode === "on" && eventsGuideOverlay) {
-    eventsGuideOverlay.classList.remove("hidden");
-  }
-
-  function closeGuide() {
-    eventsGuideOverlay.classList.add("hidden");
-  }
-
-  if (closeEventsGuide) {
-    closeEventsGuide.addEventListener("click", closeGuide);
-  }
-
-  if (gotItEventsGuide) {
-    gotItEventsGuide.addEventListener("click", closeGuide);
-  }
-});
+setupEventsTutorial();
