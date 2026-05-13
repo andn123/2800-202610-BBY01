@@ -911,7 +911,7 @@ app.post("/chat", async (req, res) => {
 
     // Call the correct SDK syntax
     const response = await genAI.models.generateContent({
-      model: "gemini-1.5-flash", // gemini-2.5-flash is recommended for general text tasks
+      model: "gemini-2.5-flash", // gemini-2.5-flash is recommended for general text tasks
       contents: formatted,
     });
 

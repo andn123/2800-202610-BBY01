@@ -74,6 +74,7 @@ let unit = localStorage.getItem("tempUnit") || "C";
 
 let currentWeather = null;
 let currentLocationName = "";
+let currentProps = {};
 const circle = document.createElement("div");
 circle.className = "circle-marker";
 
@@ -120,6 +121,7 @@ document.addEventListener("change", (e) => {
         currentLocationName,
         selectedLat,
         selectedLon,
+        currentProps,
       );
     }
   }
@@ -173,6 +175,7 @@ map.on("load", () => {
 
       currentWeather = data;
       currentLocationName = f.properties.name;
+      currentProps = f.properties;
 
       selectedLat = lat;
       selectedLon = lon;
@@ -187,7 +190,13 @@ map.on("load", () => {
 
       switchToInfo();
 
-      renderWeather(data, currentLocationName, selectedLat, selectedLon);
+      renderWeather(
+        data,
+        currentLocationName,
+        selectedLat,
+        selectedLon,
+        currentProps,
+      );
     } catch (err) {
       console.error(err);
     } finally {
@@ -199,80 +208,90 @@ map.on("load", () => {
 /* =======================
    RENDER WEATHER
 ======================= */
-async function renderWeather(data, name, selectedLat, selectedLon) {
-  const tempC = data.current.temp_c;
-  const feelsC = data.current.feelslike_c;
+async function renderWeather(data, name, selectedLat, selectedLon, props = {}) {
+  const panelContent = document.getElementById("panel");
 
-  const temp = unit === "C" ? tempC : (tempC * 9) / 5 + 32;
+  // Weather block
+  let weatherBlock = "";
+  if (data && data.current) {
+    const tempC = data.current.temp_c;
+    const feelsC = data.current.feelslike_c;
+    const temp = unit === "C" ? tempC : (tempC * 9) / 5 + 32;
+    const feels = unit === "C" ? feelsC : (feelsC * 9) / 5 + 32;
+    const symbol = unit === "C" ? "°C" : "°F";
 
-  const feels = unit === "C" ? feelsC : (feelsC * 9) / 5 + 32;
+    weatherBlock = `
+      <div class="form-check form-switch m-0 temp-toggle mt-2">
+        <input class="form-check-input" type="checkbox" id="tempSwitch"
+          ${unit === "F" ? "checked" : ""}>
+        <label class="form-check-label" for="tempSwitch">
+          <span class="label-c">°C</span>
+          <span class="label-f">°F</span>
+        </label>
+      </div>
+      <div class="temp">
+        🌡️ ${temp.toFixed(1)}${unit === "C" ? "°C" : "°F"}
+        <small class="text-muted">(Feels like ${feels.toFixed(1)}${unit === "C" ? "°C" : "°F"})</small>
+      </div>
+      <div class="details">
+        🌤️ ${data.current.condition.text}<br>
+        💨 Wind: ${data.current.wind_kph} km/h<br>
+        💧 Humidity: ${data.current.humidity}%
+      </div>
+    `;
+  }
 
-  const symbol = unit === "C" ? "°C" : "°F";
+  // Event fields — only shown if they exist on props
+
+  if (props.image && props.image.startsWith("https")) {
+    eventImage = `<img src="${props.image}" class="event-card-img" alt="${props.name || ""}">`;
+  } else {
+    eventImage = "";
+  }
+
+  const eventVenue = props.venue
+    ? `<div class="event-detail">🏟️ Venue: <span>${props.venue}</span></div>`
+    : "";
+
+  const eventCity = props.city
+    ? `<div class="event-detail">📍 Location: <span>${props.city}</span></div>`
+    : "";
+
+  const eventDate = props.date
+    ? `<div class="event-detail">📅 Date: <span>${new Date(props.date).toLocaleDateString("en-CA", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span></div>`
+    : "";
+
+  const eventDetailsBlock =
+    props.venue || props.city || props.date
+      ? `<div class="event-details-block">${eventVenue}${eventCity}${eventDate}</div>`
+      : "";
 
   if (await isPark(selectedLat, selectedLon)) {
-    console.log("renderWeather.isPark(): if statement runs");
-    document.getElementById("panel").innerHTML = `
+    panelContent.innerHTML = `
       <div class="weather-card">
-        <h4 class="fw-bold text-center">${name}</h4>
-
-        <div class="form-check form-switch m-0 temp-toggle">
-          <input class="form-check-input" type="checkbox" id="tempSwitch"
-            ${unit === "F" ? "checked" : ""}>
-          <label class="form-check-label" for="tempSwitch">
-            <span class="label-c">°C</span>
-            <span class="label-f">°F</span>
-          </label>
-        </div>
-
-        <div class="temp">
-          🌡️ ${temp.toFixed(1)}${symbol}
-          <small class="text-muted">(Feels like ${feels.toFixed(1)}${symbol})</small>
-        </div>
-
-        <div class="details">
-          🌤️ ${data.current.condition.text}<br>
-          💨 Wind: ${data.current.wind_kph} km/h<br>
-          💧 Humidity: ${data.current.humidity}%
-        </div>
+        ${eventImage}
+        <h4 class="fw-bold text-center mt-2">${name}</h4>
+        ${eventDetailsBlock}
+        ${weatherBlock}
         <br>
         <button id="toShadeMap" class="btn explore-btn w-100 position-relative">
           <img src="/img/shade/leaf.png" class="leaf-icon position-absolute top-50 start-0 translate-middle-y ms-3">
           <span>Explore Park</span>
-          <span class="position-absolute top-50 end-0 translate-middle-y me-3 arrow">
-            ›
-          </span>
+          <span class="position-absolute top-50 end-0 translate-middle-y me-3 arrow">›</span>
         </button>
       </div>
       <div id="loading" class="loader"></div>
-      `;
+    `;
     document.getElementById("toShadeMap").addEventListener("click", () => {
       location.href = `/shademapLoad?lat=${selectedLat}&lon=${selectedLon}`;
     });
   } else {
-    console.log("renderWeather(): else runs");
-    document.getElementById("panel").innerHTML = `
+    panelContent.innerHTML = `
       <div class="weather-card">
-        <h4 class="fw-bold text-center">${name}</h4>
-
-        <div class="form-check form-switch m-0 temp-toggle">
-          <input class="form-check-input" type="checkbox" id="tempSwitch"
-            ${unit === "F" ? "checked" : ""}>
-          <label class="form-check-label" for="tempSwitch">
-            <span class="label-c">°C</span>
-            <span class="label-f">°F</span>
-          </label>
-        </div>
-
-        <div class="temp">
-          🌡️ ${temp.toFixed(1)}${symbol}
-          <small class="text-muted">(Feels like ${feels.toFixed(1)}${symbol})</small>
-        </div>
-
-        <div class="details">
-          🌤️ ${data.current.condition.text}<br>
-          💨 Wind: ${data.current.wind_kph} km/h<br>
-          💧 Humidity: ${data.current.humidity}%
-        </div>
+        ${eventImage}
+        <h4 class="fw-bold text-center mt-2">${name}</h4>
+        ${eventDetailsBlock}
+        ${weatherBlock}
       </div>
       <div id="loading" class="loader"></div>
     `;
@@ -412,7 +431,7 @@ function showTab(tab, event) {
         currentLocationName,
         selectedLat,
         selectedLon,
-        tab,
+        currentProps,
       );
     } else {
       panelContent.innerHTML = `
@@ -632,6 +651,7 @@ async function loadMarkers(data) {
 
       selectedLat = lat;
       selectedLon = lon;
+      currentProps = props;
 
       let loader = document.getElementById("loading");
 
@@ -649,12 +669,12 @@ async function loadMarkers(data) {
         currentLocationName = props.name || props.location;
 
         switchToInfo();
-
         renderWeather(
           weatherData,
           currentLocationName,
           selectedLat,
           selectedLon,
+          currentProps,
         );
       } catch (err) {
         console.error(err);
