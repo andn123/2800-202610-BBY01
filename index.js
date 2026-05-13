@@ -13,6 +13,7 @@ const saltRounds = 10;
 const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
 const multer = require("multer");
+const { GoogleGenAI } = require("@google/genai");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -30,9 +31,25 @@ const mongodb_session_database = process.env.MONGODB_SESSION_DATABASE;
 const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 const mongodb_database = process.env.MONGODB_DATABASE;
+const gemini_api_key = process.env.GEMINI_API_KEY;
 const { database } = include("databaseConnection");
 const userCollection = database.db(mongodb_user_database).collection("users");
 const postsCollection = database.db(mongodb_database).collection("posts");
+
+const genAI = new GoogleGenAI({ apiKey: gemini_api_key });
+const profileImages = [
+  "/img/profile1.png",
+  "/img/profile2.png",
+  "/img/profile3.png",
+  "/img/profile4.png",
+  "/img/profile5.png",
+  "/img/profile6.png",
+];
+
+function getRandomProfileImage() {
+  const randomIndex = Math.floor(Math.random() * profileImages.length);
+  return profileImages[randomIndex];
+}
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -155,6 +172,7 @@ app.get("/map", async (req, res) => {
       mapApi: mapApi,
       locations,
       title: "Map",
+      navbar: false,
       css: ["map.css"],
       js: ["map.js"],
       navbar: false,
@@ -399,6 +417,7 @@ app.post("/signingup", async (req, res) => {
     username: username,
     email: email,
     password: hashedPassword,
+    profileImage: getRandomProfileImage(),
     firstTimeMode: true,
   });
 
@@ -433,7 +452,6 @@ app.get("/post", (req, res) => {
     mapApi: mapApi,
   });
 });
-
 const axios = require("axios");
 
 app.post("/post", upload.single("image"), async (req, res) => {
@@ -572,15 +590,34 @@ app.get("/api/posts", async (req, res) => {
 });
 
 // Events page route
-app.get("/events", (req, res) => {
+app.get("/events", async (req, res) => {
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
+
+  const user = await userCollection.findOne({
+    email: req.session.email,
+  });
+
+  if (!user) {
+    req.session.destroy();
+    return res.redirect("/login");
+  }
+
+  const firstTimeMode = user.firstTimeMode !== false;
+
   res.render("events", {
     title: "Events",
     css: ["events.css", "style.css"],
     js: ["events.js"],
+    navbar: true,
+    guideMode: firstTimeMode,
+    user: {
+      name: user.username || "User",
+      email: user.email || "",
+      firstTimeMode: firstTimeMode,
+    },
   });
 });
 
@@ -693,13 +730,24 @@ app.get("/dashboard", async (req, res) => {
       return;
     }
 
-    const user = await userCollection.findOne({
+    let user = await userCollection.findOne({
       email: req.session.email,
     });
 
     if (!user) {
       req.session.destroy();
       return res.redirect("/login");
+    }
+
+    if (!user.profileImage) {
+      const randomProfileImage = getRandomProfileImage();
+
+      await userCollection.updateOne(
+        { email: req.session.email },
+        { $set: { profileImage: randomProfileImage } },
+      );
+
+      user.profileImage = randomProfileImage;
     }
 
     const firstTimeMode = user.firstTimeMode !== false;
@@ -710,16 +758,53 @@ app.get("/dashboard", async (req, res) => {
       js: ["dashboard.js"],
       navbar: true,
       guideMode: firstTimeMode,
+      profileImages: profileImages,
       user: {
         name: user.username || "User",
         email: user.email || "",
-        profileImage: user.profileImage || "/img/mountain-profile.jpg",
+        profileImage: user.profileImage,
         firstTimeMode: firstTimeMode,
       },
     });
   } catch (err) {
     console.error("Dashboard error:", err);
     res.status(500).send("Server error loading dashboard");
+  }
+});
+
+app.post("/profile-picture", async (req, res) => {
+  try {
+    if (!req.session.authenticated) {
+      return res.status(401).json({
+        success: false,
+        message: "Not logged in",
+      });
+    }
+
+    const { profileImage } = req.body;
+
+    if (!profileImages.includes(profileImage)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid profile image",
+      });
+    }
+
+    await userCollection.updateOne(
+      { email: req.session.email },
+      { $set: { profileImage: profileImage } },
+    );
+
+    res.json({
+      success: true,
+      profileImage: profileImage,
+    });
+  } catch (err) {
+    console.error("Profile picture update error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error updating profile picture",
+    });
   }
 });
 
@@ -732,16 +817,18 @@ app.post("/guide-mode", async (req, res) => {
       });
     }
 
-    const firstTimeMode = req.body.firstTimeMode === true;
+    const guideMode = req.body.guideMode === true;
 
     await userCollection.updateOne(
       { email: req.session.email },
-      { $set: { firstTimeMode: firstTimeMode } },
+      { $set: { firstTimeMode: guideMode } },
     );
+
+    req.session.guideMode = guideMode;
 
     res.json({
       success: true,
-      firstTimeMode: firstTimeMode,
+      guideMode: guideMode,
     });
   } catch (err) {
     console.error("Guide mode update error:", err);
@@ -799,6 +886,37 @@ async function handleVote(req, res, type) {
 
 app.post("/posts/:id/like", (req, res) => handleVote(req, res, "like"));
 app.post("/posts/:id/dislike", (req, res) => handleVote(req, res, "dislike"));
+app.post("/chat", async (req, res) => {
+  try {
+    const messages = req.body.messages;
+
+    if (!messages) {
+      return res.status(400).json({ error: "Message required" });
+    }
+
+    const formatted = messages.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    }));
+
+    // Call the correct SDK syntax
+    const response = await genAI.models.generateContent({
+      model: "gemini-1.5-flash", // gemini-2.5-flash is recommended for general text tasks
+      contents: formatted,
+    });
+
+    // Send back the property string
+    res.json({
+      reply: response.text,
+    });
+  } catch (err) {
+    console.error("Full Gemini Error:", err);
+    res.status(500).json({
+      error: "Gemini request failed",
+      details: err.message,
+    });
+  }
+});
 
 // Start server
 app.listen(port, () => {

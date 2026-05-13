@@ -142,3 +142,80 @@ if ("geolocation" in navigator) {
 } else {
   fetchDashboardWeather(); // fallback Vancouver
 }
+document.addEventListener("DOMContentLoaded", () => {
+  const guideToggle = document.getElementById("guideToggle");
+
+  if (guideToggle) {
+    guideToggle.addEventListener("change", async () => {
+      try {
+        const response = await fetch("/guide-mode", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            guideMode: guideToggle.checked,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          console.error("Guide mode update failed:", data.message);
+        }
+      } catch (error) {
+        console.error("Guide mode error:", error);
+      }
+    });
+  }
+
+  const changeProfileBtn = document.getElementById("changeProfileBtn");
+  const profilePicker = document.getElementById("profilePicker");
+  const currentProfileImage = document.getElementById("currentProfileImage");
+  const profileOptions = document.querySelectorAll(".profile-option");
+
+  if (changeProfileBtn && profilePicker) {
+    changeProfileBtn.addEventListener("click", () => {
+      profilePicker.classList.toggle("show");
+    });
+  }
+
+  profileOptions.forEach((option) => {
+    option.addEventListener("click", async () => {
+      const profileImage = option.dataset.image;
+
+      try {
+        const response = await fetch("/profile-picture", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ profileImage }),
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          console.error("Profile picture update failed:", data.message);
+          return;
+        }
+
+        if (currentProfileImage) {
+          currentProfileImage.src = data.profileImage;
+        }
+
+        profileOptions.forEach((btn) => {
+          btn.classList.remove("selected");
+        });
+
+        option.classList.add("selected");
+
+        if (profilePicker) {
+          profilePicker.classList.remove("show");
+        }
+      } catch (err) {
+        console.error("Profile picture error:", err);
+      }
+    });
+  });
+});
