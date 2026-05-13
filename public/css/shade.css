@@ -38,3 +38,7 @@ body {
     height: 24px;
     object-fit: contain;
 }
+
+.mode-button {
+    z-index: 1000;
+}

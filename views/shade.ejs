@@ -9,6 +9,12 @@
                 <span class="fw-semibold">Back</span>
             </button>
 
+            <div class="mode-button position-absolute top-0 end-0 d-flex flex-column">
+                <button id="tree-mode" class="">TreeMode</button>
+                <button id="spot-mode" class="">SpotMode</button>
+            </div>
+
+
             <% if (firstTime == true) { %>
                 <%- include("partials/shadeFirstTimeView") %> 
             <% } else { %>
