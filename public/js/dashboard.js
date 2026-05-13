@@ -16,11 +16,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch("/guide-mode", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          firstTimeMode: firstTimeMode
-        })
+          firstTimeMode: firstTimeMode,
+        }),
       });
 
       const data = await response.json();
@@ -77,7 +77,6 @@ async function fetchDashboardWeather(lat, lon) {
     }
 
     renderDashboardWeather(data);
-
   } catch (error) {
     console.error("Dashboard weather error:", error);
 
@@ -106,7 +105,7 @@ function renderDashboardWeather(data) {
     const date = new Date(day.date + "T00:00:00");
 
     const dayName = date.toLocaleDateString("en-US", {
-      weekday: "short"
+      weekday: "short",
     });
 
     const item = document.createElement("div");
@@ -132,12 +131,12 @@ if ("geolocation" in navigator) {
     (position) => {
       fetchDashboardWeather(
         position.coords.latitude,
-        position.coords.longitude
+        position.coords.longitude,
       );
     },
     () => {
       fetchDashboardWeather(); // fallback Vancouver
-    }
+    },
   );
 } else {
   fetchDashboardWeather(); // fallback Vancouver
@@ -218,4 +217,103 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+});
+
+// My Posts
+document.addEventListener("DOMContentLoaded", () => {
+  const myPostsGrid = document.getElementById("myPostsGrid");
+  const deleteOverlay = document.getElementById("deleteOverlay");
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+  const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+  let pendingDeleteId = null;
+  let currentPage = 1;
+  const postsPerPage = 4;
+  let allPosts = [];
+
+  async function loadMyPosts() {
+    try {
+      const res = await fetch("/api/my-posts");
+      allPosts = await res.json();
+      renderPage(currentPage);
+    } catch (err) {
+      myPostsGrid.innerHTML = "<p>Failed to load posts.</p>";
+    }
+  }
+
+  function renderPage(page) {
+    if (!allPosts.length) {
+      myPostsGrid.innerHTML = "<p>You haven't made any posts yet.</p>";
+      return;
+    }
+
+    const totalPages = Math.ceil(allPosts.length / postsPerPage);
+    const start = (page - 1) * postsPerPage;
+    const pagePosts = allPosts.slice(start, start + postsPerPage);
+
+    myPostsGrid.innerHTML = pagePosts
+      .map(
+        (post) => `
+      <div class="my-post-card" id="post-${post._id}">
+        <img src="/uploads/${post.image}" class="my-post-img" alt="post image">
+        <div class="my-post-info">
+          <p><strong>${post.location}</strong></p>
+          <p>${post.description}</p>
+          <p class="my-post-env">${post.environment}</p>
+          <p class="my-post-date">${post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}</p>
+        </div>
+        <button class="delete-post-btn" data-id="${post._id}">🗑 Delete</button>
+      </div>
+    `,
+      )
+      .join("");
+
+    // Pagination controls
+    const paginationHTML = `
+      <div class="my-posts-pagination">
+        <button class="my-page-btn" id="myPrevBtn" ${page === 1 ? "disabled" : ""}>Prev</button>
+        <span class="my-page-number">Page ${page} of ${totalPages}</span>
+        <button class="my-page-btn" id="myNextBtn" ${page === totalPages ? "disabled" : ""}>Next</button>
+      </div>
+    `;
+
+    myPostsGrid.insertAdjacentHTML("afterend", paginationHTML);
+
+    document.getElementById("myPrevBtn")?.addEventListener("click", () => {
+      document.querySelector(".my-posts-pagination")?.remove();
+      currentPage--;
+      renderPage(currentPage);
+    });
+
+    document.getElementById("myNextBtn")?.addEventListener("click", () => {
+      document.querySelector(".my-posts-pagination")?.remove();
+      currentPage++;
+      renderPage(currentPage);
+    });
+  }
+
+  myPostsGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest(".delete-post-btn");
+    if (!btn) return;
+    pendingDeleteId = btn.dataset.id;
+    deleteOverlay.classList.add("show");
+  });
+
+  confirmDeleteBtn.addEventListener("click", async () => {
+    if (!pendingDeleteId) return;
+    await fetch(`/posts/${pendingDeleteId}`, { method: "DELETE" });
+    allPosts = allPosts.filter((p) => p._id !== pendingDeleteId);
+    document.querySelector(".my-posts-pagination")?.remove();
+    const totalPages = Math.ceil(allPosts.length / postsPerPage);
+    if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+    renderPage(currentPage);
+    pendingDeleteId = null;
+    deleteOverlay.classList.remove("show");
+  });
+
+  cancelDeleteBtn.addEventListener("click", () => {
+    pendingDeleteId = null;
+    deleteOverlay.classList.remove("show");
+  });
+
+  loadMyPosts();
 });
