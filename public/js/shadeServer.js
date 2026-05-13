@@ -22,6 +22,7 @@ async function isPark(lat, lng){
 }
 
 async function parkBoundary(lat, lng){
+    console.log('parkBoundary() executes');
     const boundsQuery = `
         [out:json]; 
         nwr["leisure"="park"](around:100,${lat},${lng});
@@ -30,9 +31,11 @@ async function parkBoundary(lat, lng){
     const res = await fetch(`${overpassAPI}${encodeURIComponent(boundsQuery)}`, {headers: {
             'User-Agent': 'ShadeMap/1.0 (student project)'
         }
-    })
+    });
     if (!res.ok) {
-        throw new Error(`Overpass error: ${res.status} ${res.statusText}`);
+        const error = new Error(`parkBoundary() error: ${res.status} ${res.statusText}`);
+        error.status = res.status;
+        throw error;
     }
 
     const data = await res.json();
@@ -40,30 +43,59 @@ async function parkBoundary(lat, lng){
         return null;
     } else {
         const boundsArr = data.elements[0].geometry;
-        let bounds = ""; 
+        let boundsOverpass = ""; 
+        let boundsTrees = ""; 
+        let coords = 0;
         boundsArr.forEach((bound, i) =>{
-            bounds += bound.lon + " " + bound.lat ;
-            if(i < boundsArr.length - 1){ //lat long, lat lon, ... lat lon
-                bounds += ","
+            boundsOverpass += bound.lat + " " + bound.lon;
+            boundsTrees += bound.lon + " " + bound.lat;
+            if(i < boundsArr.length - 1){ 
+                boundsOverpass += " "  //Seperated by spaces
+                boundsTrees += ","     //Seperated by comma
             } 
+            coords++
         }); 
-
-        return bounds;
+        console.log("Number of coordinates for poly: " + coords);
+        return {boundsOverpass, boundsTrees, coords};
     }
 }
 
-async function findShelter(lat, lng){
+async function findAmenities(lat, lng, bounds) {
+    const amenitiesQuery =`
+        [out:json];
+        (
+            nwr["amenity"="bench"](poly:"${bounds}"); 
+            nwr["leisure"="picnic_table"](poly:"${bounds}");
+        );
+        out geom tags;
+    `;
+    const res = await fetch(`${overpassAPI}${encodeURIComponent(amenitiesQuery)}`, {headers: {
+            'User-Agent': 'ShadeMap/1.0 (student project)'
+        }
+    })
+    if (!res.ok) {
+        const error = new Error(`findAmenities() error: ${res.status} ${res.statusText}`);
+        error.status = res.status;
+        throw error;
+    }
+
+    const data = await res.json();
+    return data.elements;
+}
+
+async function findShelter(lat, lng, bounds){
+    console.log('findShelter() executes');
     const shelterQuery = `
         [out:json]; 
-        nwr["amenity"="shelter"](around:100,${lat},${lng});
+        nwr["amenity"="shelter"](poly:"${bounds}");
         out center tags;
-    `
+    `;
     const res = await fetch(`${overpassAPI}${encodeURIComponent(shelterQuery)}`, {headers: {
             'User-Agent': 'ShadeMap/1.0 (student project)'
         }
     })
     if (!res.ok) {
-        throw new Error(`Overpass error: ${res.status} ${res.statusText}`);
+        throw new Error(`findShelter() error: ${res.status} ${res.statusText}`);
     }
 
     const data = await res.json();
@@ -75,15 +107,30 @@ async function findShelter(lat, lng){
     }
 }
 
-async function findTrees(lat, lng) {
-    const treeQuery = new URLSearchParams({
-        select: "geom",
-        where: `within(geom, geom'POLYGON((${await parkBoundary(lat, lng)}))')`,
-        limit: "100"
-    });
-    const res = await fetch(`${publicTreesAPI}?${treeQuery}`);
-    const data = await res.json();
-    const trees = data.results;
-    return trees;
+async function findTrees(lat, lng, bounds) {
+    const treesArr = [];
+    let currentOffset = 0;
+    while(true){
+        const treeQuery = new URLSearchParams({
+            select: "geom",
+            where: `within(geom, geom'POLYGON((${bounds}))')`,
+            limit: "100",
+            offset: String(currentOffset)
+        });
+        const res = await fetch(`${publicTreesAPI}?${treeQuery}`);
+        const data = await res.json();
+        const trees = data.results;
+
+        trees.forEach((tree, i) =>{
+            treesArr.push(tree);
+        })        
+
+        if(data.results.length < 100) {
+            console.log('Tree count: ' + treesArr.length)
+            return treesArr;
+        } else {
+            currentOffset += 100
+        }
+    }
 }
-module.exports = {isPark, findShelter, findTrees}
+module.exports = {isPark, findShelter, findTrees, findAmenities, parkBoundary}

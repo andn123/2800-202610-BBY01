@@ -1,6 +1,7 @@
 require("./utils.js");
 require("dotenv").config();
-const { isPark, findShelter, findTrees } = require("./public/js/shadeServer");
+const { isPark, findShelter, findTrees, findAmenities, parkBoundary } = require("./public/js/shadeServer");
+const { ObjectId } = require("mongodb");
 const express = require("express");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
@@ -91,6 +92,13 @@ app.use(
   }),
 );
 
+app.use(function (req, res, next) {
+  if (!req.session.votes) {
+    req.session.votes = {};
+  }
+  next();
+});
+
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.json());
@@ -175,49 +183,59 @@ app.get("/map", async (req, res) => {
   }
 });
 
-//development page.
-app.get("/shade", async (req, res) => {
-  if (!req.session.authenticated) {
-    res.redirect("/login");
-    return;
-  }
-  res.render("shade", {
-    title: "shademap",
-    css: ["shade.css", "style.css"],
-    js: [],
-    firstTime: true,
-    navbar: false,
+app.get('/shademapLoad', async (req, res) => {
+  res.render("shademapLoad", {
+    title: "loading",
+    css: ['shade.css'],
+    js: ['shadeLoad.js'],
+    latitude: req.query.lat, 
+    longitude: req.query.lon, 
+    navbar: false
   });
 });
 
-//change to app.post to use development page.
-app.get("/shademap", async (req, res) => {
-  const park = await isPark(req.query.lat, req.query.lon);
-  if (park.boolean) {
-    const result = await userCollection.findOne(
-      { email: req.session.email },
-      { projection: { _id: 0, firstTimeMode: 1 } },
-    );
-    const parkName = park.name;
-    const trees = await findTrees(req.query.lat, req.query.lon);
-    const shelter = await findShelter(req.query.lat, req.query.lon);
-
-    res.render("shade", {
-      title: "shademap",
-      css: ["shade.css", "style.css"],
-      js: [],
-      firstTime: result.firstTimeMode,
-      latitude: req.query.lat,
-      longitude: req.query.lon,
-      trees: trees,
-      shelter: shelter,
-      parkName: parkName,
-      navbar: false,
-    });
-  } else {
-    res.render("noShade");
-  }
-});
+app.get('/shademap', async (req, res) =>{
+    const park = await isPark(req.query.lat, req.query.lon);
+    if(park.boolean){
+        try {
+          const bounds = await parkBoundary(req.query.lat, req.query.lon)
+          const amenities = await findAmenities(req.query.lat, req.query.lon, bounds.boundsOverpass);
+          const trees = await findTrees(req.query.lat, req.query.lon, bounds.boundsTrees);
+          const shelter = await findShelter(req.query.lat, req.query.lon, bounds.boundsOverpass);
+          const parkName = park.name;
+          const result = await userCollection.findOne(
+            {email: req.session.email},
+            {projection:{_id: 0, firstTimeMode:1}}
+          );
+          res.render('shade', {
+            title: "shademap",
+            css: ["shade.css", 'style.css'],
+            js: [],
+            firstTime: result.firstTimeMode,
+            latitude: req.query.lat, 
+            longitude: req.query.lon, 
+            trees: trees,
+            shelter: shelter,
+            amenities: amenities,
+            parkName: parkName,
+            navbar: false
+          });
+        } catch(error) {
+          console.log(error.message);
+          res.render('noShade',{
+            title: "shademap",
+            css: ['noShade.css'],
+            js: ['noShade.js']
+          });
+        }
+    } else {
+      res.render('noShade',{
+        title: 'shademap',
+        css: ['noShade.css'],
+        js: ['noShade.js']
+      });
+    }
+})
 
 app.get("/about", (req, res) => {
   if (!req.session.authenticated) {
@@ -498,6 +516,10 @@ app.post("/post", upload.single("image"), async (req, res) => {
     lat: lat,
     lng: lng,
     createdAt: new Date(),
+    likes: 0,
+    dislikes: 0,
+    likedBy: [],
+    dislikedBy: [],
   });
 
   res.redirect("/posts?success=1");
@@ -513,7 +535,7 @@ app.get("/posts", async (req, res) => {
   const env = req.query.environment || "";
   const page = parseInt(req.query.page) || 1;
   const success = req.query.success === "1";
-  const limit = 9; // 3 rows of 3 cards
+  const limit = 9;
   const skip = (page - 1) * limit;
 
   let query = {};
@@ -530,6 +552,13 @@ app.get("/posts", async (req, res) => {
   }
 
   const totalPosts = await postsCollection.countDocuments(query);
+  const totalPages = Math.max(1, Math.ceil(totalPosts / limit));
+
+  if (page > totalPages) {
+    return res.redirect(
+      `/posts?page=${totalPages}&search=${search}&environment=${env}`,
+    );
+  }
 
   const posts = await postsCollection
     .find(query)
@@ -537,8 +566,6 @@ app.get("/posts", async (req, res) => {
     .skip(skip)
     .limit(limit)
     .toArray();
-
-  const totalPages = Math.max(1, Math.ceil(totalPosts / limit));
 
   res.render("posts", {
     posts,
@@ -822,6 +849,53 @@ app.post("/guide-mode", async (req, res) => {
   }
 });
 
+async function handleVote(req, res, type) {
+  if (!req.session.authenticated)
+    return res.status(401).json({ error: "Not logged in" });
+
+  const email = req.session.email;
+  const post = await postsCollection.findOne({
+    _id: new ObjectId(req.params.id),
+  });
+  if (!post) return res.status(404).json({ error: "Post not found" });
+
+  let { likes = 0, dislikes = 0, likedBy = [], dislikedBy = [] } = post;
+  const isLike = type === "like";
+  const ownArr = isLike ? likedBy : dislikedBy;
+  const otherArr = isLike ? dislikedBy : likedBy;
+  const ownKey = isLike ? "likes" : "dislikes";
+  const otherKey = isLike ? "dislikes" : "likes";
+
+  const alreadyOwn = ownArr.includes(email);
+  const alreadyOther = otherArr.includes(email);
+
+  if (alreadyOwn) {
+    // Undo
+    likes += isLike ? -1 : 0;
+    dislikes += isLike ? 0 : -1;
+    ownArr.splice(ownArr.indexOf(email), 1);
+  } else {
+    // Switch if needed
+    if (alreadyOther) {
+      if (isLike) dislikes -= 1;
+      else likes -= 1;
+      otherArr.splice(otherArr.indexOf(email), 1);
+    }
+    if (isLike) likes += 1;
+    else dislikes += 1;
+    ownArr.push(email);
+  }
+
+  await postsCollection.updateOne(
+    { _id: post._id },
+    { $set: { likes, dislikes, likedBy, dislikedBy } },
+  );
+
+  res.json({ likes, dislikes });
+}
+
+app.post("/posts/:id/like", (req, res) => handleVote(req, res, "like"));
+app.post("/posts/:id/dislike", (req, res) => handleVote(req, res, "dislike"));
 app.post("/chat", async (req, res) => {
   try {
     const messages = req.body.messages;
