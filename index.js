@@ -332,9 +332,6 @@ app.post("/loggingin", async (req, res) => {
     req.session.email = email;
     req.session.username = result[0].username;
     req.session.cookie.maxAge = expireTime;
-    if (typeof req.session.guideMode === "undefined") {
-      req.session.guideMode = true;
-    }
 
     res.redirect("/dashboard");
     return;
@@ -405,12 +402,13 @@ app.post("/signingup", async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  await userCollection.insertOne({
-    username: username,
-    email: email,
-    password: hashedPassword,
-    profileImage: getRandomProfileImage(),
-  });
+   await userCollection.insertOne({
+  username: username,
+  email: email,
+  password: hashedPassword,
+  profileImage: getRandomProfileImage(),
+  firstTimeMode: true,
+});
 
   req.session.authenticated = true;
   req.session.email = email;
@@ -694,6 +692,7 @@ app.get("/dashboard", async (req, res) => {
       return;
     }
 
+
     let user = await userCollection.findOne({
       email: req.session.email,
     });
@@ -772,20 +771,37 @@ app.post("/profile-picture", async (req, res) => {
   }
 });
 
-app.post("/guide-mode", (req, res) => {
-  if (!req.session.authenticated) {
-    return res.status(401).json({
+
+
+app.post("/guide-mode", async (req, res) => {
+  try {
+    if (!req.session.authenticated) {
+      return res.status(401).json({
+        success: false,
+        message: "Not logged in",
+      });
+    }
+
+    const guideMode = req.body.guideMode === true;
+
+    await userCollection.updateOne(
+      { email: req.session.email },
+      { $set: { firstTimeMode: guideMode } }
+    );
+
+    req.session.guideMode = guideMode;
+
+    res.json({
+      success: true,
+      guideMode: guideMode,
+    });
+  } catch (err) {
+    console.error("Guide mode update error:", err);
+    res.status(500).json({
       success: false,
-      message: "Not logged in",
+      message: "Server error updating guide mode",
     });
   }
-
-  req.session.guideMode = req.body.guideMode === true;
-
-  res.json({
-    success: true,
-    guideMode: req.session.guideMode,
-  });
 });
 
 // Start server

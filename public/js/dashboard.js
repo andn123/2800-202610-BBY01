@@ -1,10 +1,38 @@
-const guideToggle = document.querySelector("#guideToggle");
+document.addEventListener("DOMContentLoaded", () => {
+  const guideToggle = document.getElementById("guideToggle");
 
-if (guideToggle) {
-  guideToggle.addEventListener("change", () => {
-    document.body.classList.toggle("guide-mode", guideToggle.checked);
+  if (!guideToggle) return;
+
+  // Make the page match the toggle state when dashboard first loads
+  document.body.classList.toggle("guide-mode", guideToggle.checked);
+
+  guideToggle.addEventListener("change", async () => {
+    const firstTimeMode = guideToggle.checked;
+
+    // Update page styling immediately
+    document.body.classList.toggle("guide-mode", firstTimeMode);
+
+    try {
+      const response = await fetch("/guide-mode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          firstTimeMode: firstTimeMode
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        console.error("Guide mode update failed:", data.message);
+      }
+    } catch (error) {
+      console.error("Guide mode error:", error);
+    }
   });
-}
+});
 
 const menuButton = document.querySelector(".menu-btn");
 
@@ -117,72 +145,77 @@ if ("geolocation" in navigator) {
 document.addEventListener("DOMContentLoaded", () => {
   const guideToggle = document.getElementById("guideToggle");
 
-  if (!guideToggle) return;
+  if (guideToggle) {
+    guideToggle.addEventListener("change", async () => {
+      try {
+        const response = await fetch("/guide-mode", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            guideMode: guideToggle.checked,
+          }),
+        });
 
-  guideToggle.addEventListener("change", async () => {
-    try {
-      const response = await fetch("/guide-mode", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          guideMode: guideToggle.checked
-        })
-      });
+        const data = await response.json();
 
-      const data = await response.json();
-
-      if (!data.success) {
-        console.error("Guide mode update failed:", data.message);
+        if (!data.success) {
+          console.error("Guide mode update failed:", data.message);
+        }
+      } catch (error) {
+        console.error("Guide mode error:", error);
       }
-    } catch (error) {
-      console.error("Guide mode error:", error);
-    }
-  });
-});
+    });
+  }
 
-const changeProfileBtn = document.getElementById("changeProfileBtn");
-const profilePicker = document.getElementById("profilePicker");
-const currentProfileImage = document.getElementById("currentProfileImage");
-const profileOptions = document.querySelectorAll(".profile-option");
+  const changeProfileBtn = document.getElementById("changeProfileBtn");
+  const profilePicker = document.getElementById("profilePicker");
+  const currentProfileImage = document.getElementById("currentProfileImage");
+  const profileOptions = document.querySelectorAll(".profile-option");
 
-if (changeProfileBtn && profilePicker) {
-  changeProfileBtn.addEventListener("click", () => {
-    profilePicker.classList.toggle("show");
-  });
-}
+  if (changeProfileBtn && profilePicker) {
+    changeProfileBtn.addEventListener("click", () => {
+      profilePicker.classList.toggle("show");
+    });
+  }
 
-profileOptions.forEach((option) => {
-  option.addEventListener("click", async () => {
-    const profileImage = option.dataset.image;
+  profileOptions.forEach((option) => {
+    option.addEventListener("click", async () => {
+      const profileImage = option.dataset.image;
 
-    try {
-      const response = await fetch("/profile-picture", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ profileImage }),
-      });
+      try {
+        const response = await fetch("/profile-picture", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ profileImage }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!data.success) {
-        console.error("Profile picture update failed:", data.message);
-        return;
+        if (!data.success) {
+          console.error("Profile picture update failed:", data.message);
+          return;
+        }
+
+        if (currentProfileImage) {
+          currentProfileImage.src = data.profileImage;
+        }
+
+        profileOptions.forEach((btn) => {
+          btn.classList.remove("selected");
+        });
+
+        option.classList.add("selected");
+
+        if (profilePicker) {
+          profilePicker.classList.remove("show");
+        }
+      } catch (err) {
+        console.error("Profile picture error:", err);
       }
-
-      currentProfileImage.src = data.profileImage;
-
-      profileOptions.forEach((btn) => {
-        btn.classList.remove("selected");
-      });
-
-      option.classList.add("selected");
-      profilePicker.classList.remove("show");
-    } catch (err) {
-      console.error("Profile picture error:", err);
-    }
+    });
   });
 });
