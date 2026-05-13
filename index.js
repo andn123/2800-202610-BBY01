@@ -13,6 +13,7 @@ const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
 const multer = require("multer");
 
+
 const app = express();
 const port = process.env.PORT || 3000;
 const expireTime = 60 * 60 * 1000; // 1 hour in milliseconds
@@ -32,6 +33,20 @@ const mongodb_database = process.env.MONGODB_DATABASE;
 const { database } = include("databaseConnection");
 const userCollection = database.db(mongodb_user_database).collection("users");
 const postsCollection = database.db(mongodb_database).collection("posts");
+
+const profileImages = [
+  "/img/profile1.png",
+  "/img/profile2.png",
+  "/img/profile3.png",
+  "/img/profile4.png",
+  "/img/profile5.png",
+  "/img/profile6.png",
+];
+
+function getRandomProfileImage() {
+  const randomIndex = Math.floor(Math.random() * profileImages.length);
+  return profileImages[randomIndex];
+}
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -387,10 +402,11 @@ app.post("/signingup", async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  await userCollection.insertOne({
+   await userCollection.insertOne({
   username: username,
   email: email,
   password: hashedPassword,
+  profileImage: getRandomProfileImage(),
   firstTimeMode: true,
 });
 
@@ -676,13 +692,25 @@ app.get("/dashboard", async (req, res) => {
       return;
     }
 
-    const user = await userCollection.findOne({
+
+    let user = await userCollection.findOne({
       email: req.session.email,
     });
 
     if (!user) {
       req.session.destroy();
       return res.redirect("/login");
+    }
+
+    if (!user.profileImage) {
+      const randomProfileImage = getRandomProfileImage();
+
+      await userCollection.updateOne(
+        { email: req.session.email },
+        { $set: { profileImage: randomProfileImage } }
+      );
+
+      user.profileImage = randomProfileImage;
     }
 
     const firstTimeMode = user.firstTimeMode !== false;
@@ -693,10 +721,11 @@ app.get("/dashboard", async (req, res) => {
       js: ["dashboard.js"],
       navbar: true,
       guideMode: firstTimeMode,
+      profileImages: profileImages,
       user: {
         name: user.username || "User",
         email: user.email || "",
-        profileImage: user.profileImage || "/img/mountain-profile.jpg",
+        profileImage: user.profileImage,
         firstTimeMode: firstTimeMode,
       },
     });
@@ -705,6 +734,44 @@ app.get("/dashboard", async (req, res) => {
     res.status(500).send("Server error loading dashboard");
   }
 });
+
+app.post("/profile-picture", async (req, res) => {
+  try {
+    if (!req.session.authenticated) {
+      return res.status(401).json({
+        success: false,
+        message: "Not logged in",
+      });
+    }
+
+    const { profileImage } = req.body;
+
+    if (!profileImages.includes(profileImage)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid profile image",
+      });
+    }
+
+    await userCollection.updateOne(
+      { email: req.session.email },
+      { $set: { profileImage: profileImage } }
+    );
+
+    res.json({
+      success: true,
+      profileImage: profileImage,
+    });
+  } catch (err) {
+    console.error("Profile picture update error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error updating profile picture",
+    });
+  }
+});
+
+
 
 app.post("/guide-mode", async (req, res) => {
   try {
@@ -715,16 +782,18 @@ app.post("/guide-mode", async (req, res) => {
       });
     }
 
-    const firstTimeMode = req.body.firstTimeMode === true;
+    const guideMode = req.body.guideMode === true;
 
     await userCollection.updateOne(
       { email: req.session.email },
-      { $set: { firstTimeMode: firstTimeMode } }
+      { $set: { firstTimeMode: guideMode } }
     );
+
+    req.session.guideMode = guideMode;
 
     res.json({
       success: true,
-      firstTimeMode: firstTimeMode,
+      guideMode: guideMode,
     });
   } catch (err) {
     console.error("Guide mode update error:", err);
