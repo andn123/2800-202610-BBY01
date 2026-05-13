@@ -21,24 +21,29 @@ let currentPosts = [];
 let selectedLat = null;
 let selectedLon = null;
 
+// ── CHAT STATE ──────────────────────────────────────────────────
+let chatHistory = [];
+// ───────────────────────────────────────────────────────────────
+
 /* =======================
    SHADE FUNCTIONS AND LOGIC
 ======================= */
-async function isPark(lat, lng){
-    const parksPolygonAPI = "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/parks-polygon-representation/records";
-    const parkQuery = new URLSearchParams({
-        select: "park_name,geom",
-        where: `intersects(geom, geom'POINT(${lng} ${lat})')`,
-        limit: "1"
-    });
-    const res = await fetch(`${parksPolygonAPI}?${parkQuery}`);
-    const data = await res.json();
+async function isPark(lat, lng) {
+  const parksPolygonAPI =
+    "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/parks-polygon-representation/records";
+  const parkQuery = new URLSearchParams({
+    select: "park_name,geom",
+    where: `intersects(geom, geom'POINT(${lng} ${lat})')`,
+    limit: "1",
+  });
+  const res = await fetch(`${parksPolygonAPI}?${parkQuery}`);
+  const data = await res.json();
 
-    if (data.total_count == 0){
-        return false;
-    } else {
-        return true;
-    }
+  if (data.total_count == 0) {
+    return false;
+  } else {
+    return true;
+  }
 }
 
 /* =======================
@@ -56,12 +61,14 @@ map.addControl(new maplibregl.NavigationControl());
 const el = document.getElementById("map");
 const locations = JSON.parse(decodeURIComponent(el.dataset.locations));
 const posts = JSON.parse(decodeURIComponent(el.dataset.posts));
+console.log(locations);
 
 /* =======================
    GLOBAL STATE
 ======================= */
 let recentLocations = [];
 let hasInfo = false;
+let firstSystemPrompt = true;
 
 let unit = localStorage.getItem("tempUnit") || "C";
 
@@ -108,7 +115,12 @@ document.addEventListener("change", (e) => {
     localStorage.setItem("tempUnit", unit);
 
     if (currentWeather) {
-      renderWeather(currentWeather, currentLocationName, selectedLat, selectedLon);
+      renderWeather(
+        currentWeather,
+        currentLocationName,
+        selectedLat,
+        selectedLon,
+      );
     }
   }
 });
@@ -197,9 +209,9 @@ async function renderWeather(data, name, selectedLat, selectedLon) {
 
   const symbol = unit === "C" ? "°C" : "°F";
 
-  if(await isPark(selectedLat, selectedLon)) {
-      console.log("renderWeather.isPark(): if statement runs");
-      document.getElementById("panel").innerHTML = `
+  if (await isPark(selectedLat, selectedLon)) {
+    console.log("renderWeather.isPark(): if statement runs");
+    document.getElementById("panel").innerHTML = `
       <div class="weather-card">
         <h4 class="fw-bold text-center">${name}</h4>
 
@@ -233,9 +245,9 @@ async function renderWeather(data, name, selectedLat, selectedLon) {
       </div>
       <div id="loading" class="loader"></div>
       `;
-      document.getElementById('toShadeMap').addEventListener('click', () =>{
-          location.href = `/shademap?lat=${selectedLat}&lon=${selectedLon}`;
-      });
+    document.getElementById("toShadeMap").addEventListener("click", () => {
+      location.href = `/shademap?lat=${selectedLat}&lon=${selectedLon}`;
+    });
   } else {
     console.log("renderWeather(): else runs");
     document.getElementById("panel").innerHTML = `
@@ -395,7 +407,13 @@ function showTab(tab, event) {
 
   if (tab === "info") {
     if (hasInfo) {
-      renderWeather(currentWeather, currentLocationName, selectedLat, selectedLon);
+      renderWeather(
+        currentWeather,
+        currentLocationName,
+        selectedLat,
+        selectedLon,
+        tab,
+      );
     } else {
       panelContent.innerHTML = `
         <div>Click a location</div>
@@ -473,6 +491,10 @@ function showTab(tab, event) {
       ? recentLocations.map((l) => `<p>🕒 ${l.name}</p>`).join("")
       : `<p>No recent locations</p>
       <div id="loading" class="loader"></div>`;
+  } else if (tab === "ai") {
+    // ── CHAT TAB ───────────────────────────────────────────────
+    renderChat();
+    // ──────────────────────────────────────────────────────────
   }
 }
 
@@ -510,20 +532,22 @@ function showGuide() {
 
   guide.innerHTML = `
     <div class="guide-box">
-      <h5>👋 Welcome</h5>
+  <h5><b>👋 Welcome to VanCooler Map!</b></h5><br>
 
-      <p>• Click map locations to see weather info</p>
+  <p>📍 Click a location marker to view weather details and post information</p>
 
-      <p>• Switch tabs to view posts and recent places</p>
+  <p>🧭 Use the filter buttons to display only the locations you want</p>
 
-      <p>• Drag the panel upward on mobile</p>
+  <p>📝 Browse community uploads and recommendations in the Posts tab</p>
 
-      <p>• Switch on the switch to see temperature in °F</p>
+  <p>📱 Drag the information panel upward for a better mobile view</p>
 
-      <button id="closeGuide">
-        Got it
-      </button>
-    </div>
+  <p>🌡️ Turn on the temperature switch to view weather in °F</p>
+
+  <button id="closeGuide">
+    Got it
+  </button>
+</div>
   `;
 
   document.body.appendChild(guide);
@@ -626,7 +650,12 @@ async function loadMarkers(data) {
 
         switchToInfo();
 
-        renderWeather(weatherData, currentLocationName, selectedLat, selectedLon);
+        renderWeather(
+          weatherData,
+          currentLocationName,
+          selectedLat,
+          selectedLon,
+        );
       } catch (err) {
         console.error(err);
       } finally {
@@ -661,6 +690,198 @@ function filterMarkers(env) {
 }
 
 /* =======================
-   INIT
+   AI CHAT
 ======================= */
+function renderChat() {
+  const panelContent = document.getElementById("panel");
+
+  // Seed a greeting on first open (history persists for the whole session)
+  if (chatHistory.length === 0) {
+    chatHistory.push({
+      role: "assistant",
+      content: currentLocationName
+        ? `Hey! I'm your VanCooler guide 🌊 Ask me anything about ${currentLocationName} — best times to visit, what to bring, nearby spots, and more.`
+        : "Hey! I'm your VanCooler guide 🌊 Click a location on the map, then ask me anything about it — or just ask about Vancouver in general!",
+    });
+  }
+
+  // Context-aware chips based on whether a location is selected
+  const chips = currentLocationName
+    ? [
+        {
+          label: "⏰ Best time to visit",
+          prompt: `What's the best time to visit ${currentLocationName}?`,
+        },
+        {
+          label: "🎒 What to bring",
+          prompt: `What should I bring to ${currentLocationName}?`,
+        },
+        {
+          label: "📍 Nearby spots",
+          prompt: `What spots are worth checking out near ${currentLocationName}?`,
+        },
+      ]
+    : [
+        {
+          label: "🌿 Best parks",
+          prompt: "What are the coolest parks in Vancouver?",
+        },
+        {
+          label: "☀️ Find shade",
+          prompt: "Where can I find shade on a hot day in Vancouver?",
+        },
+        {
+          label: "🌧️ Rainy day ideas",
+          prompt: "What's fun to do in Vancouver on a rainy day?",
+        },
+      ];
+
+  panelContent.innerHTML = `
+    <div class="chat-shell">
+      ${
+        currentLocationName
+          ? `
+        <div class="chat-context-pill">
+          <span class="chat-context-dot"></span>
+          Chatting about: ${currentLocationName}
+        </div>`
+          : ""
+      }
+
+      <div class="chat-feed" id="chatFeed">
+        ${chatHistory
+          .map(
+            (msg) => `
+          <div class="chat-bubble ${msg.role === "user" ? "user" : "ai"}">
+            ${msg.content}
+          </div>`,
+          )
+          .join("")}
+      </div>
+
+      <div class="chat-chips" id="chatChips">
+        ${chips
+          .map(
+            (c) =>
+              `<button class="chat-chip" onclick="sendChip('${c.prompt.replace(/'/g, "\\'")}')">${c.label}</button>`,
+          )
+          .join("")}
+      </div>
+
+      <div class="chat-input-row">
+        <textarea
+          class="chat-input"
+          id="chatInput"
+          rows="1"
+          placeholder="Ask about this spot…"
+          onkeydown="handleChatKey(event)"
+          oninput="autogrow(this)"
+        ></textarea>
+        <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">➤</button>
+      </div>
+    </div>
+  `;
+
+  scrollChatToBottom();
+}
+
+function scrollChatToBottom() {
+  const feed = document.getElementById("chatFeed");
+  if (feed) feed.scrollTop = feed.scrollHeight;
+}
+
+function handleChatKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+function autogrow(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 96) + "px";
+}
+
+async function sendChip(prompt) {
+  document.getElementById("chatInput").value = prompt;
+  await sendChatMessage();
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("chatSendBtn");
+  const feed = document.getElementById("chatFeed");
+  if (!input || !feed) return;
+
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = "";
+  input.style.height = "auto";
+  sendBtn.disabled = true;
+
+  // Hide chips after first user message
+  const chips = document.getElementById("chatChips");
+  if (chips) chips.style.display = "none";
+
+  // Append user bubble
+  chatHistory.push({ role: "user", content: text });
+  const userBubble = document.createElement("div");
+  userBubble.className = "chat-bubble user";
+  userBubble.textContent = text;
+  feed.appendChild(userBubble);
+  scrollChatToBottom();
+
+  // Typing indicator
+  const typingBubble = document.createElement("div");
+  typingBubble.className = "chat-bubble ai";
+  typingBubble.innerHTML = `<div class="chat-typing"><span></span><span></span><span></span></div>`;
+  feed.appendChild(typingBubble);
+  scrollChatToBottom();
+
+  const locationContext = currentLocationName
+    ? `The user is currently viewing: ${currentLocationName} (lat ${selectedLat}, lon ${selectedLon}).`
+    : "";
+
+  const systemPrompt = `You are VanCooler, a friendly local guide for Vancouver, BC.
+Help users discover cool spots, outdoor activities, parks, cafés, events, and weather tips.
+Be concise (2-4 sentences), warm, and specific. No markdown formatting. Once you have greeted the user, do not need to greet again. ${locationContext}`;
+
+  const systemMessage = {
+    role: "assistant",
+    content: systemPrompt,
+  };
+
+  let messages = [...chatHistory.slice(-12)];
+
+  if (firstSystemPrompt) {
+    messages.unshift({ role: "user", content: systemPrompt });
+    firstSystemPrompt = false;
+  }
+
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages }),
+    });
+
+    const data = await res.json();
+    const reply = data.reply || "Sorry, I couldn't get a response right now.";
+
+    chatHistory.push({ role: "assistant", content: reply });
+
+    typingBubble.innerHTML = "";
+    typingBubble.textContent = reply;
+  } catch (err) {
+    typingBubble.textContent =
+      "⚠️ Couldn't reach the AI right now. Try again in a moment.";
+    console.error(err);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+    scrollChatToBottom();
+  }
+}
+
 checkDevice();
