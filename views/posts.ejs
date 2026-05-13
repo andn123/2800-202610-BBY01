@@ -45,7 +45,16 @@
           <p><strong>Location:</strong> <%= post.location %></p>
           <p><strong>Description:</strong> <%= post.description %></p>
           <p><strong>Environment:</strong> <%= post.environment %></p>
-          <p class="timestamp"><%= post.createdAt.toLocaleString() %></p>
+          <p class="timestamp"><%= post.createdAt ? post.createdAt.toLocaleString() : 'Date unknown' %></p>
+        </div>
+        <div class="like-bar">
+          <button class="like-btn" data-id="<%= post._id %>">
+          👍 <span><%= post.likes || 0 %></span>
+          </button>
+
+          <button class="dislike-btn" data-id="<%= post._id %>">
+          👎 <span><%= post.dislikes || 0 %></span>
+          </button>
         </div>
       </div>
     <% }) %>
@@ -75,48 +84,4 @@
 
 </div>
 
-<script>
-    var searchInput = document.getElementById("searchInput");
-    var envSelect = document.getElementById("envSelect");
-    var postsGrid = document.querySelector(".posts-grid");
-    var paginationContainer = document.getElementById("paginationContainer");
-
-    var typingTimer = null;
-
-    function updatePosts() {
-        var search = searchInput.value;
-        var env = envSelect.value;
-
-        var url = "/posts?search=" + encodeURIComponent(search) + "&environment=" + env;
-
-        fetch(url)
-            .then(function(response) {
-                return response.text();
-            })
-            .then(function(html) {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(html, "text/html");
-
-                // Replace posts
-                var newGrid = doc.querySelector(".posts-grid");
-                postsGrid.innerHTML = newGrid.innerHTML;
-
-                // Replace pagination
-                var newPagination = doc.querySelector("#paginationContainer");
-                if (newPagination) {
-                    paginationContainer.innerHTML = newPagination.innerHTML;
-                } else {
-                    paginationContainer.innerHTML = "";
-                }
-            });
-    }
-
-    searchInput.addEventListener("input", function () {
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(updatePosts, 200);
-    });
-
-    envSelect.addEventListener("change", function () {
-        updatePosts();
-    });
-</script>
+<script src="/js/posts.js"></script>
