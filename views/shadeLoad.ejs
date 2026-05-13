@@ -1,0 +1,23 @@
+<%- include("partials/header") %> 
+        <div class="container-fluid position-relative px-0">
+            <div id="map"></div> 
+            <button
+            id="backBtn"
+            class="btn position-absolute top-0 start-0 m-3 d-flex align-items-center px-3 py-2 rounded-pill shadow border-0">
+                <img src="/img/back.png" class="back-arrow me-2">
+                <span class="fw-semibold">Back</span>
+            </button>    
+            
+            <div id="firstTimeView" class="shade-card card shadow rounded-4 p-3 position-absolute start-0 end-0 m-3 border-0">
+                <div class="card-body text-center">
+                    <img src="/img/shade/loading.gif" width="80" class="mb-2">
+                    <h1 class="fw-bold">building trees</h5>
+                    <span class="text-muted fs-5 mb-0">please wait</span>
+                </div>
+            </div>    
+        </div>
+    <script>
+        const latitude = <%- JSON.stringify(latitude) %>;
+        const longitude = <%- JSON.stringify(longitude) %>;
+    </script>
+<%- include("partials/footer") %>
