@@ -243,11 +243,10 @@ async function renderWeather(data, name, selectedLat, selectedLon, props = {}) {
 
   // Event fields — only shown if they exist on props
 
-  if (props.image && props.image.startsWith("https")) {
-    eventImage = `<img src="${props.image}" class="event-card-img" alt="${props.name || ""}">`;
-  } else {
-    eventImage = "";
-  }
+  const eventImage =
+    props.image && props.image.startsWith("https")
+      ? `<img src="${props.image}" class="event-card-img" alt="${props.name || ""}">`
+      : "";
 
   const eventVenue = props.venue
     ? `<div class="event-detail">🏟️ Venue: <span>${props.venue}</span></div>`
