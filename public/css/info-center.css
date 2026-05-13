@@ -18,8 +18,16 @@ body {
 .help-hero {
   min-height: 420px;
   background:
-    radial-gradient(circle at 8% 60%, rgba(255, 255, 255, 0.2), transparent 120px),
-    radial-gradient(circle at 92% 25%, rgba(255, 255, 255, 0.18), transparent 130px),
+    radial-gradient(
+      circle at 8% 60%,
+      rgba(255, 255, 255, 0.2),
+      transparent 120px
+    ),
+    radial-gradient(
+      circle at 92% 25%,
+      rgba(255, 255, 255, 0.18),
+      transparent 130px
+    ),
     linear-gradient(135deg, #4f35b7, #5b3fd1, #6a4df5);
   color: white;
   padding: 20px 8%;
@@ -222,14 +230,26 @@ body {
   color: #1f2937;
 }
 
-.tutorial-header span {
+.tutorial-header .pill {
   background: white;
   color: #4f46e5;
-  border: 1px solid #e8e8f5;
+  border: 1px solid #d6d6e7;
   padding: 9px 15px;
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: 800;
+  text-decoration: none;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease;
+}
+
+.tutorial-header .pill:hover {
+  background: #4f46e5;
+  color: white;
+  transform: scale(1.08);
+  cursor: pointer;
 }
 
 .steps-row {
