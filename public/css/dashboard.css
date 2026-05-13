@@ -21,7 +21,11 @@ body {
   width: 100%;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top center, rgba(255, 255, 255, 0.98), rgba(231, 238, 248, 0.96)),
+    radial-gradient(
+      circle at top center,
+      rgba(255, 255, 255, 0.98),
+      rgba(231, 238, 248, 0.96)
+    ),
     linear-gradient(180deg, #ffffff, #eaf0f8);
   padding-bottom: 48px;
 }
@@ -421,6 +425,168 @@ body.guide-mode .profile-weather-section::after {
   .card-arrow {
     font-size: 2.8rem;
   }
+}
+
+.my-posts-section {
+  padding: 20px;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
+}
+
+.my-posts-section h2 {
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.my-posts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.my-post-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.my-post-img {
+  width: 180px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.my-post-info {
+  flex: 1;
+}
+
+.my-post-info p {
+  margin: 6px 0;
+  font-size: 16px;
+}
+
+.my-post-info strong {
+  font-size: 18px;
+}
+
+.my-post-env {
+  color: #4a6cf7;
+  text-transform: capitalize;
+  font-size: 15px !important;
+}
+
+.my-post-date {
+  font-size: 13px !important;
+  color: #999;
+}
+
+.delete-post-btn {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.delete-post-btn:hover {
+  background: #e03e3e;
+}
+
+.delete-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.delete-overlay.show {
+  display: flex;
+}
+
+.delete-popup {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+}
+
+.delete-popup p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.delete-popup-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirm-delete-btn {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cancel-delete-btn {
+  background: #eee;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.my-posts-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 16px;
+}
+
+.my-page-btn {
+  padding: 8px 16px;
+  background: #4a6cf7;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 80px;
+}
+
+.my-page-btn:disabled {
+  background: #ccc;
+  cursor: default;
+}
+
+.my-page-number {
+  font-size: 14px;
+  color: #333;
 }
 
 /* Mobile */

@@ -1,6 +1,12 @@
 require("./utils.js");
 require("dotenv").config();
-const {isPark,findShelter,findTrees,findAmenities, parkBoundary} = require("./public/js/shadeServer");
+const {
+  isPark,
+  findShelter,
+  findTrees,
+  findAmenities,
+  parkBoundary,
+} = require("./public/js/shadeServer");
 const { ObjectId } = require("mongodb");
 const express = require("express");
 const session = require("express-session");
@@ -199,9 +205,21 @@ app.get("/shademap", async (req, res) => {
   if (park.boolean) {
     try {
       const bounds = await parkBoundary(req.query.lat, req.query.lon);
-      const amenities = await findAmenities(req.query.lat,req.query.lon, bounds.boundsOverpass);
-      const trees = await findTrees(req.query.lat,req.query.lon,bounds.boundsTrees);
-      const shelter = await findShelter(req.query.lat, req.query.lon, bounds.boundsOverpass);
+      const amenities = await findAmenities(
+        req.query.lat,
+        req.query.lon,
+        bounds.boundsOverpass,
+      );
+      const trees = await findTrees(
+        req.query.lat,
+        req.query.lon,
+        bounds.boundsTrees,
+      );
+      const shelter = await findShelter(
+        req.query.lat,
+        req.query.lon,
+        bounds.boundsOverpass,
+      );
       const parkName = park.name;
       const result = await userCollection.findOne(
         { email: req.session.email },
@@ -926,6 +944,29 @@ app.post("/chat", async (req, res) => {
       details: err.message,
     });
   }
+});
+
+app.get("/api/my-posts", async (req, res) => {
+  if (!req.session.authenticated)
+    return res.status(401).json({ error: "Not logged in" });
+  const posts = await postsCollection
+    .find({ username: req.session.username })
+    .sort({ createdAt: -1 })
+    .toArray();
+  res.json(posts);
+});
+
+app.delete("/posts/:id", async (req, res) => {
+  if (!req.session.authenticated)
+    return res.status(401).json({ error: "Not logged in" });
+  const post = await postsCollection.findOne({
+    _id: new ObjectId(req.params.id),
+  });
+  if (!post) return res.status(404).json({ error: "Post not found" });
+  if (post.username !== req.session.username)
+    return res.status(403).json({ error: "Not your post" });
+  await postsCollection.deleteOne({ _id: post._id });
+  res.json({ success: true });
 });
 
 // Start server
