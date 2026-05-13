@@ -20,7 +20,10 @@ const ENV_COLORS = {
 let currentPosts = [];
 let selectedLat = null;
 let selectedLon = null;
-let isMobile = window.innerWidth <= 768;
+
+// ── CHAT STATE ──────────────────────────────────────────────────
+let chatHistory = [];
+// ───────────────────────────────────────────────────────────────
 
 /* =======================
    SHADE FUNCTIONS AND LOGIC
@@ -58,12 +61,14 @@ map.addControl(new maplibregl.NavigationControl());
 const el = document.getElementById("map");
 const locations = JSON.parse(decodeURIComponent(el.dataset.locations));
 const posts = JSON.parse(decodeURIComponent(el.dataset.posts));
+console.log(locations);
 
 /* =======================
    GLOBAL STATE
 ======================= */
 let recentLocations = [];
 let hasInfo = false;
+let firstSystemPrompt = true;
 
 let unit = localStorage.getItem("tempUnit") || "C";
 
@@ -86,6 +91,17 @@ navigator.geolocation.getCurrentPosition((position) => {
     .setPopup(
       new maplibregl.Popup({ offset: 25 }).setHTML("Your current location"),
     )
+    .addTo(map);
+  const el = document.createElement("div");
+  el.className = "circle-marker";
+
+  const popup = new maplibregl.Popup({ offset: 10 }).setHTML(
+    "Your current location",
+  );
+
+  new maplibregl.Marker({ element: el })
+    .setLngLat([lon, lat])
+    .setPopup(popup)
     .addTo(map);
 });
 
@@ -267,7 +283,7 @@ async function renderWeather(data, name, selectedLat, selectedLon) {
    PANEL HEIGHT
 ======================= */
 function setPanelHeight(value) {
-  if (isMobile) {
+  if (window.innerWidth <= 768) {
     value = Math.max(COLLAPSED, Math.min(FULL, value));
     panel.style.height = value + "px";
     currentHeight = value;
@@ -280,6 +296,7 @@ function setPanelHeight(value) {
 /* =======================
    DRAG SYSTEM (MOBILE ONLY)
 ======================= */
+let isMobile = window.innerWidth <= 768;
 
 let startY = 0;
 let startHeight = 0;
@@ -343,6 +360,8 @@ function mouseDown(e) {
    DEVICE CHECK
 ======================= */
 function checkDevice() {
+  isMobile = window.innerWidth <= 768;
+
   if (isMobile) {
     setPanelHeight(COLLAPSED);
     enableDrag();
@@ -393,6 +412,7 @@ function showTab(tab, event) {
         currentLocationName,
         selectedLat,
         selectedLon,
+        tab,
       );
     } else {
       panelContent.innerHTML = `
@@ -468,6 +488,10 @@ function showTab(tab, event) {
       ? recentLocations.map((l) => `<p>🕒 ${l.name}</p>`).join("")
       : `<p>No recent locations</p>
       <div id="loading" class="loader"></div>`;
+  } else if (tab === "ai") {
+    // ── CHAT TAB ───────────────────────────────────────────────
+    renderChat();
+    // ──────────────────────────────────────────────────────────
   }
 }
 
@@ -663,6 +687,198 @@ function filterMarkers(env) {
 }
 
 /* =======================
-   INIT
+   AI CHAT
 ======================= */
+function renderChat() {
+  const panelContent = document.getElementById("panel");
+
+  // Seed a greeting on first open (history persists for the whole session)
+  if (chatHistory.length === 0) {
+    chatHistory.push({
+      role: "assistant",
+      content: currentLocationName
+        ? `Hey! I'm your VanCooler guide 🌊 Ask me anything about ${currentLocationName} — best times to visit, what to bring, nearby spots, and more.`
+        : "Hey! I'm your VanCooler guide 🌊 Click a location on the map, then ask me anything about it — or just ask about Vancouver in general!",
+    });
+  }
+
+  // Context-aware chips based on whether a location is selected
+  const chips = currentLocationName
+    ? [
+        {
+          label: "⏰ Best time to visit",
+          prompt: `What's the best time to visit ${currentLocationName}?`,
+        },
+        {
+          label: "🎒 What to bring",
+          prompt: `What should I bring to ${currentLocationName}?`,
+        },
+        {
+          label: "📍 Nearby spots",
+          prompt: `What spots are worth checking out near ${currentLocationName}?`,
+        },
+      ]
+    : [
+        {
+          label: "🌿 Best parks",
+          prompt: "What are the coolest parks in Vancouver?",
+        },
+        {
+          label: "☀️ Find shade",
+          prompt: "Where can I find shade on a hot day in Vancouver?",
+        },
+        {
+          label: "🌧️ Rainy day ideas",
+          prompt: "What's fun to do in Vancouver on a rainy day?",
+        },
+      ];
+
+  panelContent.innerHTML = `
+    <div class="chat-shell">
+      ${
+        currentLocationName
+          ? `
+        <div class="chat-context-pill">
+          <span class="chat-context-dot"></span>
+          Chatting about: ${currentLocationName}
+        </div>`
+          : ""
+      }
+
+      <div class="chat-feed" id="chatFeed">
+        ${chatHistory
+          .map(
+            (msg) => `
+          <div class="chat-bubble ${msg.role === "user" ? "user" : "ai"}">
+            ${msg.content}
+          </div>`,
+          )
+          .join("")}
+      </div>
+
+      <div class="chat-chips" id="chatChips">
+        ${chips
+          .map(
+            (c) =>
+              `<button class="chat-chip" onclick="sendChip('${c.prompt.replace(/'/g, "\\'")}')">${c.label}</button>`,
+          )
+          .join("")}
+      </div>
+
+      <div class="chat-input-row">
+        <textarea
+          class="chat-input"
+          id="chatInput"
+          rows="1"
+          placeholder="Ask about this spot…"
+          onkeydown="handleChatKey(event)"
+          oninput="autogrow(this)"
+        ></textarea>
+        <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">➤</button>
+      </div>
+    </div>
+  `;
+
+  scrollChatToBottom();
+}
+
+function scrollChatToBottom() {
+  const feed = document.getElementById("chatFeed");
+  if (feed) feed.scrollTop = feed.scrollHeight;
+}
+
+function handleChatKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+function autogrow(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 96) + "px";
+}
+
+async function sendChip(prompt) {
+  document.getElementById("chatInput").value = prompt;
+  await sendChatMessage();
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("chatSendBtn");
+  const feed = document.getElementById("chatFeed");
+  if (!input || !feed) return;
+
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = "";
+  input.style.height = "auto";
+  sendBtn.disabled = true;
+
+  // Hide chips after first user message
+  const chips = document.getElementById("chatChips");
+  if (chips) chips.style.display = "none";
+
+  // Append user bubble
+  chatHistory.push({ role: "user", content: text });
+  const userBubble = document.createElement("div");
+  userBubble.className = "chat-bubble user";
+  userBubble.textContent = text;
+  feed.appendChild(userBubble);
+  scrollChatToBottom();
+
+  // Typing indicator
+  const typingBubble = document.createElement("div");
+  typingBubble.className = "chat-bubble ai";
+  typingBubble.innerHTML = `<div class="chat-typing"><span></span><span></span><span></span></div>`;
+  feed.appendChild(typingBubble);
+  scrollChatToBottom();
+
+  const locationContext = currentLocationName
+    ? `The user is currently viewing: ${currentLocationName} (lat ${selectedLat}, lon ${selectedLon}).`
+    : "";
+
+  const systemPrompt = `You are VanCooler, a friendly local guide for Vancouver, BC.
+Help users discover cool spots, outdoor activities, parks, cafés, events, and weather tips.
+Be concise (2-4 sentences), warm, and specific. No markdown formatting. Once you have greeted the user, do not need to greet again. ${locationContext}`;
+
+  const systemMessage = {
+    role: "assistant",
+    content: systemPrompt,
+  };
+
+  let messages = [...chatHistory.slice(-12)];
+
+  if (firstSystemPrompt) {
+    messages.unshift({ role: "user", content: systemPrompt });
+    firstSystemPrompt = false;
+  }
+
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages }),
+    });
+
+    const data = await res.json();
+    const reply = data.reply || "Sorry, I couldn't get a response right now.";
+
+    chatHistory.push({ role: "assistant", content: reply });
+
+    typingBubble.innerHTML = "";
+    typingBubble.textContent = reply;
+  } catch (err) {
+    typingBubble.textContent =
+      "⚠️ Couldn't reach the AI right now. Try again in a moment.";
+    console.error(err);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+    scrollChatToBottom();
+  }
+}
+
 checkDevice();

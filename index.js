@@ -12,6 +12,7 @@ const saltRounds = 10;
 const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
 const multer = require("multer");
+const { GoogleGenAI } = require("@google/genai");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -29,9 +30,12 @@ const mongodb_session_database = process.env.MONGODB_SESSION_DATABASE;
 const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 const mongodb_database = process.env.MONGODB_DATABASE;
+const gemini_api_key = process.env.GEMINI_API_KEY;
 const { database } = include("databaseConnection");
 const userCollection = database.db(mongodb_user_database).collection("users");
 const postsCollection = database.db(mongodb_database).collection("posts");
+
+const genAI = new GoogleGenAI({ apiKey: gemini_api_key });
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -88,7 +92,7 @@ app.get("/", (req, res) => {
     currentPage: "home",
     authenticated: req.session.authenticated,
     username: req.session.username,
-    navbar: false
+    navbar: false,
   });
 });
 
@@ -150,7 +154,7 @@ app.get("/map", async (req, res) => {
       navbar: false,
       css: ["map.css"],
       js: ["map.js"],
-      navbar: false
+      navbar: false,
     });
   } catch (err) {
     console.error(err);
@@ -169,38 +173,38 @@ app.get("/shade", async (req, res) => {
     css: ["shade.css", "style.css"],
     js: [],
     firstTime: true,
-    navbar: false
+    navbar: false,
   });
 });
 
 //change to app.post to use development page.
-app.get('/shademap', async (req, res) =>{
-    const park = await isPark(req.query.lat, req.query.lon);
-    if(park.boolean){
-        const result = await userCollection.findOne(
-          {email: req.session.email},
-          {projection: { _id: 0, firstTimeMode: 1 } }
-        );
-        const parkName = park.name;
-        const trees = await findTrees(req.query.lat, req.query.lon);
-        const shelter = await findShelter(req.query.lat, req.query.lon);
-  
-        res.render('shade', {
-            title: "shademap",
-            css: ["shade.css", 'style.css'],
-            js: [],
-            firstTime: result.firstTimeMode,
-            latitude: req.query.lat, 
-            longitude: req.query.lon, 
-            trees: trees,
-            shelter: shelter,
-            parkName: parkName,
-            navbar: false
-        });
-    } else {
-        res.render('noShade');
-    }
-})
+app.get("/shademap", async (req, res) => {
+  const park = await isPark(req.query.lat, req.query.lon);
+  if (park.boolean) {
+    const result = await userCollection.findOne(
+      { email: req.session.email },
+      { projection: { _id: 0, firstTimeMode: 1 } },
+    );
+    const parkName = park.name;
+    const trees = await findTrees(req.query.lat, req.query.lon);
+    const shelter = await findShelter(req.query.lat, req.query.lon);
+
+    res.render("shade", {
+      title: "shademap",
+      css: ["shade.css", "style.css"],
+      js: [],
+      firstTime: result.firstTimeMode,
+      latitude: req.query.lat,
+      longitude: req.query.lon,
+      trees: trees,
+      shelter: shelter,
+      parkName: parkName,
+      navbar: false,
+    });
+  } else {
+    res.render("noShade");
+  }
+});
 
 app.get("/about", (req, res) => {
   if (!req.session.authenticated) {
@@ -211,7 +215,7 @@ app.get("/about", (req, res) => {
     title: "About",
     css: ["about.css", "style.css"],
     js: ["about.js"],
-    navbar: true
+    navbar: true,
   });
 });
 
@@ -241,7 +245,7 @@ app.get("/weatherapi", async (req, res) => {
         title: "Weather",
         css: ["weather.css", "style.css"],
         js: ["weather.js"],
-        navbar: true
+        navbar: true,
       });
     } else {
       res.json(data);
@@ -266,7 +270,7 @@ app.get("/login", (req, res) => {
     css: ["style.css", "SignUpLogIn.css"],
     js: ["SignUpLogIn.js"],
     errorMessage: "",
-    navbar: false
+    navbar: false,
   });
 });
 
@@ -275,7 +279,7 @@ app.get("/info-center", (req, res) => {
     title: "Info Center",
     css: ["info-center.css", "style.css"],
     js: ["info-center.js"],
-    navbar: false
+    navbar: false,
   });
 });
 
@@ -294,7 +298,7 @@ app.post("/loggingin", async (req, res) => {
       css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: "Error: Incorrect email or password",
-      navbar: false
+      navbar: false,
     });
     return;
   }
@@ -330,7 +334,7 @@ app.post("/loggingin", async (req, res) => {
       css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: "Error: Invalid email or password",
-      navbar: false
+      navbar: false,
     });
     return;
   }
@@ -346,7 +350,7 @@ app.get("/signup", (req, res) => {
     css: ["style.css", "SignUpLogIn.css"],
     js: ["SignUpLogIn.js"],
     errorMessage: "",
-    navbar: false
+    navbar: false,
   });
 });
 
@@ -368,7 +372,7 @@ app.post("/signingup", async (req, res) => {
       errorMessage:
         "Error: Invalid format for " +
         validationResult.error.details[0].context.key,
-      navbar: false
+      navbar: false,
     });
     return;
   }
@@ -385,7 +389,7 @@ app.post("/signingup", async (req, res) => {
       css: ["style.css", "SignUpLogIn.css"],
       js: ["SignUpLogIn.js"],
       errorMessage: `Error: That ${conflictField} is already in use.`,
-      navbar: false
+      navbar: false,
     });
     return;
   }
@@ -413,7 +417,7 @@ app.post("/logout", (req, res) => {
   res.redirect("/login");
   res.render("index", {
     currentPage: "home",
-    navbar: false
+    navbar: false,
   });
 });
 
@@ -704,6 +708,38 @@ app.post("/guide-mode", (req, res) => {
     success: true,
     guideMode: req.session.guideMode,
   });
+});
+
+app.post("/chat", async (req, res) => {
+  try {
+    const messages = req.body.messages;
+
+    if (!messages) {
+      return res.status(400).json({ error: "Message required" });
+    }
+
+    const formatted = messages.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    }));
+
+    // Call the correct SDK syntax
+    const response = await genAI.models.generateContent({
+      model: "gemini-1.5-flash", // gemini-2.5-flash is recommended for general text tasks
+      contents: formatted,
+    });
+
+    // Send back the property string
+    res.json({
+      reply: response.text,
+    });
+  } catch (err) {
+    console.error("Full Gemini Error:", err);
+    res.status(500).json({
+      error: "Gemini request failed",
+      details: err.message,
+    });
+  }
 });
 
 // Start server
