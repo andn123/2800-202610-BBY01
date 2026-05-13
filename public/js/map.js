@@ -246,7 +246,7 @@ async function renderWeather(data, name, selectedLat, selectedLon) {
       <div id="loading" class="loader"></div>
       `;
     document.getElementById("toShadeMap").addEventListener("click", () => {
-      location.href = `/shademap?lat=${selectedLat}&lon=${selectedLon}`;
+      location.href = `/shademapLoad?lat=${selectedLat}&lon=${selectedLon}`;
     });
   } else {
     console.log("renderWeather(): else runs");

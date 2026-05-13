@@ -1,6 +1,6 @@
 require("./utils.js");
 require("dotenv").config();
-const { isPark, findShelter, findTrees } = require("./public/js/shadeServer");
+const { isPark, findShelter, findTrees, findAmenities, parkBoundary } = require("./public/js/shadeServer");
 const { ObjectId } = require("mongodb");
 const express = require("express");
 const session = require("express-session");
@@ -183,49 +183,59 @@ app.get("/map", async (req, res) => {
   }
 });
 
-//development page.
-app.get("/shade", async (req, res) => {
-  if (!req.session.authenticated) {
-    res.redirect("/login");
-    return;
-  }
-  res.render("shade", {
-    title: "shademap",
-    css: ["shade.css", "style.css"],
-    js: [],
-    firstTime: true,
-    navbar: false,
+app.get('/shademapLoad', async (req, res) => {
+  res.render("shademapLoad", {
+    title: "loading",
+    css: ['shade.css'],
+    js: ['shadeLoad.js'],
+    latitude: req.query.lat, 
+    longitude: req.query.lon, 
+    navbar: false
   });
 });
 
-//change to app.post to use development page.
-app.get("/shademap", async (req, res) => {
-  const park = await isPark(req.query.lat, req.query.lon);
-  if (park.boolean) {
-    const result = await userCollection.findOne(
-      { email: req.session.email },
-      { projection: { _id: 0, firstTimeMode: 1 } },
-    );
-    const parkName = park.name;
-    const trees = await findTrees(req.query.lat, req.query.lon);
-    const shelter = await findShelter(req.query.lat, req.query.lon);
-
-    res.render("shade", {
-      title: "shademap",
-      css: ["shade.css", "style.css"],
-      js: [],
-      firstTime: result.firstTimeMode,
-      latitude: req.query.lat,
-      longitude: req.query.lon,
-      trees: trees,
-      shelter: shelter,
-      parkName: parkName,
-      navbar: false,
-    });
-  } else {
-    res.render("noShade");
-  }
-});
+app.get('/shademap', async (req, res) =>{
+    const park = await isPark(req.query.lat, req.query.lon);
+    if(park.boolean){
+        try {
+          const bounds = await parkBoundary(req.query.lat, req.query.lon)
+          const amenities = await findAmenities(req.query.lat, req.query.lon, bounds.boundsOverpass);
+          const trees = await findTrees(req.query.lat, req.query.lon, bounds.boundsTrees);
+          const shelter = await findShelter(req.query.lat, req.query.lon, bounds.boundsOverpass);
+          const parkName = park.name;
+          const result = await userCollection.findOne(
+            {email: req.session.email},
+            {projection:{_id: 0, firstTimeMode:1}}
+          );
+          res.render('shade', {
+            title: "shademap",
+            css: ["shade.css", 'style.css'],
+            js: [],
+            firstTime: result.firstTimeMode,
+            latitude: req.query.lat, 
+            longitude: req.query.lon, 
+            trees: trees,
+            shelter: shelter,
+            amenities: amenities,
+            parkName: parkName,
+            navbar: false
+          });
+        } catch(error) {
+          console.log(error.message);
+          res.render('noShade',{
+            title: "shademap",
+            css: ['noShade.css'],
+            js: ['noShade.js']
+          });
+        }
+    } else {
+      res.render('noShade',{
+        title: 'shademap',
+        css: ['noShade.css'],
+        js: ['noShade.js']
+      });
+    }
+})
 
 app.get("/about", (req, res) => {
   if (!req.session.authenticated) {
