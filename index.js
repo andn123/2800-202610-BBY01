@@ -571,15 +571,34 @@ app.get("/api/posts", async (req, res) => {
 });
 
 // Events page route
-app.get("/events", (req, res) => {
+app.get("/events", async (req, res) => {
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
+
+  const user = await userCollection.findOne({
+    email: req.session.email,
+  });
+
+  if (!user) {
+    req.session.destroy();
+    return res.redirect("/login");
+  }
+
+  const firstTimeMode = user.firstTimeMode !== false;
+
   res.render("events", {
     title: "Events",
     css: ["events.css", "style.css"],
     js: ["events.js"],
+    navbar: true,
+    guideMode: firstTimeMode,
+    user: {
+      name: user.username || "User",
+      email: user.email || "",
+      firstTimeMode: firstTimeMode,
+    },
   });
 });
 
