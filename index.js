@@ -1,12 +1,6 @@
 require("./utils.js");
 require("dotenv").config();
-const {
-  isPark,
-  findShelter,
-  findTrees,
-  findAmenities,
-  parkBoundary,
-} = require("./public/js/shadeServer");
+const {isPark,findShelter,findTrees,findAmenities, parkBoundary} = require("./public/js/shadeServer");
 const { ObjectId } = require("mongodb");
 const express = require("express");
 const session = require("express-session");
@@ -205,21 +199,9 @@ app.get("/shademap", async (req, res) => {
   if (park.boolean) {
     try {
       const bounds = await parkBoundary(req.query.lat, req.query.lon);
-      const amenities = await findAmenities(
-        req.query.lat,
-        req.query.lon,
-        bounds.boundsOverpass,
-      );
-      const trees = await findTrees(
-        req.query.lat,
-        req.query.lon,
-        bounds.boundsTrees,
-      );
-      const shelter = await findShelter(
-        req.query.lat,
-        req.query.lon,
-        bounds.boundsOverpass,
-      );
+      const amenities = await findAmenities(req.query.lat,req.query.lon, bounds.boundsOverpass);
+      const trees = await findTrees(req.query.lat,req.query.lon,bounds.boundsTrees);
+      const shelter = await findShelter(req.query.lat, req.query.lon, bounds.boundsOverpass);
       const parkName = park.name;
       const result = await userCollection.findOne(
         { email: req.session.email },
