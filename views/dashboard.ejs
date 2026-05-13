@@ -35,12 +35,33 @@
     <section class="profile-weather-section">
 
       <div class="profile-img-wrap">
-        <img 
-          src="<%= user.profileImage || '/img/mountain-profile.jpg' %>" 
-          alt="Profile image" 
-          class="profile-img"
-        />
-      </div>
+  <img 
+    src="<%= user.profileImage %>" 
+    alt="Profile image" 
+    class="profile-img"
+    id="currentProfileImage"
+  />
+</div>
+
+<button type="button" id="changeProfileBtn" class="change-profile-btn">
+  Change Profile Picture
+</button>
+
+<div class="profile-picker" id="profilePicker">
+  <h3>Choose Profile Picture</h3>
+
+  <div class="profile-options">
+    <% profileImages.forEach((image) => { %>
+      <button 
+        type="button" 
+        class="profile-option <%= user.profileImage === image ? 'selected' : '' %>"
+        data-image="<%= image %>"
+      >
+        <img src="<%= image %>" alt="Profile option">
+      </button>
+    <% }) %>
+  </div>
+</div>
 
       <!-- Weather location from API -->
       <p class="location" id="weatherLocation">Loading location...</p>

@@ -441,6 +441,9 @@ function showTab(tab, event) {
       return;
     }
 
+    // Sort by most recent first
+    currentPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
     panelContent.innerHTML = currentPosts
       .map((post) => {
         const color = ENV_COLORS[post.environment] || "#6C757D";

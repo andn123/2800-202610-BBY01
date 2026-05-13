@@ -36,6 +36,19 @@ const userCollection = database.db(mongodb_user_database).collection("users");
 const postsCollection = database.db(mongodb_database).collection("posts");
 
 const genAI = new GoogleGenAI({ apiKey: gemini_api_key });
+const profileImages = [
+  "/img/profile1.png",
+  "/img/profile2.png",
+  "/img/profile3.png",
+  "/img/profile4.png",
+  "/img/profile5.png",
+  "/img/profile6.png",
+];
+
+function getRandomProfileImage() {
+  const randomIndex = Math.floor(Math.random() * profileImages.length);
+  return profileImages[randomIndex];
+}
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -322,9 +335,6 @@ app.post("/loggingin", async (req, res) => {
     req.session.email = email;
     req.session.username = result[0].username;
     req.session.cookie.maxAge = expireTime;
-    if (typeof req.session.guideMode === "undefined") {
-      req.session.guideMode = true;
-    }
 
     res.redirect("/dashboard");
     return;
@@ -399,6 +409,8 @@ app.post("/signingup", async (req, res) => {
     username: username,
     email: email,
     password: hashedPassword,
+    profileImage: getRandomProfileImage(),
+    firstTimeMode: true,
   });
 
   req.session.authenticated = true;
@@ -561,15 +573,34 @@ app.get("/api/posts", async (req, res) => {
 });
 
 // Events page route
-app.get("/events", (req, res) => {
+app.get("/events", async (req, res) => {
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
+
+  const user = await userCollection.findOne({
+    email: req.session.email,
+  });
+
+  if (!user) {
+    req.session.destroy();
+    return res.redirect("/login");
+  }
+
+  const firstTimeMode = user.firstTimeMode !== false;
+
   res.render("events", {
     title: "Events",
     css: ["events.css", "style.css"],
     js: ["events.js"],
+    navbar: true,
+    guideMode: firstTimeMode,
+    user: {
+      name: user.username || "User",
+      email: user.email || "",
+      firstTimeMode: firstTimeMode,
+    },
   });
 });
 
@@ -675,39 +706,120 @@ app.get("/api/dashboard-weather", async (req, res) => {
     });
   }
 });
-app.get("/dashboard", (req, res) => {
-  if (!req.session.authenticated) {
-    res.redirect("/login");
-    return;
-  }
+app.get("/dashboard", async (req, res) => {
+  try {
+    if (!req.session.authenticated) {
+      res.redirect("/login");
+      return;
+    }
 
-  res.render("dashboard", {
-    title: "Dashboard",
-    css: ["dashboard.css", "style.css"],
-    js: ["dashboard.js"],
-    navbar: true,
-    guideMode: req.session.guideMode !== false,
-    user: {
-      name: req.session.username || "User",
-      email: req.session.email || "",
-      profileImage: "/img/mountain-profile.jpg",
-    },
-  });
+    let user = await userCollection.findOne({
+      email: req.session.email,
+    });
+
+    if (!user) {
+      req.session.destroy();
+      return res.redirect("/login");
+    }
+
+    if (!user.profileImage) {
+      const randomProfileImage = getRandomProfileImage();
+
+      await userCollection.updateOne(
+        { email: req.session.email },
+        { $set: { profileImage: randomProfileImage } },
+      );
+
+      user.profileImage = randomProfileImage;
+    }
+
+    const firstTimeMode = user.firstTimeMode !== false;
+
+    res.render("dashboard", {
+      title: "Dashboard",
+      css: ["dashboard.css", "style.css"],
+      js: ["dashboard.js"],
+      navbar: true,
+      guideMode: firstTimeMode,
+      profileImages: profileImages,
+      user: {
+        name: user.username || "User",
+        email: user.email || "",
+        profileImage: user.profileImage,
+        firstTimeMode: firstTimeMode,
+      },
+    });
+  } catch (err) {
+    console.error("Dashboard error:", err);
+    res.status(500).send("Server error loading dashboard");
+  }
 });
-app.post("/guide-mode", (req, res) => {
-  if (!req.session.authenticated) {
-    return res.status(401).json({
+
+app.post("/profile-picture", async (req, res) => {
+  try {
+    if (!req.session.authenticated) {
+      return res.status(401).json({
+        success: false,
+        message: "Not logged in",
+      });
+    }
+
+    const { profileImage } = req.body;
+
+    if (!profileImages.includes(profileImage)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid profile image",
+      });
+    }
+
+    await userCollection.updateOne(
+      { email: req.session.email },
+      { $set: { profileImage: profileImage } },
+    );
+
+    res.json({
+      success: true,
+      profileImage: profileImage,
+    });
+  } catch (err) {
+    console.error("Profile picture update error:", err);
+    res.status(500).json({
       success: false,
-      message: "Not logged in",
+      message: "Server error updating profile picture",
     });
   }
+});
 
-  req.session.guideMode = req.body.guideMode === true;
+app.post("/guide-mode", async (req, res) => {
+  try {
+    if (!req.session.authenticated) {
+      return res.status(401).json({
+        success: false,
+        message: "Not logged in",
+      });
+    }
 
-  res.json({
-    success: true,
-    guideMode: req.session.guideMode,
-  });
+    const guideMode = req.body.guideMode === true;
+
+    await userCollection.updateOne(
+      { email: req.session.email },
+      { $set: { firstTimeMode: guideMode } },
+    );
+
+    req.session.guideMode = guideMode;
+
+    res.json({
+      success: true,
+      guideMode: guideMode,
+    });
+  } catch (err) {
+    console.error("Guide mode update error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error updating guide mode",
+    });
+  }
 });
 
 app.post("/chat", async (req, res) => {
