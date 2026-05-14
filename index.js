@@ -1013,6 +1013,65 @@ app.post("/chat", async (req, res) => {
   }
 });
 
+app.post("/shadeAI", async (req, res) => {
+  try {
+    const messages = req.body.messages;
+    const promptType = req.body.promptType;
+
+    if (!messages) {
+      return res.status(400).json({ error: "Message required" });
+    }
+
+    const serverPrompts = {
+      tree: {
+        role: "system",
+        content:`
+          Write 2-3 sentence description based on given tree information. Focus on explaining 
+          how a given tree can contribute to shade. Build description from its common name,
+          and scientific name, then use species trait like leaves and brancing pattern to explain
+          if it can provide useful shade. Plain text only, no markdown, and maximum 45 words.
+        `
+      },
+      spot: {
+        role: "system",
+        content:`
+          Write a 2-3 sentence description based on given information for a spot in a park. Focus 
+          on the possible shade from number of trees. Plain text only, no markdown, 
+          and maximum 45 words. Do not mention radius and tree characteristics. Refrain from 
+          mentioning downsides. In the user request, the values for number of trees, number of benches, 
+          and number of picnic table are category labels: none=0, low=1-2, medium=3-5, high=6+.
+        `
+      },
+    };
+
+    const serverPrompt = serverPrompts[promptType];
+
+    // Groq uses OpenAI-style format — prepend server prompt, no role conversion needed
+    const response = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      temperature: 0.5,
+      messages: [
+        serverPrompt,
+        ...messages.map((m) => ({
+          role: m.role, // "user" and "assistant" work as-is
+          content: m.content,
+        })),
+      ],
+    });
+
+    res.json({
+      reply: response.choices[0].message.content,
+    });
+  } catch (err) {
+    console.error("Full Groq Error:", err);
+    res.status(500).json({
+      error: "Groq request failed",
+      details: err.message,
+    });
+  }
+});
+
+
 app.get("/api/my-posts", async (req, res) => {
   if (!req.session.authenticated)
     return res.status(401).json({ error: "Not logged in" });
