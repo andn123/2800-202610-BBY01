@@ -504,11 +504,6 @@ function showTab(tab, event) {
       `;
       })
       .join("");
-  } else if (tab === "recent") {
-    panelContent.innerHTML = recentLocations.length
-      ? recentLocations.map((l) => `<p>🕒 ${l.name}</p>`).join("")
-      : `<p>No recent locations</p>
-      <div id="loading" class="loader"></div>`;
   } else if (tab === "ai") {
     // ── CHAT TAB ───────────────────────────────────────────────
     renderChat();
