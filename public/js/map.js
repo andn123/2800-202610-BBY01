@@ -66,7 +66,6 @@ console.log(locations);
 /* =======================
    GLOBAL STATE
 ======================= */
-let recentLocations = [];
 let hasInfo = false;
 let firstSystemPrompt = true;
 
@@ -157,9 +156,6 @@ map.on("load", () => {
     const lat = e.lngLat.lat;
     const lon = e.lngLat.lng;
     hasInfo = true;
-
-    recentLocations.unshift(f.properties);
-    recentLocations = recentLocations.slice(0, 10);
 
     if (window.innerWidth <= 768) {
       setPanelHeight(HALF);
@@ -504,11 +500,6 @@ function showTab(tab, event) {
       `;
       })
       .join("");
-  } else if (tab === "recent") {
-    panelContent.innerHTML = recentLocations.length
-      ? recentLocations.map((l) => `<p>🕒 ${l.name}</p>`).join("")
-      : `<p>No recent locations</p>
-      <div id="loading" class="loader"></div>`;
   } else if (tab === "ai") {
     // ── CHAT TAB ───────────────────────────────────────────────
     renderChat();
@@ -633,9 +624,6 @@ async function loadMarkers(data) {
       const lon = coords[0];
 
       hasInfo = true;
-
-      recentLocations.unshift(props);
-      recentLocations = recentLocations.slice(0, 10);
 
       if (window.innerWidth <= 768) {
         setPanelHeight(HALF);
