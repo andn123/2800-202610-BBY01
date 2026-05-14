@@ -42,6 +42,25 @@ const { database } = include("databaseConnection");
 const userCollection = database.db(mongodb_user_database).collection("users");
 const postsCollection = database.db(mongodb_database).collection("posts");
 
+const { GridFSBucket } = require("mongodb");
+const fs = require("fs");
+
+async function uploadToGridFS(filePath, filename) {
+  const bucket = new GridFSBucket(database.db(mongodb_database), {
+    bucketName: "uploads",
+  });
+  const readStream = fs.createReadStream(filePath);
+  const uploadStream = bucket.openUploadStream(filename);
+  readStream.pipe(uploadStream);
+  return new Promise((resolve, reject) => {
+    uploadStream.on("finish", () => {
+      fs.unlink(filePath, () => {}); // delete local file after upload
+      resolve(filename);
+    });
+    uploadStream.on("error", reject);
+  });
+}
+
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const profileImages = [
   "/img/profile1.png",
@@ -571,13 +590,13 @@ app.post("/post", upload.single("image"), async (req, res) => {
       success: null,
     });
   }
-
+  const gridFilename = await uploadToGridFS(imageFile.path, imageFile.filename);
   await postsCollection.insertOne({
     username: req.session.username,
     location,
     description,
     environment,
-    image: imageFile.filename,
+    image: gridFilename,
     lat: lat,
     lng: lng,
     createdAt: new Date(),
@@ -1002,6 +1021,19 @@ app.get("/api/my-posts", async (req, res) => {
     .sort({ createdAt: -1 })
     .toArray();
   res.json(posts);
+});
+
+app.get("/image/:filename", async (req, res) => {
+  try {
+    const bucket = new GridFSBucket(database.db(mongodb_database), {
+      bucketName: "uploads",
+    });
+    const stream = bucket.openDownloadStreamByName(req.params.filename);
+    stream.on("error", () => res.status(404).send("Image not found"));
+    stream.pipe(res);
+  } catch (err) {
+    res.status(500).send("Error loading image");
+  }
 });
 
 app.delete("/posts/:id", async (req, res) => {
