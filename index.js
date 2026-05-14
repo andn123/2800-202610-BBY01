@@ -1018,7 +1018,7 @@ app.delete("/posts/:id", async (req, res) => {
 });
 
 async function removeOldPosts() {
-  const cutoff = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+  const cutoff = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
   const result = await postsCollection.deleteMany({
     createdAt: { $lt: cutoff },
   });
@@ -1030,7 +1030,7 @@ async function removeOldPosts() {
 removeOldPosts();
 postsCollection.createIndex(
   { createdAt: 1 },
-  { expireAfterSeconds: 5 * 24 * 60 * 60 },
+  { expireAfterSeconds: 4 * 24 * 60 * 60 },
 );
 
 // Start server
