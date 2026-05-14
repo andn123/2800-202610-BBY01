@@ -1017,6 +1017,22 @@ app.delete("/posts/:id", async (req, res) => {
   res.json({ success: true });
 });
 
+async function removeOldPosts() {
+  const cutoff = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+  const result = await postsCollection.deleteMany({
+    createdAt: { $lt: cutoff },
+  });
+  if (result.deletedCount > 0) {
+    console.log(`Removed ${result.deletedCount} expired post(s)`);
+  }
+}
+
+removeOldPosts();
+postsCollection.createIndex(
+  { createdAt: 1 },
+  { expireAfterSeconds: 5 * 24 * 60 * 60 },
+);
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
