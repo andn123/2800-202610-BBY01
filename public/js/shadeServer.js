@@ -112,7 +112,7 @@ async function findTrees(lat, lng, bounds) {
     let currentOffset = 0;
     while(true){
         const treeQuery = new URLSearchParams({
-            select: "geom",
+            select: "common_name, genus_name, species_name, height_m, diameter_cm, geom",
             where: `within(geom, geom'POLYGON((${bounds}))')`,
             limit: "100",
             offset: String(currentOffset)
@@ -124,7 +124,6 @@ async function findTrees(lat, lng, bounds) {
         trees.forEach((tree, i) =>{
             treesArr.push(tree);
         })        
-
         if(data.results.length < 100) {
             console.log('Tree count: ' + treesArr.length)
             return treesArr;
