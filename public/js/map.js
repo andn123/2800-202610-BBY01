@@ -1,4 +1,5 @@
 const mapApi = window.mapApi;
+let firstTimeMode = window.firstTimeMode === "true";
 
 let markers = [];
 let markersVisible = true;
@@ -66,7 +67,6 @@ console.log(locations);
 /* =======================
    GLOBAL STATE
 ======================= */
-let recentLocations = [];
 let hasInfo = false;
 let firstSystemPrompt = true;
 
@@ -75,6 +75,7 @@ let unit = localStorage.getItem("tempUnit") || "C";
 let currentWeather = null;
 let currentLocationName = "";
 let currentProps = {};
+let chatMode = "simple";
 const circle = document.createElement("div");
 circle.className = "circle-marker";
 
@@ -157,9 +158,6 @@ map.on("load", () => {
     const lat = e.lngLat.lat;
     const lon = e.lngLat.lng;
     hasInfo = true;
-
-    recentLocations.unshift(f.properties);
-    recentLocations = recentLocations.slice(0, 10);
 
     if (window.innerWidth <= 768) {
       setPanelHeight(HALF);
@@ -567,13 +565,11 @@ function showGuide() {
 
   document.getElementById("closeGuide").addEventListener("click", () => {
     guide.remove();
-
-    localStorage.setItem("guideSeen", "true");
   });
 }
 
 /* show only first time */
-if (!localStorage.getItem("guideSeen")) {
+if (firstTimeMode) {
   setTimeout(showGuide, 1000);
 }
 
@@ -628,9 +624,6 @@ async function loadMarkers(data) {
       const lon = coords[0];
 
       hasInfo = true;
-
-      recentLocations.unshift(props);
-      recentLocations = recentLocations.slice(0, 10);
 
       if (window.innerWidth <= 768) {
         setPanelHeight(HALF);
@@ -701,6 +694,14 @@ function filterMarkers(env) {
       (m) => (m.getElement().style.display = ""),
     );
   }
+}
+
+function setChatMode(mode, btn) {
+  chatMode = mode;
+  document
+    .querySelectorAll(".chat-mode-btn")
+    .forEach((b) => b.classList.remove("active"));
+  btn.classList.add("active");
 }
 
 /* =======================
@@ -782,6 +783,11 @@ function renderChat() {
           .join("")}
       </div>
 
+      <div class="chat-mode-row">
+          <button class="chat-mode-btn active" data-mode="simple" onclick="setChatMode('simple', this)">Simple</button>
+          <button class="chat-mode-btn" data-mode="detailed" onclick="setChatMode('detailed', this)">Detailed</button>
+      </div>
+
       <div class="chat-input-row">
         <textarea
           class="chat-input"
@@ -857,21 +863,18 @@ async function sendChatMessage() {
     ? `The user is currently viewing: ${currentLocationName} (lat ${selectedLat}, lon ${selectedLon}).`
     : "";
 
-  const systemPrompt = `You are VanCooler, a friendly local guide for Vancouver, BC.
-Help users discover cool spots, outdoor activities, parks, cafés, events, and weather tips.
-Be concise (2-4 sentences), warm, and specific. No markdown formatting. Once you have greeted the user, do not need to greet again. ${locationContext}`;
+  const modeInstruction =
+    chatMode === "detailed"
+      ? `Give thorough, well-structured answers with context, tips, and background details. Use multiple sentences.`
+      : `Help users discover cool spots, outdoor activities, parks, cafés, events, and weather tips.
+Be concise (2-4 sentences), warm, and specific.`;
 
-  const systemMessage = {
-    role: "assistant",
-    content: systemPrompt,
-  };
+  const systemPrompt = `You are VanCooler, a friendly local guide for Vancouver, BC.
+${modeInstruction} No markdown formatting. Once you have greeted the user, do not need to greet again. ${locationContext}`;
 
   let messages = [...chatHistory.slice(-12)];
 
-  if (firstSystemPrompt) {
-    messages.unshift({ role: "user", content: systemPrompt });
-    firstSystemPrompt = false;
-  }
+  messages.push({ role: "user", content: systemPrompt });
 
   try {
     const res = await fetch("/chat", {

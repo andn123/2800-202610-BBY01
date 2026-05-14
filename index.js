@@ -159,6 +159,17 @@ app.get("/map", async (req, res) => {
 
   const posts = await postsCollection.find({}).toArray();
 
+  const user = await userCollection.findOne({
+    email: req.session.email,
+  });
+
+  if (!user) {
+    req.session.destroy();
+    return res.redirect("/login");
+  }
+
+  const firstTimeMode = user.firstTimeMode !== false;
+
   const url = `https://app.ticketmaster.com/discovery/v2/events.json?latlong=49.2827,-123.1207&radius=100&unit=km&size=200&sort=date,asc&apikey=${apiKey}`;
 
   try {
@@ -213,6 +224,7 @@ app.get("/map", async (req, res) => {
       css: ["map.css"],
       js: ["map.js"],
       navbar: false,
+      firstTimeMode: firstTimeMode,
     });
   } catch (err) {
     console.error(err);
