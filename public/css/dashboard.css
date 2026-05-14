@@ -815,3 +815,174 @@ body.guide-mode .profile-weather-section::after {
 .profile-option:hover {
   transform: scale(1.06);
 }
+/* ---------- Desktop website layout ---------- */
+@media (min-width: 901px) {
+  body {
+    background: #eef2f7;
+  }
+
+  .dashboard {
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    background:
+      radial-gradient(
+        circle at top center,
+        rgba(255, 255, 255, 0.98),
+        rgba(231, 238, 248, 0.96)
+      ),
+      linear-gradient(180deg, #ffffff, #eaf0f8);
+    padding-bottom: 70px;
+  }
+
+  .top-bar {
+    height: 72px;
+    padding: 0 56px;
+    justify-content: flex-end;
+  }
+
+  .guide-toggle-wrap {
+    font-size: 1.15rem;
+    gap: 14px;
+  }
+
+  .switch {
+    width: 64px;
+    height: 36px;
+  }
+
+  .slider::before {
+    width: 30px;
+    height: 30px;
+    top: 3px;
+    left: 3px;
+  }
+
+  .switch input:checked + .slider::before {
+    transform: translateX(28px);
+  }
+
+  .profile-weather-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 70px 40px 52px;
+  }
+
+  .profile-img-wrap {
+    width: 150px;
+    height: 150px;
+    padding: 7px;
+    margin-bottom: 22px;
+  }
+
+  .change-profile-btn {
+    margin-top: 10px;
+    padding: 8px 18px;
+    font-size: 0.9rem;
+  }
+
+  .location {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+  }
+
+  .user-name {
+    font-size: 3rem;
+    letter-spacing: -1px;
+    margin-bottom: 18px;
+  }
+
+  .temperature {
+    font-size: 4.5rem;
+    letter-spacing: -2px;
+  }
+
+  .sun-icon {
+    font-size: 2.5rem;
+  }
+
+  .condition {
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+  }
+
+  .forecast-row {
+    font-size: 1rem;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+
+  .logout-btn {
+    min-width: 140px;
+    height: 54px;
+    font-size: 1.25rem;
+    border-width: 2px;
+    border-radius: 10px;
+  }
+
+  .dashboard-cards {
+    width: min(92%, 1100px);
+    margin: 28px auto 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .dashboard-card {
+    min-height: 190px;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    justify-items: center;
+    text-align: center;
+    padding: 28px 22px;
+    border-radius: 26px;
+  }
+
+  .card-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 1.7rem;
+  }
+
+  .card-content h2 {
+    font-size: 1.35rem;
+    margin-bottom: 8px;
+  }
+
+  .card-content p {
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .card-arrow {
+    font-size: 2.4rem;
+  }
+
+  .my-posts-section {
+    width: min(92%, 1100px);
+    max-width: 1100px;
+    padding: 34px 0;
+    margin: 0 auto 50px;
+  }
+
+  .my-posts-section h2 {
+    font-size: 1.7rem;
+    margin-bottom: 18px;
+  }
+
+  .my-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .my-post-card {
+    flex-direction: column;
+    min-height: 260px;
+  }
+
+  .my-post-img {
+    width: 100%;
+    height: 170px;
+  }
+}
