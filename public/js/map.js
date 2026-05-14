@@ -1,4 +1,5 @@
 const mapApi = window.mapApi;
+let firstTimeMode = window.firstTimeMode === "true";
 
 let markers = [];
 let markersVisible = true;
@@ -564,13 +565,11 @@ function showGuide() {
 
   document.getElementById("closeGuide").addEventListener("click", () => {
     guide.remove();
-
-    localStorage.setItem("guideSeen", "true");
   });
 }
 
 /* show only first time */
-if (!localStorage.getItem("guideSeen")) {
+if (firstTimeMode) {
   setTimeout(showGuide, 1000);
 }
 

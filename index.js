@@ -19,7 +19,7 @@ const saltRounds = 10;
 const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
 const multer = require("multer");
-const { GoogleGenAI } = require("@google/genai");
+const Groq = require("groq-sdk");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -42,7 +42,7 @@ const { database } = include("databaseConnection");
 const userCollection = database.db(mongodb_user_database).collection("users");
 const postsCollection = database.db(mongodb_database).collection("posts");
 
-const genAI = new GoogleGenAI({ apiKey: gemini_api_key });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const profileImages = [
   "/img/profile1.png",
   "/img/profile2.png",
@@ -110,6 +110,37 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+const signupAttemptsCollection = database
+  .db(mongodb_database)
+  .collection("signupAttempts");
+
+async function signupLimiter(req, res, next) {
+  const raw =
+    req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+  const ip = require("crypto").createHash("sha256").update(raw).digest("hex");
+  const now = new Date();
+  const cutoff = new Date(now - 24 * 60 * 60 * 1000);
+
+  const count = await signupAttemptsCollection.countDocuments({
+    ip: ip,
+    createdAt: { $gt: cutoff },
+  });
+
+  if (count >= 2) {
+    return res.render("signUp", {
+      title: "Sign Up",
+      css: ["style.css", "SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage:
+        "Too many accounts created from this IP. Please try again tomorrow.",
+      navbar: false,
+    });
+  }
+
+  await signupAttemptsCollection.insertOne({ ip: ip, createdAt: now });
+  next();
+}
+
 // Home route
 app.get("/", (req, res) => {
   res.render("index", {
@@ -127,6 +158,17 @@ app.get("/map", async (req, res) => {
   const apiKey = process.env.TICKETMASTER_API_KEY;
 
   const posts = await postsCollection.find({}).toArray();
+
+  const user = await userCollection.findOne({
+    email: req.session.email,
+  });
+
+  if (!user) {
+    req.session.destroy();
+    return res.redirect("/login");
+  }
+
+  const firstTimeMode = user.firstTimeMode !== false;
 
   const url = `https://app.ticketmaster.com/discovery/v2/events.json?latlong=49.2827,-123.1207&radius=100&unit=km&size=200&sort=date,asc&apikey=${apiKey}`;
 
@@ -182,6 +224,7 @@ app.get("/map", async (req, res) => {
       css: ["map.css"],
       js: ["map.js"],
       navbar: false,
+      firstTimeMode: firstTimeMode,
     });
   } catch (err) {
     console.error(err);
@@ -400,7 +443,7 @@ app.get("/signup", (req, res) => {
   });
 });
 
-app.post("/signingup", async (req, res) => {
+app.post("/signingup", signupLimiter, async (req, res) => {
   const { username, email, password } = req.body;
 
   const schema = Joi.object({
@@ -461,11 +504,8 @@ app.post("/signingup", async (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  req.session.destroy();
-  res.redirect("/login");
-  res.render("index", {
-    currentPage: "home",
-    navbar: false,
+  req.session.destroy(() => {
+    res.redirect("/login");
   });
 });
 
@@ -922,25 +962,22 @@ app.post("/chat", async (req, res) => {
       return res.status(400).json({ error: "Message required" });
     }
 
-    const formatted = messages.map((m) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
-    }));
-
-    // Call the correct SDK syntax
-    const response = await genAI.models.generateContent({
-      model: "gemini-2.5-flash-lite", // gemini-2.5-flash is recommended for general text tasks
-      contents: formatted,
+    // Groq uses OpenAI-style format — no role conversion needed
+    const response = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: messages.map((m) => ({
+        role: m.role, // "user" and "assistant" work as-is
+        content: m.content,
+      })),
     });
 
-    // Send back the property string
     res.json({
-      reply: response.text,
+      reply: response.choices[0].message.content,
     });
   } catch (err) {
-    console.error("Full Gemini Error:", err);
+    console.error("Full Groq Error:", err);
     res.status(500).json({
-      error: "Gemini request failed",
+      error: "Groq request failed",
       details: err.message,
     });
   }
