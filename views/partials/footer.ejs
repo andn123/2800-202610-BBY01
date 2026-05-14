@@ -32,8 +32,6 @@
         <% } %>
 
 
-  <% if (typeof js !== "undefined" && Array.isArray(js)) { %>
   <% js.forEach(file => { %>
-    <script src="/js/<%= file %>"></script>
-  <% }) %>
-<% } %>
+  <script src="/js/<%= file %>"></script>
+<% }) %>
