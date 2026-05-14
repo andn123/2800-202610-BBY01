@@ -144,8 +144,8 @@ function spotClickHandler(map, treeArr, shelterArr) {
             }
         });
 
-        // Erases guide card if it exists.
-        // view card is dispaly: none as default.
+        // Erases guide card if it exists after click.
+        // view card is displays none as default.
         document.getElementById('firstTimeView')?.style.setProperty('display', 'none');
         document.getElementById('view').style.setProperty ('display', 'block');
 
@@ -160,9 +160,33 @@ function spotClickHandler(map, treeArr, shelterArr) {
 }
 
 /**
+ * Handles click events for tree markesr
+ */
+function treeClickHandler(treeArr) {
+    treeArr.forEach(tree => {
+        // clears old marker handlers if it exists.
+        tree.marker.off('click');
+        tree.marker.on('click', function(e) {
+            //commonName: tree.common_name;
+            //genus_name: tree.genus_name,
+            //species_name: tree.species_name,
+            //height_name: tree.height_name,
+            //diameter_cm: tree.diameter_cm, 
+            document.getElementById('treeName').textContent = tree.common_name;
+
+            // Erases guide card if it exists after click.
+            // view card is displays none as default.
+            document.getElementById('firstTimeView')?.style.setProperty('display', 'none');
+            document.getElementById('view').style.setProperty ('display', 'block');
+            console.log('A tree has been clicked');
+        });
+    });
+}
+
+/**
  * 
  */
-function spotMode(map, treeArr, handler) {
+function spotMode(map, treeArr, spotClickHandler) {
     treeArr.forEach(tree => {
         tree.marker.getElement()?.classList.add('no-pointer');
     });
@@ -174,6 +198,8 @@ function spotMode(map, treeArr, handler) {
         element.style.setProperty('display', 'none');
     })
 
+    // checks if firstTimeView is enabled
+    // displayes guide card first
     if(document.getElementById('firstTimeView')) {
         document.getElementById('firstTimeView')?.style.setProperty('display', 'block');
         document.getElementById('view').style.setProperty ('display', 'none');
@@ -183,12 +209,18 @@ function spotMode(map, treeArr, handler) {
 
     // Removes an existing click handler if it exists before attaching 
     // a click handler.
-    map.off('click', handler);
-    map.on('click', handler);
+    map.off('click', spotClickHandler);
+    map.on('click', spotClickHandler);
+
+    // Loops through tree markers and disables click events
+    treeArr.forEach(tree =>{
+        tree.marker.off('click');
+    });
 }
 
 
-function treeMode(map, treeArr, handler) {
+function treeMode(map, treeArr, spotClickHandler) {
+    //console.log(treeArr);
     treeArr.forEach(tree => {
         tree.marker.getElement()?.classList.remove('no-pointer');
     });
@@ -201,29 +233,31 @@ function treeMode(map, treeArr, handler) {
     })
 
     if(document.getElementById('firstTimeView')) {
+        console.log('First time view displayed!!!')
         document.getElementById('firstTimeView')?.style.setProperty('display', 'block');
         document.getElementById('view').style.setProperty ('display', 'none');
     } else {
         document.getElementById('view').style.setProperty ('display', 'block');
     }
 
-    map.off('click', handler);
+    // Handles event related features for treeMode
+    map.off('click', spotClickHandler);
+    treeClickHandler(treeArr);
 }
 
 /**
  * 
  */
-function switchMode(map, treeArr, handler) {
+function switchMode(map, treeArr, spotClickHandler) {
     const treeModeBtn = document.getElementById('tree-mode');
     const spotModeBtn = document.getElementById('spot-mode');
 
     spotModeBtn.addEventListener('click', function() {
-        spotMode(map, treeArr, handler);
+        spotMode(map, treeArr, spotClickHandler);
     });
 
     treeModeBtn.addEventListener('click', function() {
-        
-        treeMode(map, treeArr, handler);
+        treeMode(map, treeArr, spotClickHandler);
     });
 }
 
@@ -251,12 +285,16 @@ function initShadeMap() {
         subdomains: 'abcd'
     }).addTo(map)
 
-    const handler = spotClickHandler(map, treeArr, shelterArr);
+    const spotHandler = spotClickHandler(map, treeArr, shelterArr);
     const icons = createMarkers();
 
     populateShadeMap(map, icons, treeArr, shelterArr);
-    spotMode(map, treeArr, handler);
-    switchMode(map, treeArr, handler);
+
+    // Default mode
+    spotMode(map, treeArr, spotHandler);
+
+    // Allows switching to and from treeMode
+    switchMode(map, treeArr, spotHandler, treeClickHandler);
 
     document.getElementById('backBtn').addEventListener('click', function (e){
         location.href = '/map';

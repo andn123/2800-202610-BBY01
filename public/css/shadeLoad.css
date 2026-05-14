@@ -5,24 +5,9 @@ body {
     height: 100vh; 
 }
 
-.no-pointer { pointer-events: none; }
-
-.circle-fade {
-    transition: stroke-opacity 1s, fill-opacity 1s;
-    stroke-opacity: 0;
-    fill-opacity: 0;
-}
-
 .shade-card{
     z-index: 1000;
     bottom: 80px;
-}
-
-#view {
-    display: none;
-}
-#firstTimeView {
-    display: none;
 }
 
 #backBtn {
@@ -40,8 +25,4 @@ body {
     width: 24px;
     height: 24px;
     object-fit: contain;
-}
-
-.mode-button {
-    z-index: 1000;
 }
