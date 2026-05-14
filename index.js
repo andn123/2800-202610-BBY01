@@ -12,7 +12,7 @@ const express = require("express");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 require("dotenv").config();
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const Joi = require("joi");
 const { title } = require("node:process");
 const saltRounds = 10;
