@@ -296,17 +296,18 @@ body {
     font-size: 13px;
   }
 
-  .event-action {
+   .event-action {
     grid-column: 1 / -1;
   }
-  .location-search-box {
-  flex-direction: column;
-}
 
-.address-search-btn {
-  width: 100%;
-  font-size: 16px;
-}
+  .location-search-box {
+    flex-direction: column;
+  }
+
+  .address-search-btn {
+    width: 100%;
+    font-size: 16px;
+  }
 
   .event-action a {
     width: 100%;
@@ -546,5 +547,69 @@ body {
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+/* ---------- Desktop proportional layout fix ---------- */
+
+.events-page {
+  width: 100%;
+  padding: 28px 16px 120px;
+}
+
+.events-header,
+.events-container,
+.status-box,
+.location-search-box {
+  width: min(100%, 1100px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sort-dropdown {
+  width: min(100%, 1100px);
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 12px;
+}
+
+.event-search,
+.sort-button {
+  width: 100%;
+}
+
+.location-search-box {
+  margin-top: 12px;
+}
+
+/* Keep input/button nicely aligned */
+.address-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.address-search-btn {
+  flex-shrink: 0;
+}
+
+/* ---------- Mobile layout ---------- */
+@media (max-width: 700px) {
+  .events-page {
+    padding: 22px 10px 120px;
+  }
+
+  .events-header,
+  .events-container,
+  .status-box,
+  .sort-dropdown,
+  .location-search-box {
+    width: 100%;
+  }
+
+  .location-search-box {
+    flex-direction: column;
+  }
+
+  .address-search-btn {
+    width: 100%;
   }
 }
