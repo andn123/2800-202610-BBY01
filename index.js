@@ -192,7 +192,7 @@ app.get("/map", async (req, res) => {
 app.get("/shademapLoad", async (req, res) => {
   res.render("shademapLoad", {
     title: "loading",
-    css: ["shade.css"],
+    css: ["shadeLoad.css"],
     js: ["shadeLoad.js"],
     latitude: req.query.lat,
     longitude: req.query.lon,
