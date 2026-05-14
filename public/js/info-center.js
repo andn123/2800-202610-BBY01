@@ -11,32 +11,32 @@ const recommendations = [
   {
     label: "Search Events",
     keywords: ["search", "events", "find events", "event search"],
-    route: "/help-center#search-events",
+    route: "/info-center#search-events",
   },
   {
     label: "Change Location",
     keywords: ["location", "city", "address", "change location"],
-    route: "/help-center#change-location",
+    route: "/info-center#change-location",
   },
   {
     label: "Sort Events",
     keywords: ["sort", "filter", "date", "organize"],
-    route: "/help-center#sort-events",
+    route: "/info-center#sort-events",
   },
   {
     label: "Weather-Based Events",
     keywords: ["weather", "rain", "indoor", "outdoor", "recommendations"],
-    route: "/help-center#weather-events",
+    route: "/info-center#weather-events",
   },
   {
     label: "Create Posts",
     keywords: ["post", "create post", "social spot", "submit post"],
-    route: "/help-center#create-posts",
+    route: "/info-center#create-posts",
   },
   {
     label: "View Map",
     keywords: ["map", "places", "markers", "activity spots"],
-    route: "/help-center#view-map",
+    route: "/info-center#view-map",
   },
 ];
 
