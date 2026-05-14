@@ -815,3 +815,182 @@ body.guide-mode .profile-weather-section::after {
 .profile-option:hover {
   transform: scale(1.06);
 }
+/* ---------- Desktop layout fix ---------- */
+@media (min-width: 768px) {
+  body {
+    background: #eef2f7;
+  }
+
+  .dashboard {
+    width: 430px;
+    max-width: 430px;
+    min-height: 100vh;
+    margin: 0 auto;
+    background:
+      radial-gradient(
+        circle at top center,
+        rgba(255, 255, 255, 0.98),
+        rgba(231, 238, 248, 0.96)
+      ),
+      linear-gradient(180deg, #ffffff, #eaf0f8);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
+    overflow-x: hidden;
+  }
+
+  .top-bar {
+    width: 100%;
+    height: 58px;
+    padding: 0 14px;
+    transform: none;
+  }
+
+  .guide-toggle-wrap {
+    font-size: 0.95rem;
+    gap: 12px;
+  }
+
+  .switch {
+    width: 46px;
+    height: 28px;
+  }
+
+  .slider::before {
+    width: 24px;
+    height: 24px;
+    top: 2px;
+    left: 2px;
+  }
+
+  .switch input:checked + .slider::before {
+    transform: translateX(18px);
+  }
+
+  .profile-weather-section {
+    padding: 28px 14px 28px;
+  }
+
+  .profile-img-wrap {
+    width: 118px;
+    height: 118px;
+    padding: 5px;
+    margin-bottom: 18px;
+  }
+
+  .change-profile-btn {
+    margin-top: 8px;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+  }
+
+  .location {
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+  }
+
+  .user-name {
+    font-size: 1.5rem;
+    letter-spacing: 0;
+    margin-bottom: 8px;
+  }
+
+  .weather-main {
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+
+  .temperature {
+    font-size: 2.5rem;
+    letter-spacing: -1px;
+  }
+
+  .sun-icon {
+    font-size: 1.5rem;
+  }
+
+  .condition {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .forecast-row {
+    font-size: 0.65rem;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+
+  .small-weather-icon {
+    font-size: 0.85rem;
+  }
+
+  .forecast-divider {
+    height: 14px;
+    width: 1px;
+  }
+
+  .logout-btn {
+    min-width: 92px;
+    height: 38px;
+    font-size: 0.95rem;
+    border-width: 1.5px;
+    border-radius: 7px;
+  }
+
+  .dashboard-cards {
+    width: calc(100% - 20px);
+    margin: 0 auto;
+    gap: 14px;
+  }
+
+  .dashboard-card {
+    min-height: 88px;
+    grid-template-columns: 44px 1fr 18px;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .card-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .card-content h2 {
+    font-size: 1rem;
+    margin-bottom: 3px;
+  }
+
+  .card-content p {
+    font-size: 0.72rem;
+  }
+
+  .card-arrow {
+    font-size: 2rem;
+  }
+
+  .my-posts-section {
+    width: calc(100% - 40px);
+    max-width: 390px;
+    padding: 20px 0;
+    margin: 0 auto 40px auto;
+  }
+
+  .my-posts-section h2 {
+    font-size: 1.25rem;
+  }
+
+  .my-post-card {
+    flex-direction: column;
+    padding: 14px;
+  }
+
+  .my-post-img {
+    width: 100%;
+    height: 160px;
+  }
+
+  .my-post-info p {
+    font-size: 0.9rem;
+  }
+}
