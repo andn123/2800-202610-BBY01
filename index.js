@@ -353,7 +353,7 @@ app.get("/weatherapi", async (req, res) => {
 
 app.get("/login", (req, res) => {
   if (req.session.authenticated) {
-    res.redirect("/");
+    res.redirect("/dashboard");
     return;
   }
   res.render("LogIn", {
