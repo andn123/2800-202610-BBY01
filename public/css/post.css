@@ -1,85 +1,177 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f9;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #eef0f7;
   margin: 0;
   padding: 0;
 }
 
-h1 {
-  margin-bottom: 20px;
-  color: #333;
-}
-
 .container {
-  width: 350px;
-  margin: 80px auto;
+  width: 420px;
+  margin: 60px auto;
   background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  padding: 36px 40px;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
   text-align: center;
 }
 
-input {
-  width: 90%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-}
-
-button {
-  width: 95%;
-  padding: 12px;
-  margin-top: 10px;
-  background: #4a6cf7;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #3b57d6;
-}
-
-.error {
-  color: red;
-  margin-top: 10px;
-  font-size: 14px;
-}
-
-.success {
-  color: green;
-  margin-top: 10px;
-  font-size: 15px;
-  font-weight: bold;
+h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 24px;
 }
 
 .input-label {
   display: block;
   text-align: left;
-  width: 90%;
-  margin: 12px auto 4px auto;
-  font-size: 14px;
+  width: 100%;
+  margin: 14px 0 5px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  padding: 10px 14px;
+  margin: 0;
+  border-radius: 8px;
+  border: 1.5px solid #dde1f0;
+  font-size: 14px;
+  color: #333;
+  background: #f9faff;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  outline: none;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+  border-color: #4a6cf7;
+  box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.12);
+  background: #fff;
+}
+
+textarea {
+  height: 90px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px dashed #c0c8ef;
+  font-size: 13px;
+  color: #555;
+  background: #f4f6ff;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+input[type="file"]:hover {
+  border-color: #4a6cf7;
+  background: #eef1ff;
 }
 
 .radio-group {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 90%;
-  margin: 6px auto 12px auto;
-  gap: 8px;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  margin: 6px 0 14px 0;
+  gap: 16px;
 }
 
 .radio-group label {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 15px;
+  font-size: 14px;
+  color: #444;
   cursor: pointer;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #dde1f0;
+  transition: all 0.2s;
+}
+
+.radio-group label:has(input:checked) {
+  border-color: #4a6cf7;
+  background: #eef1ff;
+  color: #4a6cf7;
+  font-weight: 600;
+}
+
+.radio-group input[type="radio"] {
+  accent-color: #4a6cf7;
+  width: 15px;
+  height: 15px;
+}
+
+.expiry-notice {
+  width: 100%;
+  margin: 10px 0 6px 0;
+  padding: 8px 12px;
+  background: #fff8e1;
+  border-left: 4px solid #f0a500;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  color: #7a5c00;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 12px;
+  background: #4a6cf7;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.1s;
+}
+
+button:hover {
+  background: #3b57d6;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.error {
+  color: #d32f2f;
+  margin-top: 10px;
+  font-size: 13px;
+  background: #fff0f0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #d32f2f;
+  text-align: left;
+}
+
+.success {
+  color: #2e7d32;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f0fff4;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #2e7d32;
+  text-align: left;
 }
