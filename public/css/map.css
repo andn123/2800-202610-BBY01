@@ -312,6 +312,37 @@ body {
   font-weight: bold;
 }
 
+.chat-mode-row {
+  display: flex;
+  gap: 8px;
+  padding: 6px 12px 2px;
+}
+
+.chat-mode-btn {
+  flex: 1;
+  border: 1.5px solid #e0e0e0;
+  background: #f8f9fa;
+  color: #888;
+  border-radius: 999px;
+  padding: 6px 0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chat-mode-btn:hover {
+  border-color: #4facfe;
+  color: #4facfe;
+}
+
+.chat-mode-btn.active {
+  background: linear-gradient(135deg, #4facfe, #00c6fb);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(79, 172, 254, 0.35);
+}
+
 @keyframes locationPulse {
   0% {
     box-shadow: 0 0 0 0px rgba(49, 130, 189, 0.7);

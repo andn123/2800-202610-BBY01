@@ -74,6 +74,7 @@ let unit = localStorage.getItem("tempUnit") || "C";
 let currentWeather = null;
 let currentLocationName = "";
 let currentProps = {};
+let chatMode = "simple";
 const circle = document.createElement("div");
 circle.className = "circle-marker";
 
@@ -696,6 +697,14 @@ function filterMarkers(env) {
   }
 }
 
+function setChatMode(mode, btn) {
+  chatMode = mode;
+  document
+    .querySelectorAll(".chat-mode-btn")
+    .forEach((b) => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
 /* =======================
    AI CHAT
 ======================= */
@@ -775,6 +784,11 @@ function renderChat() {
           .join("")}
       </div>
 
+      <div class="chat-mode-row">
+          <button class="chat-mode-btn active" data-mode="simple" onclick="setChatMode('simple', this)">Simple</button>
+          <button class="chat-mode-btn" data-mode="detailed" onclick="setChatMode('detailed', this)">Detailed</button>
+      </div>
+
       <div class="chat-input-row">
         <textarea
           class="chat-input"
@@ -850,21 +864,18 @@ async function sendChatMessage() {
     ? `The user is currently viewing: ${currentLocationName} (lat ${selectedLat}, lon ${selectedLon}).`
     : "";
 
-  const systemPrompt = `You are VanCooler, a friendly local guide for Vancouver, BC.
-Help users discover cool spots, outdoor activities, parks, cafés, events, and weather tips.
-Be concise (2-4 sentences), warm, and specific. No markdown formatting. Once you have greeted the user, do not need to greet again. ${locationContext}`;
+  const modeInstruction =
+    chatMode === "detailed"
+      ? `Give thorough, well-structured answers with context, tips, and background details. Use multiple sentences.`
+      : `Help users discover cool spots, outdoor activities, parks, cafés, events, and weather tips.
+Be concise (2-4 sentences), warm, and specific.`;
 
-  const systemMessage = {
-    role: "assistant",
-    content: systemPrompt,
-  };
+  const systemPrompt = `You are VanCooler, a friendly local guide for Vancouver, BC.
+${modeInstruction} No markdown formatting. Once you have greeted the user, do not need to greet again. ${locationContext}`;
 
   let messages = [...chatHistory.slice(-12)];
 
-  if (firstSystemPrompt) {
-    messages.unshift({ role: "user", content: systemPrompt });
-    firstSystemPrompt = false;
-  }
+  messages.push({ role: "user", content: systemPrompt });
 
   try {
     const res = await fetch("/chat", {
