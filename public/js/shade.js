@@ -1,5 +1,38 @@
 //vancouver coords latitude:49.xxxxxx longitude:-123.xxxxxx
+// gemini uses user/model
 
+async function geminiTreeDetails(tree, treeDescriptionArr) {
+    //example: {name: pinetree, description: This tree is a...}, {name: ..., description: ...}, ...
+    // Should it be an array? or in localStorage? what is caching?
+    //const treeDescription = []; 
+    const prompt = `
+        Write 2-3 sentence description for ${tree.common_name}. Explain 
+        how ${tree.common_name} can contribute to shade, but not to estimate exact 
+        shade coverage. Build description from the the tree's common name and
+        scientific name, then use species traits like leaves and branching pattern
+        to explain the kind of shade it can provide. It's scientific name is 
+        ${tree.genus_name} ${tree.species_name}. Plain text only, no markdown.
+    `;
+
+    const response = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            messages: [
+                { role: 'user', content: prompt }
+            ]
+        })
+    });
+    const data = await response.json();
+    treeDescriptionArr.push({
+        tree: `${tree.genus_name} ${tree.species_name}`,
+        desc: data.reply
+    })
+
+    console.log(data.reply);
+    return data.reply;
+}
+//geminiTreeDetails();
 
 /**
  * Determines shade score based on tree count and existing shelter.
@@ -7,15 +40,14 @@
 function shadeScore(trees, shelter){
     if(shelter > 0) {
         return "high";
-    } else if (trees > 10){
+    } else if (trees > 10) {
         return "high";
-    } else if (trees > 2){
+    } else if (trees > 2) {
         return "medium";
     } else {
         return "low";
     }
 }
-
 
 /**
  * Creates markers for shademap
@@ -69,8 +101,8 @@ function populateShadeMap(map, icons, treeArr, shelterArr) {
             common_name: tree.common_name,
             genus_name: tree.genus_name,
             species_name: tree.species_name,
-            height_name: tree.height_name,
-            diameter_cm: tree.diameter_cm, 
+            //height_name: tree.height_name,
+            //diameter_cm: tree.diameter_cm, 
             lat: tree.geom.geometry.coordinates[1], 
             lng: tree.geom.geometry.coordinates[0],
             marker: treeMarker
@@ -160,19 +192,27 @@ function spotClickHandler(map, treeArr, shelterArr) {
 }
 
 /**
- * Handles click events for tree markesr
+ * Handles click events for tree markers
  */
-function treeClickHandler(treeArr) {
+function treeClickHandler(treeArr, treeDescriptionArr) {
     treeArr.forEach(tree => {
         // clears old marker handlers if it exists.
         tree.marker.off('click');
-        tree.marker.on('click', function(e) {
+        tree.marker.on('click', async function(e) {
             //commonName: tree.common_name;
             //genus_name: tree.genus_name,
             //species_name: tree.species_name,
             //height_name: tree.height_name,
-            //diameter_cm: tree.diameter_cm, 
+            //diameter_cm: tree.diameter_cm,
             document.getElementById('treeName').textContent = tree.common_name;
+            const species = tree.genus_name + " " + tree.species_name;
+            const cached = treeDescriptionArr.find(item => item.tree === species);
+            if(!cached) {
+                const reply = await geminiTreeDetails(tree, treeDescriptionArr);
+                document.getElementById('treeDescription').textContent = reply;
+            } else {
+                document.getElementById('treeDescription').textContent = cached.desc;
+            }
 
             // Erases guide card if it exists after click.
             // view card is displays none as default.
@@ -219,7 +259,7 @@ function spotMode(map, treeArr, spotClickHandler) {
 }
 
 
-function treeMode(map, treeArr, spotClickHandler) {
+function treeMode(map, treeArr, spotClickHandler, treeDescriptionArr) {
     //console.log(treeArr);
     treeArr.forEach(tree => {
         tree.marker.getElement()?.classList.remove('no-pointer');
@@ -242,13 +282,13 @@ function treeMode(map, treeArr, spotClickHandler) {
 
     // Handles event related features for treeMode
     map.off('click', spotClickHandler);
-    treeClickHandler(treeArr);
+    treeClickHandler(treeArr, treeDescriptionArr);
 }
 
 /**
  * 
  */
-function switchMode(map, treeArr, spotClickHandler) {
+function switchMode(map, treeArr, spotClickHandler, treeDescriptionArr) {
     const treeModeBtn = document.getElementById('tree-mode');
     const spotModeBtn = document.getElementById('spot-mode');
 
@@ -257,7 +297,7 @@ function switchMode(map, treeArr, spotClickHandler) {
     });
 
     treeModeBtn.addEventListener('click', function() {
-        treeMode(map, treeArr, spotClickHandler);
+        treeMode(map, treeArr, spotClickHandler, treeDescriptionArr);
     });
 }
 
@@ -265,6 +305,7 @@ function switchMode(map, treeArr, spotClickHandler) {
  * 
  */
 function initShadeMap() {
+    const treeDescriptionArr = [];
     const treeArr = [];
     const shelterArr = [];
     const amenitiesArr = [];
@@ -294,7 +335,7 @@ function initShadeMap() {
     spotMode(map, treeArr, spotHandler);
 
     // Allows switching to and from treeMode
-    switchMode(map, treeArr, spotHandler, treeClickHandler);
+    switchMode(map, treeArr, spotHandler, treeDescriptionArr);
 
     document.getElementById('backBtn').addEventListener('click', function (e){
         location.href = '/map';
