@@ -461,11 +461,8 @@ app.post("/signingup", async (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  req.session.destroy();
-  res.redirect("/login");
-  res.render("index", {
-    currentPage: "home",
-    navbar: false,
+  req.session.destroy(() => {
+    res.redirect("/login");
   });
 });
 
