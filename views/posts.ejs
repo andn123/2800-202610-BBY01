@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/css/posts.css">
+<%- include('partials/header', { title: title, css: css }) %>
 
 <div class="page-container">
   <% if (success) { %>
@@ -84,4 +84,4 @@
 
 </div>
 
-<script src="/js/posts.js"></script>
+<%- include('partials/footer', { js: js }) %>

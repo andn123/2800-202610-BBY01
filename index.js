@@ -209,7 +209,6 @@ app.get("/map", async (req, res) => {
       mapApi: mapApi,
       locations,
       title: "Map",
-      navbar: false,
       css: ["map.css"],
       js: ["map.js"],
       navbar: false,
@@ -503,6 +502,10 @@ app.get("/post", (req, res) => {
   }
 
   res.render("post", {
+    title: "Post",
+    css: ["post.css"],
+    js: ["create-post.js"],
+    navbar: false,
     error: null,
     success: null,
     mapApi: mapApi,
@@ -547,6 +550,10 @@ app.post("/post", upload.single("image"), async (req, res) => {
 
   if (!lat || !lng) {
     return res.render("post", {
+      title: "Post",
+      css: ["post.css"],
+      js: ["create-post.js"],
+      navbar: false,
       mapApi: mapApi,
       error: "Please select a valid location from the dropdown.",
       success: null,
@@ -614,6 +621,10 @@ app.get("/posts", async (req, res) => {
     .toArray();
 
   res.render("posts", {
+    title: "Posts",
+    css: ["posts.css"],
+    js: ["posts.js"],
+    navbar: false,
     posts,
     search,
     env,

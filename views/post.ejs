@@ -1,7 +1,7 @@
-<link rel="stylesheet" href="/css/post.css">
+<%- include('partials/header', { title: title, css: css }) %>
 
 <div class="container">
-  <h1>Create a Post</h1>
+  <h2>Create a Post</h2><br>
 
   <form method="post" action="/post" enctype="multipart/form-data">
 
@@ -52,4 +52,4 @@
   window.mapApi = "<%= mapApi %>";
 </script>
 
-<script src="/js/create-post.js"></script>
+<%- include('partials/footer', { js: js }) %>

@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
   let pendingDeleteId = null;
   let currentPage = 1;
-  const postsPerPage = 4;
+  const postsPerPage = 6;
   let allPosts = [];
 
   async function loadMyPosts() {
