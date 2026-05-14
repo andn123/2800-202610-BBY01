@@ -110,6 +110,37 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+const signupAttemptsCollection = database
+  .db(mongodb_database)
+  .collection("signupAttempts");
+
+async function signupLimiter(req, res, next) {
+  const raw =
+    req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+  const ip = require("crypto").createHash("sha256").update(raw).digest("hex");
+  const now = new Date();
+  const cutoff = new Date(now - 24 * 60 * 60 * 1000);
+
+  const count = await signupAttemptsCollection.countDocuments({
+    ip: ip,
+    createdAt: { $gt: cutoff },
+  });
+
+  if (count >= 2) {
+    return res.render("signUp", {
+      title: "Sign Up",
+      css: ["style.css", "SignUpLogIn.css"],
+      js: ["SignUpLogIn.js"],
+      errorMessage:
+        "Too many accounts created from this IP. Please try again tomorrow.",
+      navbar: false,
+    });
+  }
+
+  await signupAttemptsCollection.insertOne({ ip: ip, createdAt: now });
+  next();
+}
+
 // Home route
 app.get("/", (req, res) => {
   res.render("index", {
@@ -400,7 +431,7 @@ app.get("/signup", (req, res) => {
   });
 });
 
-app.post("/signingup", async (req, res) => {
+app.post("/signingup", signupLimiter, async (req, res) => {
   const { username, email, password } = req.body;
 
   const schema = Joi.object({
