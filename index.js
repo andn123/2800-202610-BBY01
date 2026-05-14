@@ -19,7 +19,7 @@ const saltRounds = 10;
 const weatherApi = process.env.WEATHER_API;
 const mapApi = process.env.MAP_API;
 const multer = require("multer");
-const { GoogleGenAI } = require("@google/genai");
+const Groq = require("groq-sdk");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -42,7 +42,7 @@ const { database } = include("databaseConnection");
 const userCollection = database.db(mongodb_user_database).collection("users");
 const postsCollection = database.db(mongodb_database).collection("posts");
 
-const genAI = new GoogleGenAI({ apiKey: gemini_api_key });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const profileImages = [
   "/img/profile1.png",
   "/img/profile2.png",
@@ -463,10 +463,6 @@ app.post("/signingup", async (req, res) => {
 app.post("/logout", (req, res) => {
   req.session.destroy();
   res.redirect("/login");
-  res.render("index", {
-    currentPage: "home",
-    navbar: false,
-  });
 });
 
 app.get("/post", (req, res) => {
@@ -922,25 +918,22 @@ app.post("/chat", async (req, res) => {
       return res.status(400).json({ error: "Message required" });
     }
 
-    const formatted = messages.map((m) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
-    }));
-
-    // Call the correct SDK syntax
-    const response = await genAI.models.generateContent({
-      model: "gemini-2.5-flash-lite", // gemini-2.5-flash is recommended for general text tasks
-      contents: formatted,
+    // Groq uses OpenAI-style format — no role conversion needed
+    const response = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: messages.map((m) => ({
+        role: m.role, // "user" and "assistant" work as-is
+        content: m.content,
+      })),
     });
 
-    // Send back the property string
     res.json({
-      reply: response.text,
+      reply: response.choices[0].message.content,
     });
   } catch (err) {
-    console.error("Full Gemini Error:", err);
+    console.error("Full Groq Error:", err);
     res.status(500).json({
-      error: "Gemini request failed",
+      error: "Groq request failed",
       details: err.message,
     });
   }
