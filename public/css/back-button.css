@@ -1,7 +1,7 @@
 /* Reusable Back Button */
 .back-btn {
   position: fixed;
-  z-index: 9999;
+  z-index: 10000;
 
   width: 54px;
   height: 54px;
@@ -13,15 +13,15 @@
   border-radius: 50%;
   text-decoration: none;
 
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.85);
 
   box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.22),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    0 10px 25px rgba(0, 0, 0, 0.22),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
 
   transition:
     transform 0.25s ease,
@@ -30,63 +30,73 @@
 }
 
 .back-btn img {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
   display: block;
 }
 
 .back-btn:hover {
   transform: translateY(-3px) scale(1.05);
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.98);
 
   box-shadow:
-    0 14px 32px rgba(0, 0, 0, 0.28),
+    0 14px 34px rgba(0, 0, 0, 0.3),
     inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
-/* Page-specific positions */
+/* -------------------------------
+   Page-specific positions
+-------------------------------- */
+
+/* Info Center */
 .back-btn.info-back {
   top: 100px;
   left: 28px;
 }
 
+/* Events */
 .back-btn.events-back {
   top: 24px;
   left: 24px;
 }
 
-/* Better map position: below the filter panel */
+/* Map page: below the filter/legend card */
 .back-btn.map-back {
   top: 138px;
   left: 24px;
 }
 
+/* Post page */
 .back-btn.post-back {
   top: 24px;
   left: 24px;
 }
 
+/* Posts page */
 .back-btn.posts-back {
   top: 24px;
   left: 24px;
 }
 
+/* About page */
 .back-btn.about-back {
   top: 24px;
   left: 24px;
 }
 
-/* Mobile */
+/* -------------------------------
+   Mobile
+-------------------------------- */
 @media (max-width: 600px) {
   .back-btn {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
   }
 
   .back-btn img {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
   }
 
   .back-btn.info-back {
@@ -102,9 +112,24 @@
     left: 14px;
   }
 
-  /* Mobile map: still below filter box */
+  /* Mobile map page: pushed below your legend card */
   .back-btn.map-back {
-    top: 128px;
-    left: 14px;
+    top: 145px;
+    left: 18px;
+
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(220, 220, 220, 0.95);
+
+    box-shadow:
+      0 8px 20px rgba(0, 0, 0, 0.24),
+      inset 0 1px 1px rgba(255, 255, 255, 1);
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 390px) {
+  .back-btn.map-back {
+    top: 150px;
+    left: 16px;
   }
 }
