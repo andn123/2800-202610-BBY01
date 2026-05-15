@@ -472,7 +472,7 @@ function showTab(tab, event) {
         <div class="card shadow-sm border-0 mb-3">
 
           <img
-            src="/uploads/${post.image}"
+            src="/image/${post.image}"
             class="card-img-top"
             style="height:250px; object-fit:cover;"
           >
