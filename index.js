@@ -234,16 +234,20 @@ app.get("/map", async (req, res) => {
         }),
     };
 
-    res.render("map", {
-      posts: posts,
-      mapApi: mapApi,
-      locations,
-      title: "Map",
-      css: ["map.css"],
-      js: ["map.js"],
-      navbar: false,
-      firstTimeMode: firstTimeMode,
-    });
+  res.render("map", {
+  posts: posts,
+  mapApi: mapApi,
+  locations,
+  title: "Map",
+  css: ["map.css", "back-button.css"],
+  js: ["map.js"],
+  navbar: false,
+  firstTimeMode: firstTimeMode,
+
+  backButton: true,
+  backButtonHref: "/dashboard",
+  backButtonClass: "map-back",
+});
   } catch (err) {
     console.error(err);
     res.send("Error fetching events");

@@ -1,0 +1,110 @@
+/* Reusable Back Button */
+.back-btn {
+  position: fixed;
+  z-index: 9999;
+
+  width: 54px;
+  height: 54px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  text-decoration: none;
+
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(255, 255, 255, 0.75);
+
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.22),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.back-btn img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+}
+
+.back-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  background: rgba(255, 255, 255, 0.97);
+
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
+}
+
+/* Page-specific positions */
+.back-btn.info-back {
+  top: 100px;
+  left: 28px;
+}
+
+.back-btn.events-back {
+  top: 24px;
+  left: 24px;
+}
+
+/* Better map position: below the filter panel */
+.back-btn.map-back {
+  top: 138px;
+  left: 24px;
+}
+
+.back-btn.post-back {
+  top: 24px;
+  left: 24px;
+}
+
+.back-btn.posts-back {
+  top: 24px;
+  left: 24px;
+}
+
+.back-btn.about-back {
+  top: 24px;
+  left: 24px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .back-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .back-btn img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .back-btn.info-back {
+    top: 90px;
+    left: 16px;
+  }
+
+  .back-btn.events-back,
+  .back-btn.post-back,
+  .back-btn.posts-back,
+  .back-btn.about-back {
+    top: 16px;
+    left: 14px;
+  }
+
+  /* Mobile map: still below filter box */
+  .back-btn.map-back {
+    top: 128px;
+    left: 14px;
+  }
+}
