@@ -825,8 +825,7 @@ app.get("/api/dashboard-weather", async (req, res) => {
 app.get("/dashboard", async (req, res) => {
   try {
     if (!req.session.authenticated) {
-      res.redirect("/login");
-      return;
+      return res.redirect("/login");
     }
 
     let user = await userCollection.findOne({
@@ -843,7 +842,7 @@ app.get("/dashboard", async (req, res) => {
 
       await userCollection.updateOne(
         { email: req.session.email },
-        { $set: { profileImage: randomProfileImage } },
+        { $set: { profileImage: randomProfileImage } }
       );
 
       user.profileImage = randomProfileImage;
