@@ -591,6 +591,26 @@ body.guide-mode .profile-weather-section::after {
 
 /* Mobile */
 @media (max-width: 560px) {
+  .my-post-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .my-post-img {
+    width: 100%;
+    height: auto;
+  }
+
+  .my-post-info {
+    width: 100%;
+  }
+
+  .delete-post-btn {
+    width: 100%;
+    margin-top: 12px;
+  }
+
   .dashboard {
     padding-bottom: 24px;
   }
