@@ -378,7 +378,7 @@ app.get("/login", (req, res) => {
   res.render("LogIn", {
     title: "Login",
     css: ["style.css", "SignUpLogIn.css"],
-    js: ["SignUpLogIn.js"],
+    js: ["form-utils.js", "SignUpLogIn.js"],
     errorMessage: "",
     navbar: false,
   });
@@ -406,7 +406,7 @@ app.post("/loggingin", async (req, res) => {
     res.render("LogIn", {
       title: "Login",
       css: ["style.css", "SignUpLogIn.css"],
-      js: ["SignUpLogIn.js"],
+      js: ["form-utils.js", "SignUpLogIn.js"],
       errorMessage: "Error: Incorrect email or password",
       navbar: false,
     });
@@ -422,8 +422,9 @@ app.post("/loggingin", async (req, res) => {
     res.render("LogIn", {
       title: "Login",
       css: ["style.css", "SignUpLogIn.css"],
-      js: ["SignUpLogIn.js"],
+      js: ["form-utils.js", "SignUpLogIn.js"],
       errorMessage: "Error: Invalid email or password",
+      navbar: false,
     });
     return;
   }
@@ -439,7 +440,7 @@ app.post("/loggingin", async (req, res) => {
     res.render("LogIn", {
       title: "Login",
       css: ["style.css", "SignUpLogIn.css"],
-      js: ["SignUpLogIn.js"],
+      js: ["form-utils.js", "SignUpLogIn.js"],
       errorMessage: "Error: Invalid email or password",
       navbar: false,
     });
@@ -455,7 +456,7 @@ app.get("/signup", (req, res) => {
   res.render("signUp", {
     title: "Sign Up",
     css: ["style.css", "SignUpLogIn.css"],
-    js: ["SignUpLogIn.js"],
+    js: ["form-utils.js", "SignUpLogIn.js"],
     errorMessage: "",
     navbar: false,
   });
@@ -475,7 +476,7 @@ app.post("/signingup", signupLimiter, async (req, res) => {
     res.render("signUp", {
       title: "Sign Up",
       css: ["style.css", "SignUpLogIn.css"],
-      js: ["SignUpLogIn.js"],
+      js: ["form-utils.js", "SignUpLogIn.js"],
       errorMessage:
         "Error: Invalid format for " +
         validationResult.error.details[0].context.key,
@@ -494,7 +495,7 @@ app.post("/signingup", signupLimiter, async (req, res) => {
     res.render("signUp", {
       title: "Sign Up",
       css: ["style.css", "SignUpLogIn.css"],
-      js: ["SignUpLogIn.js"],
+      js: ["form-utils.js", "SignUpLogIn.js"],
       errorMessage: `Error: That ${conflictField} is already in use.`,
       navbar: false,
     });
