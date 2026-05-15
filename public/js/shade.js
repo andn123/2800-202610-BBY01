@@ -160,10 +160,10 @@ function createMarkers() {
     })
 
     const shelterIcon = L.icon({
-        iconUrl: '/img/shade/shelter.png',
-        iconSize: [24, 24],
-        iconAnchor: [12,20],
-        popupAnchor: [0, -24]
+        iconUrl: '/img/shade/gazebo.png',
+        iconSize: [16, 16],
+        iconAnchor: [8,12],
+        popupAnchor: [0, -16]
     });
 
     const benchIcon = L.icon({
@@ -184,6 +184,13 @@ function createMarkers() {
     return icons 
 }
 
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const object1Coords = L.latLng(lat1, lon1);
+    const object2Coords = L.latLng(lat2, lon2);
+
+    return object1Coords.distanceTo(object2Coords)
+}
+
 /**
  * Populates shademap with markers using icons defined by createMarkers() and information from
  * queried data coming from overpassAPI and public trees dataset from city of Vancouver.
@@ -193,7 +200,10 @@ function populateShadeMap(icons) {
         const treeMarker = L.marker([
             tree.geom.geometry.coordinates[1], 
             tree.geom.geometry.coordinates[0]], 
-            {icon: icons.treeIcon}
+            {
+                icon: icons.treeIcon,
+                zIndexOffset: 500
+            }
         ).addTo(map);
         
         treeArr.push({
@@ -209,34 +219,72 @@ function populateShadeMap(icons) {
     });
 
     if(shelter !== null) {
+        //Removes tree markers in close proximity of shelter
+        treeArr.forEach(tree =>{
+            const distanceToShelter = calculateDistance(
+                shelter.center.lat, 
+                shelter.center.lon,
+                tree.lat,
+                tree.lng
+            )
+            if(distanceToShelter < 3) {
+                tree.marker.remove();
+            }
+        })
+
         L.marker([
             shelter.center.lat,
             shelter.center.lon],
-            {icon: icons.shelterIcon, interactive: false}
+            {
+                icon: icons.shelterIcon, 
+                interactive: false,
+                zIndexOffset: 400
+            }
         ).addTo(map);
 
         shelterArr.push({type:shelter.tags.shelter_type, lat: shelter.center.lat, lng: shelter.center.lon})
     }
 
-    amenities.forEach(item =>{
+    amenities.forEach((item, i) =>{
         const bench = 0;
         const picnic_table = 0;
         if(item.tags.amenity == 'bench'){
-            L.marker([
+            const marker = L.marker([
                 item.lat,    
                 item.lon],
-                {icon: icons.benchIcon}
+                {
+                    icon: icons.benchIcon, 
+                    zIndexOffset: 400
+                }
             ).addTo(map);
-            amenitiesArr.push({type: item.tags.amenity, lat: item.lat, lng: item.lon})
+            amenitiesArr.push({type: item.tags.amenity, lat: item.lat, lng: item.lon, marker: marker})
         } else if (item.tags.leisure == 'picnic_table') {
-            L.marker([
+            const marker = L.marker([
                 item.lat,    
                 item.lon],
-                {icon: icons.tableIcon, interactive: false}
+                {
+                    icon: icons.tableIcon, 
+                    interactive: false, 
+                    zIndexOffset: 400
+                }
             ).addTo(map);
-            amenitiesArr.push({type: item.tags.amenity, lat: item.lat, lng: item.lon})
+            amenitiesArr.push({type: item.tags.amenity, lat: item.lat, lng: item.lon, marker: marker})
        }
     });
+
+    amenitiesArr.forEach((amenity, i) =>{
+        if(!amenity.marker._map){
+            return;
+        }
+
+        for(let j = i + 1; j < amenitiesArr.length; j++){
+            const distance = calculateDistance(amenity.lat, amenity.lng, amenitiesArr[j].lat, amenitiesArr[j].lng);
+            if(distance < 4){
+                console.log('An amenity marker has been removed from map')
+                amenitiesArr[j].marker.remove()
+            }
+        }
+    })
 }
 
 /**
@@ -347,8 +395,6 @@ function spotClickHandler() {
             console.log("using description from array");
             document.getElementById('parkDescription').textContent = cached.desc;
         }
-
-
     };
 }
 

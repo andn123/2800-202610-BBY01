@@ -286,7 +286,7 @@ app.get("/shademap", async (req, res) => {
         { email: req.session.email },
         { projection: { _id: 0, firstTimeMode: 1 } },
       );
-      res.render("shade", {
+      res.render("shade", { //Fix crash when session timeout
         title: "shademap",
         css: ["shade.css", "style.css"],
         js: [],
@@ -1037,9 +1037,10 @@ app.post("/shadeAI", async (req, res) => {
         content:`
           Write a 2-3 sentence description based on given information for a spot in a park. Focus 
           on the possible shade from number of trees. Plain text only, no markdown, 
-          and maximum 45 words. Do not mention radius and tree characteristics. Refrain from 
+          and maximum 45 words. Do not mention radius, tree characteristics, or buildings. Refrain from 
           mentioning downsides. In the user request, the values for number of trees, number of benches, 
-          and number of picnic table are category labels: none=0, low=1-2, medium=3-5, high=6+.
+          and number of picnic table are category labels: none=0, low=1-2, medium=3-5, high=6+. If none, say
+          0 instead of low.
         `
       },
     };
