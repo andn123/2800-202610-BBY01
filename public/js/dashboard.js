@@ -254,7 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .map(
         (post) => `
       <div class="my-post-card" id="post-${post._id}">
-        <img src="/uploads/${post.image}" class="my-post-img" alt="post image">
+        <img src="/image/${post.image}" class="my-post-img" alt="post image">
         <div class="my-post-info">
           <p><strong>${post.location}</strong></p>
           <p>${post.description}</p>
