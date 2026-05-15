@@ -234,16 +234,20 @@ app.get("/map", async (req, res) => {
         }),
     };
 
-    res.render("map", {
-      posts: posts,
-      mapApi: mapApi,
-      locations,
-      title: "Map",
-      css: ["map.css"],
-      js: ["map.js"],
-      navbar: false,
-      firstTimeMode: firstTimeMode,
-    });
+  res.render("map", {
+  posts: posts,
+  mapApi: mapApi,
+  locations,
+  title: "Map",
+  css: ["map.css", "back-button.css"],
+  js: ["map.js"],
+  navbar: false,
+  firstTimeMode: firstTimeMode,
+
+  backButton: true,
+  backButtonHref: "/dashboard",
+  backButtonClass: "map-back",
+});
   } catch (err) {
     console.error(err);
     res.send("Error fetching events");
@@ -825,8 +829,7 @@ app.get("/api/dashboard-weather", async (req, res) => {
 app.get("/dashboard", async (req, res) => {
   try {
     if (!req.session.authenticated) {
-      res.redirect("/login");
-      return;
+      return res.redirect("/login");
     }
 
     let user = await userCollection.findOne({
@@ -843,7 +846,7 @@ app.get("/dashboard", async (req, res) => {
 
       await userCollection.updateOne(
         { email: req.session.email },
-        { $set: { profileImage: randomProfileImage } },
+        { $set: { profileImage: randomProfileImage } }
       );
 
       user.profileImage = randomProfileImage;
