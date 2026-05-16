@@ -1,12 +1,6 @@
 require("./utils.js");
 require("dotenv").config();
-const {
-  isPark,
-  findShelter,
-  findTrees,
-  findAmenities,
-  parkBoundary,
-} = require("./public/js/shadeServer");
+const {shadeMapData} = require("./public/js/shadeServer");
 const { ObjectId } = require("mongodb");
 const express = require("express");
 const session = require("express-session");
@@ -254,6 +248,14 @@ app.get("/map", async (req, res) => {
   }
 });
 
+app.get('/noShade', (req,res) =>{
+  res.render("noShade", {
+    title: "shademap",
+    css: ["noShade.css"],
+    js: ["noShade.js"],
+  });
+})
+
 app.get("/shademapLoad", async (req, res) => {
   res.render("shademapLoad", {
     title: "loading",
@@ -266,58 +268,31 @@ app.get("/shademapLoad", async (req, res) => {
 });
 
 app.get("/shademap", async (req, res) => {
-  const park = await isPark(req.query.lat, req.query.lon);
-  if (park.boolean) {
-    try {
-      const bounds = await parkBoundary(req.query.lat, req.query.lon);
-      const amenities = await findAmenities(
-        req.query.lat,
-        req.query.lon,
-        bounds.boundsOverpass,
-      );
-      const trees = await findTrees(
-        req.query.lat,
-        req.query.lon,
-        bounds.boundsTrees,
-      );
-      const shelter = await findShelter(
-        req.query.lat,
-        req.query.lon,
-        bounds.boundsOverpass,
-      );
-      const parkName = park.name;
-      const result = await userCollection.findOne(
-        { email: req.session.email },
-        { projection: { _id: 0, firstTimeMode: 1 } },
-      );
-      res.render("shade", { //Fix crash when session timeout
-        title: "shademap",
-        css: ["shade.css", "style.css"],
-        js: [],
-        firstTime: result.firstTimeMode,
-        latitude: req.query.lat,
-        longitude: req.query.lon,
-        trees: trees,
-        shelter: shelter,
-        amenities: amenities,
-        parkName: parkName,
-        navbar: false,
-      });
-    } catch (error) {
-      console.log(error.message);
-      res.render("noShade", {
-        title: "shademap",
-        css: ["noShade.css"],
-        js: ["noShade.js"],
-      });
-    }
-  } else {
-    res.render("noShade", {
+  const { lat: latitude, lon: longitude } = req.query;
+
+  try {
+    const data = await shadeMapData(latitude, longitude);
+    const firstTime = (await userCollection.findOne(
+      { email: req.session.email },
+      { projection: { _id: 0, firstTimeMode: 1 } },
+    ))?.firstTimeMode
+
+    res.render("shade", {
       title: "shademap",
-      css: ["noShade.css"],
-      js: ["noShade.js"],
+      css: ["shade.css", "style.css"],
+      js: [],
+      latitude,
+      longitude,    
+      firstTime,    
+      navbar: false,
+      ...data
     });
+
+  } catch (error) {
+    console.error(error.message);
+    res.redirect('/noShade');
   }
+
 });
 
 app.get("/about", (req, res) => {

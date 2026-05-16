@@ -132,4 +132,20 @@ async function findTrees(lat, lng, bounds) {
         }
     }
 }
-module.exports = {isPark, findShelter, findTrees, findAmenities, parkBoundary}
+
+async function shadeMapData(latitude, longitude) {
+    const park = await isPark(latitude,longitude);
+    if(park.boolean) {
+        const bounds = await parkBoundary(latitude, longitude);
+        return {
+            amenities : await findAmenities(latitude, longitude, bounds.boundsOverpass),
+            trees : await findTrees(latitude, longitude, bounds.boundsTrees),
+            shelter : await findShelter(latitude, longitude, bounds.boundsOverpass),
+            parkName : park.name
+        }
+    } else if(!park.boolean) {
+        throw new Error(`error: Location is not a park!`);
+    }
+}
+
+module.exports = {shadeMapData}
