@@ -90,17 +90,28 @@ class FormUtils {
     }
 
     static setupPasswordToggle(passwordInput, toggleButton) {
-        if (!passwordInput || !toggleButton) return;
-        toggleButton.addEventListener('click', () => {
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            const eyeIcon = toggleButton.querySelector('.eye-icon');
-            eyeIcon?.classList.toggle('show-password', isPassword);
-            toggleButton.style.transform = 'scale(0.9)';
-            setTimeout(() => { toggleButton.style.transform = 'scale(1)'; }, 150);
-            passwordInput.focus();
-        });
-    }
+    if (!passwordInput || !toggleButton) return;
+
+    // Prevent layout shift from transform
+    toggleButton.style.transformOrigin = 'center center';
+
+    toggleButton.addEventListener('click', () => {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+
+        const eyeIcon = toggleButton.querySelector('.eye-icon');
+        eyeIcon?.classList.toggle('show-password', isPassword);
+
+        // Animate the icon directly, not the whole button
+        if (eyeIcon) {
+            eyeIcon.style.transition = 'transform 150ms ease';
+            eyeIcon.style.transform = 'scale(0.9)';
+            setTimeout(() => { eyeIcon.style.transform = 'scale(1)'; }, 150);
+        }
+
+        passwordInput.focus();
+    });
+}
 
     static addEntranceAnimation(element, delay = 100) {
         if (!element) return;

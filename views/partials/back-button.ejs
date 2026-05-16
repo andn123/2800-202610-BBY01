@@ -1,0 +1,8 @@
+<% if (typeof backButton !== "undefined" && backButton === true) { %>
+  <a
+    href="<%= typeof backButtonHref !== "undefined" ? backButtonHref : "/dashboard" %>"
+    class="back-btn <%= typeof backButtonClass !== "undefined" ? backButtonClass : "" %>"
+  >
+    <img src="/img/Back.gif" alt="Back" />
+  </a>
+<% } %>
