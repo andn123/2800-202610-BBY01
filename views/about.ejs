@@ -1,52 +1,65 @@
 <%- include("partials/header", {css: css}) %>
-    <div class="container my-5 text-center">
-      <h3 class="fancy-underline">What Vancooler Does</h3>
-      <p>
-        We are developing a web application that recommends locations and
-        suitable social activities based on the level of shade at each place.
-        Our goal is to help users enjoy outdoor experiences while staying
-        comfortable during hot weather.
-      </p>
-    </div>
+<%- include("partials/back-button") %>
 
-    <!-- Features -->
-    <div class="container my-5 text-center">
-      <h3 class="fancy-underline">Features & Innovations</h3>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">Shade-based location recommendations</li>
-        <li class="list-group-item">Activity suggestions around each place</li>
-        <li class="list-group-item">Weather-aware planning for hot days</li>
-        <li class="list-group-item">Simple and user-friendly interface</li>
-        <li class="list-group-item">
-          Focus on comfort and outdoor safety during hot days
-        </li>
-      </ul>
-    </div>
+    <div class="page">
+  <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Vancooler about page preview</h2>
 
-    <!-- Team Section -->
-    <div class="container my-5 text-center">
-      <h3 class="mb-4 fancy-underline">Our Team</h3>
+  <div class="hero">
+    <i class="ti ti-sun-wind hero-icon" aria-hidden="true"></i>
+    <h2>Stay cool, stay out</h2>
+    <p>Vancooler recommends shaded outdoor spots and social activities matched to the weather — so you can enjoy Vancouver without the heat.</p>
+  </div>
 
-      <div class="d-flex flex-wrap justify-content-center gap-3">
-        <div class="team-card">
-          <strong>Andrew Ni</strong><br />
-        </div>
-
-        <div class="team-card">
-          <strong>Maneet Singh</strong><br />
-        </div>
-
-        <div class="team-card">
-          <strong>Jonathan Lin</strong><br />
-        </div>
-
-        <div class="team-card">
-          <strong>Tracee Miasco</strong><br />
-        </div>
-
-        <div class="team-card">
-          <strong>Adam Locke</strong><br />
-        </div>
+  <div style="margin-bottom:2.5rem">
+    <div class="section-label">What we do</div>
+    <div class="section-title"><i class="ti ti-sparkles" aria-hidden="true" style="font-size:18px;color:#1D9E75"></i>Features & innovations</div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <i class="ti ti-trees feature-icon" aria-hidden="true"></i>
+        <span class="feature-text">Shade-based location recommendations</span>
+      </div>
+      <div class="feature-card">
+        <i class="ti ti-confetti feature-icon" aria-hidden="true"></i>
+        <span class="feature-text">Activity suggestions around each place</span>
+      </div>
+      <div class="feature-card">
+        <i class="ti ti-sun feature-icon" aria-hidden="true"></i>
+        <span class="feature-text">Weather-aware planning for hot days</span>
+      </div>
+      <div class="feature-card">
+        <i class="ti ti-layout feature-icon" aria-hidden="true"></i>
+        <span class="feature-text">Simple and user-friendly interface</span>
+      </div>
+      <div class="feature-card">
+        <i class="ti ti-shield-check feature-icon" aria-hidden="true"></i>
+        <span class="feature-text">Focus on outdoor comfort and safety</span>
       </div>
     </div>
+  </div>
+
+  <div class="section-label">Behind the project</div>
+  <div class="section-title"><i class="ti ti-users" aria-hidden="true" style="font-size:18px;color:#1D9E75"></i>Our team</div>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="avatar">AN</div>
+      <div class="team-name">Andrew Ni</div>
+    </div>
+    <div class="team-card">
+      <div class="avatar">MS</div>
+      <div class="team-name">Maneet Singh</div>
+    </div>
+    <div class="team-card">
+      <div class="avatar">JL</div>
+      <div class="team-name">Jonathan Lin</div>
+    </div>
+    <div class="team-card">
+      <div class="avatar">TM</div>
+      <div class="team-name">Tracee Miasco</div>
+    </div>
+    <div class="team-card">
+      <div class="avatar">AL</div>
+      <div class="team-name">Adam Locke</div>
+    </div>
+  </div>
+</div>
     <%- include("partials/footer", {js: js}) %>
