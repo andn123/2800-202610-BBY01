@@ -286,7 +286,8 @@ app.get("/shademap", async (req, res) => {
         { email: req.session.email },
         { projection: { _id: 0, firstTimeMode: 1 } },
       );
-      res.render("shade", { //Fix crash when session timeout
+      res.render("shade", {
+        //Fix crash when session timeout
         title: "shademap",
         css: ["shade.css", "style.css"],
         js: [],
@@ -1026,23 +1027,23 @@ app.post("/shadeAI", async (req, res) => {
     const serverPrompts = {
       tree: {
         role: "system",
-        content:`
+        content: `
           Write 2-3 sentence description based on given tree information. Focus on explaining 
           how a given tree can contribute to shade. Build description from its common name,
           and scientific name, then use species trait like leaves and brancing pattern to explain
           if it can provide useful shade. Plain text only, no markdown, and maximum 45 words.
-        `
+        `,
       },
       spot: {
         role: "system",
-        content:`
+        content: `
           Write a 2-3 sentence description based on given information for a spot in a park. Focus 
           on the possible shade from number of trees. Plain text only, no markdown, 
           and maximum 45 words. Do not mention radius, tree characteristics, or buildings. Refrain from 
           mentioning downsides. In the user request, the values for number of trees, number of benches, 
           and number of picnic table are category labels: none=0, low=1-2, medium=3-5, high=6+. If none, say
           0 instead of low.
-        `
+        `,
       },
     };
 
@@ -1072,7 +1073,6 @@ app.post("/shadeAI", async (req, res) => {
     });
   }
 });
-
 
 app.get("/api/my-posts", async (req, res) => {
   if (!req.session.authenticated)
