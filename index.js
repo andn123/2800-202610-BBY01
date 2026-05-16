@@ -327,9 +327,12 @@ app.get("/about", (req, res) => {
   }
   res.render("about", {
     title: "About",
-    css: ["about.css", "style.css"],
+    css: ["about.css", "style.css", "back-button.css"],
     js: ["about.js"],
     navbar: true,
+    backButton: true,
+    backButtonHref: "/dashboard",
+    backButtonClass: "map-back",
   });
 });
 
