@@ -357,7 +357,7 @@ app.get("/login", (req, res) => {
     res.redirect("/dashboard");
     return;
   }
-  res.render("LogIn", {
+  res.render("Login", {
     title: "Login",
     css: ["style.css", "SignUpLogIn.css"],
     js: ["form-utils.js", "SignUpLogIn.js"],
@@ -385,7 +385,7 @@ app.post("/loggingin", async (req, res) => {
 
   const validationResult = schema.validate({ email, password });
   if (validationResult.error) {
-    res.render("LogIn", {
+    res.render("Login", {
       title: "Login",
       css: ["style.css", "SignUpLogIn.css"],
       js: ["form-utils.js", "SignUpLogIn.js"],
@@ -401,7 +401,7 @@ app.post("/loggingin", async (req, res) => {
     .toArray();
 
   if (result.length != 1) {
-    res.render("LogIn", {
+    res.render("Login", {
       title: "Login",
       css: ["style.css", "SignUpLogIn.css"],
       js: ["form-utils.js", "SignUpLogIn.js"],
@@ -419,7 +419,7 @@ app.post("/loggingin", async (req, res) => {
     res.redirect("/dashboard");
     return;
   } else {
-    res.render("LogIn", {
+    res.render("Login", {
       title: "Login",
       css: ["style.css", "SignUpLogIn.css"],
       js: ["form-utils.js", "SignUpLogIn.js"],
