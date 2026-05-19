@@ -581,6 +581,7 @@ body {
     0 4px 12px rgba(29, 185, 84, 0.35),
     0 0 18px rgba(29, 185, 84, 0.15);
   transition: transform 0.2s ease;
+  overflow: hidden;
 }
 
 .explore-btn:hover {
