@@ -47,7 +47,7 @@ function getUserLocation() {
   );
 }
 
-async function fetchEvents({ reset = false } = {}) {
+async function fetchEvents({ reset = false, minimumLoadingTime = 0 } = {}) {
   if (isLoading) return;
 
   if (!currentLat || !currentLon) {
@@ -57,6 +57,8 @@ async function fetchEvents({ reset = false } = {}) {
 
   try {
     isLoading = true;
+
+    const loadingStartTime = Date.now();
 
     if (reset) {
       currentPage = 0;
@@ -78,6 +80,13 @@ async function fetchEvents({ reset = false } = {}) {
 
     const response = await fetch(url);
     const data = await response.json();
+
+    const elapsedTime = Date.now() - loadingStartTime;
+    const remainingTime = minimumLoadingTime - elapsedTime;
+
+    if (remainingTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remainingTime));
+    }
 
     if (!response.ok) {
       showError(data.error || "Something went wrong.");
@@ -238,7 +247,7 @@ function showError(message) {
 function showSpinner() {
   loadingSpinner.classList.remove("hidden");
   loadMoreBtn.disabled = true;
-  loadMoreBtn.textContent = "Loading...";
+  loadMoreWrap.classList.add("hidden");
 }
 
 function hideSpinner() {
@@ -292,11 +301,12 @@ addressInput.addEventListener("keydown", (event) => {
   }
 });
 
-loadMoreBtn.addEventListener("click", () => {
+loadMoreBtn.addEventListener("click", async () => {
   if (!hasMoreEvents || isLoading) return;
 
   currentPage += 1;
-  fetchEvents({ reset: false });
+
+  await fetchEvents({ reset: false, minimumLoadingTime: 4000 });
 });
 
 async function getCityName(lat, lon) {
