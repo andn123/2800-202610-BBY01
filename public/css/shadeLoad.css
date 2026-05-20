@@ -14,10 +14,9 @@ body {
     z-index: 1000;
     background: white;
     font-size: 16px;
-    transition: all 0.2s ease;
 }
 
-#backBtn:hover {
+#backBtn:active {
     transform: translateY(-1px);
 }
 
