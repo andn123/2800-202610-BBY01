@@ -35,9 +35,16 @@ const gemini_api_key = process.env.GEMINI_API_KEY;
 const { database } = include("databaseConnection");
 const userCollection = database.db(mongodb_user_database).collection("users");
 const postsCollection = database.db(mongodb_database).collection("posts");
+const easterEggCollection = database
+  .db(mongodb_database)
+  .collection("easterEgg");
 
 const { GridFSBucket } = require("mongodb");
 const fs = require("fs");
+
+async function getActiveEasterEgg() {
+  return await easterEggCollection.findOne({ expiresAt: { $gt: new Date() } });
+}
 
 async function uploadToGridFS(filePath, filename) {
   const bucket = new GridFSBucket(database.db(mongodb_database), {
@@ -48,10 +55,13 @@ async function uploadToGridFS(filePath, filename) {
   readStream.pipe(uploadStream);
   return new Promise((resolve, reject) => {
     uploadStream.on("finish", () => {
-      fs.unlink(filePath, () => {}); // delete local file after upload
+      fs.unlink(filePath, () => {});
       resolve(filename);
     });
-    uploadStream.on("error", reject);
+    uploadStream.on("error", (err) => {
+      fs.unlink(filePath, () => {});
+      reject(err);
+    });
   });
 }
 
@@ -151,6 +161,32 @@ async function signupLimiter(req, res, next) {
   }
 
   await signupAttemptsCollection.insertOne({ ip: ip, createdAt: now });
+  next();
+}
+
+async function postRateLimiter(req, res, next) {
+  const username = req.session.username;
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+  const recentPostCount = await postsCollection.countDocuments({
+    username: username,
+    createdAt: { $gt: oneHourAgo },
+  });
+
+  if (recentPostCount >= 3) {
+    const easterEgg = await getActiveEasterEgg();
+    return res.render("post", {
+      title: "Post",
+      css: ["post.css"],
+      js: ["create-post.js"],
+      navbar: false,
+      mapApi: mapApi,
+      easterEgg: easterEgg ? easterEgg.environment : null,
+      error: "You can only create 3 posts per hour. Please try again later.",
+      success: null,
+    });
+  }
+
   next();
 }
 
@@ -510,28 +546,38 @@ app.post("/logout", (req, res) => {
   });
 });
 
-app.get("/post", (req, res) => {
+app.get("/post", async (req, res) => {
   if (!req.session || !req.session.authenticated) {
     return res.redirect("/login");
   }
+  const easterEgg = await getActiveEasterEgg();
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const recentPostCount = await postsCollection.countDocuments({
+    username: req.session.username,
+    createdAt: { $gt: oneHourAgo },
+  });
 
   res.render("post", {
     title: "Post",
     css: ["post.css"],
     js: ["create-post.js"],
     navbar: false,
-    error: null,
-    success: null,
     mapApi: mapApi,
+    error:
+      recentPostCount >= 3
+        ? "You can only create 3 posts per hour. Please try again later."
+        : null,
+    success: null,
+    easterEgg: easterEgg ? easterEgg.environment : null,
   });
 });
 const axios = require("axios");
 
-app.post("/post", upload.single("image"), async (req, res) => {
+app.post("/post", postRateLimiter, upload.single("image"), async (req, res) => {
   if (!req.session || !req.session.authenticated) {
     return res.redirect("/login");
   }
-
+  const easterEgg = await getActiveEasterEgg();
   let location = req.body.location;
   let description = req.body.description;
   let environment = req.body.environment;
@@ -551,7 +597,12 @@ app.post("/post", upload.single("image"), async (req, res) => {
 
   if (validationResult.error || !imageFile) {
     return res.render("post", {
+      title: "Post",
+      css: ["post.css"],
+      js: ["create-post.js"],
+      navbar: false,
       mapApi: mapApi,
+      easterEgg: easterEgg ? easterEgg.environment : null,
       error: validationResult.error
         ? validationResult.error.message
         : "Image is required",
@@ -569,6 +620,7 @@ app.post("/post", upload.single("image"), async (req, res) => {
       js: ["create-post.js"],
       navbar: false,
       mapApi: mapApi,
+      easterEgg: easterEgg ? easterEgg.environment : null,
       error: "Please select a valid location from the dropdown.",
       success: null,
     });
@@ -588,7 +640,23 @@ app.post("/post", upload.single("image"), async (req, res) => {
     likedBy: [],
     dislikedBy: [],
   });
+  const lastTwo = await postsCollection
+    .find({})
+    .sort({ createdAt: -1 })
+    .limit(2)
+    .toArray();
 
+  if (
+    lastTwo.length === 2 &&
+    lastTwo[0].environment === lastTwo[1].environment
+  ) {
+    const env = lastTwo[0].environment;
+    await easterEggCollection.deleteMany({}); // clear old egg
+    await easterEggCollection.insertOne({
+      environment: env,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+    });
+  }
   res.redirect("/posts?success=1");
 });
 
@@ -596,7 +664,7 @@ app.get("/posts", async (req, res) => {
   if (!req.session || !req.session.authenticated) {
     return res.redirect("/login");
   }
-
+  const easterEgg = await getActiveEasterEgg();
   const search = req.query.search || "";
   const safeSearch = escapeRegex(search);
   const env = req.query.environment || "";
@@ -645,6 +713,7 @@ app.get("/posts", async (req, res) => {
     page,
     totalPages,
     success,
+    easterEgg: easterEgg ? easterEgg.environment : null,
   });
 });
 
@@ -705,7 +774,7 @@ app.get("/events", async (req, res) => {
 // Ticketmaster API route
 app.get("/api/events", async (req, res) => {
   try {
-    const { lat, lon } = req.query;
+    const { lat, lon, keyword = "", page = 0 } = req.query;
 
     if (!lat || !lon) {
       return res.status(400).json({
@@ -721,17 +790,28 @@ app.get("/api/events", async (req, res) => {
       });
     }
 
-    const url =
+    let url =
       "https://app.ticketmaster.com/discovery/v2/events.json" +
       `?apikey=${apiKey}` +
       `&latlong=${lat},${lon}` +
       `&radius=50` +
       `&unit=km` +
       `&size=10` +
+      `&page=${page}` +
       `&sort=date,asc`;
+
+    if (keyword.trim() !== "") {
+      url += `&keyword=${encodeURIComponent(keyword.trim())}`;
+    }
 
     const response = await fetch(url);
     const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.errors?.[0]?.detail || "Ticketmaster API error.",
+      });
+    }
 
     const events = data._embedded?.events || [];
 
@@ -740,18 +820,28 @@ app.get("/api/events", async (req, res) => {
       const venue = event._embedded?.venues?.[0];
 
       return {
-        name: event.name,
-        url: event.url,
-        date: dateInfo.localDate,
-        time: dateInfo.localTime,
+        name: event.name || "Untitled Event",
+        url: event.url || "#",
+        date: dateInfo.localDate || "",
+        time: dateInfo.localTime || "",
         city: venue?.city?.name || "Unknown city",
         venue: venue?.name || "Unknown venue",
       };
     });
 
-    res.json(formattedEvents);
+    const pageInfo = data.page || {};
+    const currentPage = Number(pageInfo.number || 0);
+    const totalPages = Number(pageInfo.totalPages || 0);
+
+    res.json({
+      events: formattedEvents,
+      page: currentPage,
+      totalPages: totalPages,
+      hasMore: currentPage + 1 < totalPages,
+    });
   } catch (error) {
     console.error("Error fetching events:", error);
+
     res.status(500).json({
       error: "Failed to fetch events.",
     });

@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="/css/info-center.css" />
   </head>
+
   <body>
     <section class="help-hero">
       <nav class="help-navbar">
@@ -21,6 +22,7 @@
 
       <div class="hero-content">
         <h1>Hi, how can we help?</h1>
+
         <p class="hero-subtitle">
           Step-by-step tutorials for every feature our app offers.
         </p>
@@ -34,17 +36,24 @@
         </div>
 
         <div class="support-tags">
-          <span>events</span>
-          <span>location</span>
-          <span>weather</span>
-          <span>account</span>
+          <button class="category-btn active" data-category="all">all</button>
+          <button class="category-btn" data-category="events">events</button>
+          <button class="category-btn" data-category="location">
+            location
+          </button>
+          <button class="category-btn" data-category="weather">weather</button>
+          <button class="category-btn" data-category="account">account</button>
         </div>
       </div>
     </section>
 
     <main class="help-container">
       <section class="feature-grid">
-        <a href="#search-events" class="feature-card">
+        <a
+          href="#search-events"
+          class="feature-card"
+          data-category="events"
+        >
           <div class="feature-icon">🔍</div>
           <h3>Search Events</h3>
           <p>
@@ -52,7 +61,11 @@
           </p>
         </a>
 
-        <a href="#change-location" class="feature-card">
+        <a
+          href="#change-location"
+          class="feature-card"
+          data-category="location"
+        >
           <div class="feature-icon">📍</div>
           <h3>Change Location</h3>
           <p>
@@ -61,28 +74,52 @@
           </p>
         </a>
 
-        <a href="#sort-events" class="feature-card">
+        <a
+          href="#sort-events"
+          class="feature-card"
+          data-category="events"
+        >
           <div class="feature-icon">↕️</div>
           <h3>Sort Events</h3>
-          <p>Organize events by date, name, or other available filters.</p>
+          <p>
+            Organize events by date, name, or other available filters.
+          </p>
         </a>
 
-        <a href="#weather-events" class="feature-card">
+        <a
+          href="#weather-events"
+          class="feature-card"
+          data-category="weather"
+        >
           <div class="feature-icon">🌦️</div>
           <h3>Weather-Based Events</h3>
-          <p>Get recommendations based on the current weather conditions.</p>
+          <p>
+            Get recommendations based on the current weather conditions.
+          </p>
         </a>
 
-        <a href="#create-posts" class="feature-card placeholder-card">
+        <a
+          href="#create-posts"
+          class="feature-card placeholder-card"
+          data-category="account"
+        >
           <div class="feature-icon">📝</div>
           <h3>Create Posts</h3>
-          <p>Make posts about places ideal for different social activities.</p>
+          <p>
+            Make posts about places ideal for different social activities.
+          </p>
         </a>
 
-        <a href="#view-map" class="feature-card placeholder-card">
+        <a
+          href="#view-map"
+          class="feature-card placeholder-card"
+          data-category="location"
+        >
           <div class="feature-icon">🗺️</div>
           <h3>View Map</h3>
-          <p>Explore the map to find suitable activity spots in your area.</p>
+          <p>
+            Explore the map to find suitable activity spots in your area.
+          </p>
         </a>
       </section>
 
@@ -90,6 +127,7 @@
         class="tutorial-section"
         id="search-events"
         data-title="search events"
+        data-category="events"
       >
         <div class="tutorial-header">
           <h2>Search for events near you</h2>
@@ -100,7 +138,9 @@
           <div class="step-card">
             <div class="step-number">1</div>
             <h3>Open events</h3>
-            <p>Go to the Events page from the bottom navigation or homepage.</p>
+            <p>
+              Go to the Events page from the bottom navigation or homepage.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -139,6 +179,7 @@
         class="tutorial-section"
         id="change-location"
         data-title="change location address city"
+        data-category="location"
       >
         <div class="tutorial-header">
           <h2>Change your location manually</h2>
@@ -149,7 +190,9 @@
           <div class="step-card">
             <div class="step-number">1</div>
             <h3>Open events</h3>
-            <p>Go to the Events page where nearby events are displayed.</p>
+            <p>
+              Go to the Events page where nearby events are displayed.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -168,7 +211,9 @@
           <div class="step-card">
             <div class="step-number">3</div>
             <h3>Enter address</h3>
-            <p>Type the city or address where you want to search for events.</p>
+            <p>
+              Type the city or address where you want to search for events.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -176,7 +221,9 @@
           <div class="step-card">
             <div class="step-number">4</div>
             <h3>Update results</h3>
-            <p>The app reloads events based on the new location you entered.</p>
+            <p>
+              The app reloads events based on the new location you entered.
+            </p>
           </div>
         </div>
       </section>
@@ -185,6 +232,7 @@
         class="tutorial-section"
         id="sort-events"
         data-title="sort events filter date"
+        data-category="events"
       >
         <div class="tutorial-header">
           <h2>Sort and filter events</h2>
@@ -195,7 +243,9 @@
           <div class="step-card">
             <div class="step-number">1</div>
             <h3>Open events</h3>
-            <p>Go to the Events page after events have loaded.</p>
+            <p>
+              Go to the Events page after events have loaded.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -203,7 +253,9 @@
           <div class="step-card">
             <div class="step-number">2</div>
             <h3>Find sort menu</h3>
-            <p>Use the sort dropdown or buttons near the search area.</p>
+            <p>
+              Use the sort dropdown or buttons near the search area.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -211,7 +263,9 @@
           <div class="step-card">
             <div class="step-number">3</div>
             <h3>Choose option</h3>
-            <p>Select how you want to organize the events, such as by date.</p>
+            <p>
+              Select how you want to organize the events, such as by date.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -219,7 +273,9 @@
           <div class="step-card">
             <div class="step-number">4</div>
             <h3>Check results</h3>
-            <p>The event cards update based on your selected sorting option.</p>
+            <p>
+              The event cards update based on your selected sorting option.
+            </p>
           </div>
         </div>
       </section>
@@ -228,6 +284,7 @@
         class="tutorial-section"
         id="weather-events"
         data-title="weather indoor outdoor recommendations"
+        data-category="weather"
       >
         <div class="tutorial-header">
           <h2>Get weather-based recommendations</h2>
@@ -238,7 +295,9 @@
           <div class="step-card">
             <div class="step-number">1</div>
             <h3>Allow location</h3>
-            <p>Give the app permission to check your local weather.</p>
+            <p>
+              Give the app permission to check your local weather.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -246,7 +305,9 @@
           <div class="step-card">
             <div class="step-number">2</div>
             <h3>Check weather</h3>
-            <p>The app reads the current weather conditions for your area.</p>
+            <p>
+              The app reads the current weather conditions for your area.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -264,7 +325,9 @@
           <div class="step-card">
             <div class="step-number">4</div>
             <h3>Pick an event</h3>
-            <p>Choose the event that best fits your plans and conditions.</p>
+            <p>
+              Choose the event that best fits your plans and conditions.
+            </p>
           </div>
         </div>
       </section>
@@ -272,7 +335,8 @@
       <section
         class="tutorial-section placeholder-tutorial"
         id="create-posts"
-        data-title="saved favourite events placeholder"
+        data-title="create posts social spot submit post account"
+        data-category="account"
       >
         <div class="tutorial-header">
           <h2>Share a social spot</h2>
@@ -284,7 +348,7 @@
             <div class="step-number">1</div>
             <h3>Sign in</h3>
             <p>
-              Sign in to your account; if already signed in, you can skip this
+              Sign in to your account. If already signed in, you can skip this
               step.
             </p>
           </div>
@@ -294,7 +358,9 @@
           <div class="step-card">
             <div class="step-number">2</div>
             <h3>Open post</h3>
-            <p>Go to the Post page from the bottom navigation menu.</p>
+            <p>
+              Go to the Post page from the bottom navigation menu.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -302,7 +368,9 @@
           <div class="step-card">
             <div class="step-number">3</div>
             <h3>Enter the information</h3>
-            <p>Provide all information requested in the form.</p>
+            <p>
+              Provide all information requested in the form.
+            </p>
           </div>
 
           <div class="arrow">→</div>
@@ -321,7 +389,8 @@
       <section
         class="tutorial-section placeholder-tutorial"
         id="view-map"
-        data-title="profile account login signup placeholder"
+        data-title="view map places markers activity spots location"
+        data-category="location"
       >
         <div class="tutorial-header">
           <h2>Find nearby places on map</h2>
@@ -332,7 +401,9 @@
           <div class="step-card">
             <div class="step-number">1</div>
             <h3>Open map</h3>
-            <p>Go to the Map page from the bottom navigation menu.</p>
+            <p>
+              Go to the Map page from the bottom navigation menu.
+            </p>
           </div>
 
           <div class="arrow">→</div>

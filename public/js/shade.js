@@ -55,7 +55,15 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
     subdomains: 'abcd'
 }).addTo(map)
 
+/**
+ * Stores icons to be used for createring marks on the map.
+ */
 const icons = {}
+
+/**
+ * Stores the currently selected tree by a user.
+ */
+let selectedTreeMarker = null;
 
 /* ========================
     HELPER FUNCTIONS 
@@ -169,7 +177,6 @@ function scanNearbyShelters(clickCoords, radius) {
         if (distance <= radius) {
             shelterCount++;
             shelterType = shelter.type;
-            console.log("shelter: " + shelterType);
         }
     });
 
@@ -192,7 +199,6 @@ function scanNearbyAmenities(clickCoords, radius) {
         const distance = calculateDistance(clickCoords, {lat: amenity.lat, lng: amenity.lng})
         if (distance <= radius) {
             amenitiesCount++;
-            console.log("amenity: " + amenity.type);
             if(amenity.type === 'bench'){
                 benches++;
             } else if(amenity.type === 'picnic_table') {
@@ -275,7 +281,6 @@ async function groqTreeDetails(tree) {
         desc: data.reply
     })
 
-    console.log(data.reply);
     return data.reply;
 }
 
@@ -300,7 +305,6 @@ async function groqSpotDescription(treeCount, benches, picnicTables, shelterType
         shelter found with shade: ${shelterType}
         radius: 10m
     `;
-    console.log(`prompt body to send: ${prompt}`);
 
     const response = await fetch('/shadeAI', {
         method: 'POST',
@@ -343,7 +347,6 @@ async function updateSpotDescription (treeCount, benches, picnicTables, shelterT
             shelterType
         )
     } else {
-        console.log("using description from array");
         document.getElementById('parkDescription').textContent = cached.desc;
     }
 }
@@ -374,10 +377,10 @@ async function updateSpotCard (treeCount, shelterCount) {
  */
 function createIcons() {
     const iconSet = [
-        { name: 'treeIcon', url: 'tree2',  iconSize: [24, 24], iconAnchor: [12, 24], popupAnchor: [0, -24]},
-        { name: 'shelterIcon', url: 'gazebo',  iconSize: [16, 16], iconAnchor: [8, 12], popupAnchor: [0, -16]},
-        { name: 'benchIcon', url: '/bench2',  iconSize: [16, 16], iconAnchor: [8, 16], popupAnchor: [0, -16]},
-        { name: 'tableIcon', url: 'table',  iconSize: [16, 16], iconAnchor: [8, 16], popupAnchor: [0, -16]}
+        { name: 'treeIcon', url: 'tree2',  iconSize: [24, 24], iconAnchor: [12, 24], popupAnchor: [0, -24], className: 'treeMarkers'},
+        { name: 'shelterIcon', url: 'gazebo',  iconSize: [16, 16], iconAnchor: [8, 12], popupAnchor: [0, -16], className: 'shelterMarkers'},
+        { name: 'benchIcon', url: 'bench2',  iconSize: [16, 16], iconAnchor: [8, 16], popupAnchor: [0, -16], className: 'benchMarkers'},
+        { name: 'tableIcon', url: 'table',  iconSize: [16, 16], iconAnchor: [8, 16], popupAnchor: [0, -16], className: 'tableMarkers'}
     ];
 
     iconSet.forEach(item =>{
@@ -385,7 +388,8 @@ function createIcons() {
             iconUrl: `/img/shade/${item.url}.png`,
             iconSize: item.iconSize,
             iconAnchor: item.iconAnchor,
-            popupAnchor: item.popupAnchor
+            popupAnchor: item.popupAnchor,
+            className: item.className
         })
     })
 }
@@ -524,18 +528,22 @@ function treeClickHandler() {
         // clears old marker handlers if it exists.
         tree.marker.off('click');
         tree.marker.on('click', async function(e) {
-            //commonName: tree.common_name;
-            //genus_name: tree.genus_name,
-            //species_name: tree.species_name,
-            //height_name: tree.height_name,
-            //diameter_cm: tree.diameter_cm,
+            if (selectedTreeMarker && selectedTreeMarker !== tree.marker) {
+                selectedTreeMarker.getElement()?.classList.remove('treeMarkerSelected');
+            }
+
+            tree.marker.getElement()?.classList.add('treeMarkerSelected');
+            selectedTreeMarker = tree.marker;
+            
             document.getElementById('treeName').textContent = tree.common_name;
             const species = tree.genus_name + " " + tree.species_name;
             const cached = treeDescriptionArr.find(item => item.tree === species);
+
             if(!cached) {
                 const reply = await groqTreeDetails(tree);
                 document.getElementById('treeDescription').textContent = reply;
-            } else {
+            } 
+            else {
                 document.getElementById('treeDescription').textContent = cached.desc;
             }
 
@@ -543,7 +551,6 @@ function treeClickHandler() {
             // view card is displays none as default.
             document.getElementById('firstTimeView')?.style.setProperty('display', 'none');
             document.getElementById('view').style.setProperty ('display', 'block');
-            console.log('A tree has been clicked');
         });
     });
 }
@@ -598,6 +605,11 @@ function spotMode(spotClickHandler) {
     map.off('click', spotClickHandler);
     map.on('click', spotClickHandler);
 
+    if (selectedTreeMarker) {
+        selectedTreeMarker.getElement()?.classList.remove('treeMarkerSelected');
+        selectedTreeMarker = null;
+    }
+    
     // Disables click for tree markers
     treeArr.forEach(tree => {
         tree.marker.getElement()?.classList.add('no-pointer');

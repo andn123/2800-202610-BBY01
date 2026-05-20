@@ -45,3 +45,14 @@ body {
     z-index: 1000;
 }
 
+.treeMarkers {
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.treeMarkerSelected {
+    transform: scale(1.25);
+    filter: 
+    drop-shadow(0 0 4px #4caf50)
+    drop-shadow(0 0 4px #4caf50)
+    drop-shadow(0 0 4px #4caf50)
+}
