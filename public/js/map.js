@@ -18,6 +18,8 @@ const ENV_COLORS = {
   indoors: "#1E90FF",
 };
 
+const backBtn = document.getElementById("back-btn");
+
 let currentPosts = [];
 let selectedLat = null;
 let selectedLon = null;
@@ -62,7 +64,6 @@ map.addControl(new maplibregl.NavigationControl());
 const el = document.getElementById("map");
 const locations = JSON.parse(decodeURIComponent(el.dataset.locations));
 const posts = JSON.parse(decodeURIComponent(el.dataset.posts));
-console.log(locations);
 
 /* =======================
    GLOBAL STATE
@@ -543,33 +544,32 @@ function showGuide() {
 
   guide.innerHTML = `
     <div class="guide-box">
-  <h5><b>👋 Welcome to VanCooler Map!</b></h5><br>
-
-  <p>📍 Click a location marker to view weather details and post information</p>
-
-  <p>🧭 Use the filter buttons to display only the locations you want</p>
-
-  <p>📝 Browse community uploads and recommendations in the Posts tab</p>
-
-  <p>📱 Drag the information panel upward for a better mobile view</p>
-
-  <p>🌡️ Turn on the temperature switch to view weather in °F</p>
-
-  <button id="closeGuide">
-    Got it
-  </button>
-</div>
+      <h5><b>👋 Welcome to VanCooler Map!</b></h5><br>
+      <p>📍 Click a location marker to view event's details, weather information, and post uploaded by other users</p>
+      <p>🧭 Use the filter buttons to display only the locations you want</p>
+      <p>📝 Browse community uploads and recommendations in the Posts tab</p>
+      <p>🤖 Ask questions in the AI Chat Bot tab to get quick information and travel tips about the selected location</p>
+      <p>💬 The AI Chat Bot can answer things like best time to visit, what to bring, nearby attractions, and activities</p>
+      <p>📱 Drag the information panel upward for a better mobile view</p>
+      <p>🌡️ Turn on the temperature switch to view weather in °F</p>
+      <p>🔄 Refresh the page if map data or posts are not loading properly</p>
+      <button id="closeGuide">
+        Got it
+      </button>
+    </div>
   `;
 
   document.body.appendChild(guide);
 
   document.getElementById("closeGuide").addEventListener("click", () => {
     guide.remove();
+    backBtn.style.display = "";
   });
 }
 
 /* show only first time */
 if (firstTimeMode) {
+  backBtn.style.display = "none";
   setTimeout(showGuide, 1000);
 }
 

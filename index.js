@@ -1064,15 +1064,41 @@ app.post("/chat", async (req, res) => {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // Groq uses OpenAI-style format — no role conversion needed
-    const response = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      messages: messages.map((m) => ({
-        role: m.role, // "user" and "assistant" work as-is
-        content: m.content,
-      })),
-    });
+    const modelStack = [
+      "openai/gpt-oss-120b", // Primary choice
+      "qwen/qwen3-32b", // Backup 1
+      "llama-3.1-8b-instant", // Backup 2
+    ];
 
+    const formattedMessages = messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    let response = null;
+    let successfulModel = null;
+
+    for (const model of modelStack) {
+      try {
+        response = await groq.chat.completions.create({
+          model: model,
+          messages: formattedMessages,
+        });
+        successfulModel = model;
+        break;
+      } catch (err) {
+        if (err.status === 429) {
+          continue;
+        }
+      }
+    }
+
+    if (!response) {
+      return res.status(429).json({
+        error:
+          "All available models are currently rate-limited. Please try again shortly.",
+      });
+    }
     res.json({
       reply: response.choices[0].message.content,
     });

@@ -106,7 +106,6 @@ body {
   padding: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
-  animation: bubbleIn 0.2s;
 }
 
 .temp {
@@ -310,6 +309,19 @@ body {
 .map-legend button.active-filter {
   outline: 2px solid #333;
   font-weight: bold;
+}
+
+.chat-input-row {
+  width: 100%;
+}
+/* Ensures the text does not run under the absolute-positioned icons */
+.chat-input {
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+.bi {
+  padding-left: 5px;
 }
 
 .chat-mode-row {
