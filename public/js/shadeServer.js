@@ -91,7 +91,6 @@ async function parkBoundary(lat, lng){
         return null;
     } else {
         const boundsArr = data.elements[0].geometry;
-        console.log(data.elements)
         return buildCoordsString(boundsArr);
     }
 }
@@ -118,7 +117,6 @@ async function findAmenities(bounds) {
     }
 
     const data = await res.json();
-    console.log(data);
     return data.elements;
 }
 
@@ -142,7 +140,6 @@ async function findShelter(bounds){
     }
 
     const data = await res.json();
-    console.log(data);
     if (data.elements.length == 0){
         return null;
     } else {
