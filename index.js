@@ -738,7 +738,7 @@ app.get("/events", async (req, res) => {
 // Ticketmaster API route
 app.get("/api/events", async (req, res) => {
   try {
-    const { lat, lon } = req.query;
+    const { lat, lon, keyword = "", page = 0 } = req.query;
 
     if (!lat || !lon) {
       return res.status(400).json({
@@ -754,17 +754,28 @@ app.get("/api/events", async (req, res) => {
       });
     }
 
-    const url =
+    let url =
       "https://app.ticketmaster.com/discovery/v2/events.json" +
       `?apikey=${apiKey}` +
       `&latlong=${lat},${lon}` +
       `&radius=50` +
       `&unit=km` +
       `&size=10` +
+      `&page=${page}` +
       `&sort=date,asc`;
+
+    if (keyword.trim() !== "") {
+      url += `&keyword=${encodeURIComponent(keyword.trim())}`;
+    }
 
     const response = await fetch(url);
     const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.errors?.[0]?.detail || "Ticketmaster API error.",
+      });
+    }
 
     const events = data._embedded?.events || [];
 
@@ -773,18 +784,28 @@ app.get("/api/events", async (req, res) => {
       const venue = event._embedded?.venues?.[0];
 
       return {
-        name: event.name,
-        url: event.url,
-        date: dateInfo.localDate,
-        time: dateInfo.localTime,
+        name: event.name || "Untitled Event",
+        url: event.url || "#",
+        date: dateInfo.localDate || "",
+        time: dateInfo.localTime || "",
         city: venue?.city?.name || "Unknown city",
         venue: venue?.name || "Unknown venue",
       };
     });
 
-    res.json(formattedEvents);
+    const pageInfo = data.page || {};
+    const currentPage = Number(pageInfo.number || 0);
+    const totalPages = Number(pageInfo.totalPages || 0);
+
+    res.json({
+      events: formattedEvents,
+      page: currentPage,
+      totalPages: totalPages,
+      hasMore: currentPage + 1 < totalPages,
+    });
   } catch (error) {
     console.error("Error fetching events:", error);
+
     res.status(500).json({
       error: "Failed to fetch events.",
     });
