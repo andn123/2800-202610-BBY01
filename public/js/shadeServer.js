@@ -12,7 +12,7 @@ const publicTreesAPI = "https://opendata.vancouver.ca/api/explore/v2.1/catalog/d
 async function overpassQuery(query) {
     return fetch(`${overpassAPI}${encodeURIComponent(query)}`, {
         headers: {
-            'User-Agent': 'ShadeMap/1.0 (student project)'
+            'User-Agent': 'Vancooler/1.0 (student project)'
         }
     });
 }
@@ -76,9 +76,9 @@ async function isPark(lat, lng){
  */
 async function parkBoundary(lat, lng){
     const boundsQuery = `
-        [out:json]; 
-        nwr["leisure"="park"](around:100,${lat},${lng});
-        out geom;
+        [out:json][timeout:60]; 
+        way["leisure"="park"](around:50,${lat},${lng});
+        out geom qt;
     `
     const res = await overpassQuery(boundsQuery);
 
@@ -87,11 +87,11 @@ async function parkBoundary(lat, lng){
     }
 
     const data = await res.json();
-
     if (data.elements.length == 0){
         return null;
     } else {
         const boundsArr = data.elements[0].geometry;
+        console.log(data.elements)
         return buildCoordsString(boundsArr);
     }
 }
@@ -104,21 +104,21 @@ async function parkBoundary(lat, lng){
  */
 async function findAmenities(bounds) {
     const amenitiesQuery =`
-        [out:json];
+        [out:json][timeout:60];
         (
-            nwr["amenity"="bench"](poly:"${bounds}"); 
-            nwr["leisure"="picnic_table"](poly:"${bounds}");
+            node["amenity"="bench"](poly:"${bounds}"); 
+            node["leisure"="picnic_table"](poly:"${bounds}");
         );
-        out geom tags;
+        out center tags;
     `;
 
     const res = await overpassQuery(amenitiesQuery);
-
     if (!res.ok) {
         throw new Error(`findAmenities() error: ${res.status} ${res.statusText}`);
     }
 
     const data = await res.json();
+    console.log(data);
     return data.elements;
 }
 
@@ -130,8 +130,8 @@ async function findAmenities(bounds) {
  */
 async function findShelter(bounds){
     const shelterQuery = `
-        [out:json]; 
-        nwr["amenity"="shelter"](poly:"${bounds}");
+        [out:json][timeout:60]; 
+        way["amenity"="shelter"](poly:"${bounds}");
         out center tags;
     `;
 
@@ -142,6 +142,7 @@ async function findShelter(bounds){
     }
 
     const data = await res.json();
+    console.log(data);
     if (data.elements.length == 0){
         return null;
     } else {
@@ -174,7 +175,6 @@ async function findTrees(bounds) {
             treesArr.push(tree);
         })        
         if(data.results.length < 100) {
-            console.log('Tree count: ' + treesArr.length)
             return treesArr;
         } else {
             currentOffset += 100
@@ -194,12 +194,17 @@ async function shadeMapData(latitude, longitude) {
     const park = await isPark(latitude,longitude);
     if(park.boolean) {
         const bounds = await parkBoundary(latitude, longitude);
-        return {
-            amenities : await findAmenities(bounds.boundsOverpass),
-            trees : await findTrees(bounds.boundsTrees),
-            shelter : await findShelter(bounds.boundsOverpass),
-            parkName : park.name
-        }
+        const [amenities, trees, shelter] = await Promise.all([
+            findAmenities(bounds.boundsOverpass),
+            findTrees(bounds.boundsTrees),
+            findShelter(bounds.boundsOverpass)
+        ]);
+        return { 
+            amenities, 
+            trees, 
+            shelter, 
+            parkName: park.name 
+    };
     } else if(!park.boolean) {
         throw new Error(`error: Location is not a park!`);
     }

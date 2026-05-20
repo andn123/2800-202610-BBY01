@@ -7,7 +7,7 @@ body {
 
 .shade-card{
     z-index: 1000;
-    bottom: 80px;
+    bottom: 20px;
 }
 
 #backBtn {
