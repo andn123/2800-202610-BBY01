@@ -6,12 +6,22 @@ const sortButton = document.getElementById("sortButton");
 const sortMenu = document.getElementById("sortMenu");
 const addressInput = document.getElementById("addressInput");
 const addressSearchBtn = document.getElementById("addressSearchBtn");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
+const loadMoreWrap = document.getElementById("loadMoreWrap");
+const loadingSpinner = document.getElementById("loadingSpinner");
 
 let currentSort = "date-asc";
-
 let allEvents = [];
 
+let currentLat = null;
+let currentLon = null;
+let currentPage = 0;
+let hasMoreEvents = false;
+let isLoading = false;
+let searchTimer = null;
+
 window.addEventListener("load", () => {
+  setupEventsTutorial();
   getUserLocation();
 });
 
@@ -21,48 +31,92 @@ function getUserLocation() {
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    position => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
+  showStatus("Loading nearby events...");
 
-      getCityName(lat, lon);
-fetchEvents(lat, lon);
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      currentLat = position.coords.latitude;
+      currentLon = position.coords.longitude;
+
+      getCityName(currentLat, currentLon);
+      fetchEvents({ reset: true });
     },
     () => {
-      showError("Location permission was denied. Please allow location access.");
+      showError("Location permission was denied. Please allow location access or enter a city/address.");
     }
   );
 }
 
-async function fetchEvents(lat, lon) {
+async function fetchEvents({ reset = false } = {}) {
+  if (isLoading) return;
+
+  if (!currentLat || !currentLon) {
+    showError("Location is missing. Please enter a city or allow location access.");
+    return;
+  }
+
   try {
-    const response = await fetch(`/api/events?lat=${lat}&lon=${lon}`);
-    const events = await response.json();
+    isLoading = true;
+
+    if (reset) {
+      currentPage = 0;
+      allEvents = [];
+      eventsContainer.innerHTML = "";
+      loadMoreWrap.classList.add("hidden");
+      showStatus("Loading events...");
+    } else {
+      showSpinner();
+    }
+
+    const keyword = eventSearch.value.trim();
+
+    const url =
+      `/api/events?lat=${encodeURIComponent(currentLat)}` +
+      `&lon=${encodeURIComponent(currentLon)}` +
+      `&page=${currentPage}` +
+      `&keyword=${encodeURIComponent(keyword)}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
 
     if (!response.ok) {
-      showError(events.error || "Something went wrong.");
+      showError(data.error || "Something went wrong.");
       return;
     }
 
-    if (events.length === 0) {
-      showError("No events found near your location.");
+    const newEvents = data.events || [];
+
+    if (reset && newEvents.length === 0) {
+      eventsContainer.innerHTML = "";
+      showError(keyword ? `No events found for "${keyword}".` : "No events found near your location.");
       return;
     }
+
+    allEvents = [...allEvents, ...newEvents];
+
+    hasMoreEvents = data.hasMore === true;
 
     statusBox.style.display = "none";
-    allEvents = events;
-updateEventList();
+    updateEventList();
+
+    if (hasMoreEvents) {
+      loadMoreWrap.classList.remove("hidden");
+    } else {
+      loadMoreWrap.classList.add("hidden");
+    }
   } catch (error) {
     console.error(error);
     showError("Failed to load events.");
+  } finally {
+    isLoading = false;
+    hideSpinner();
   }
 }
 
 function displayEvents(events) {
   eventsContainer.innerHTML = "";
 
-  events.forEach(event => {
+  events.forEach((event) => {
     const eventCard = document.createElement("article");
     eventCard.classList.add("event-card");
 
@@ -79,17 +133,58 @@ function displayEvents(events) {
       <div class="event-info">
         <span class="near-you">NEAR YOU</span>
         <p class="event-time">${formatDate(event.date)} • ${eventTime}</p>
-        <h2>${event.name}</h2>
-        <p class="event-location">${event.city} • ${event.venue}</p>
+        <h2>${escapeHTML(event.name)}</h2>
+        <p class="event-location">${escapeHTML(event.city)} • ${escapeHTML(event.venue)}</p>
       </div>
 
       <div class="event-action">
-        <a href="${event.url}" target="_blank">Find Tickets</a>
+        <a href="${event.url}" target="_blank" rel="noopener noreferrer">Find Tickets</a>
       </div>
     `;
 
     eventsContainer.appendChild(eventCard);
   });
+}
+
+function updateEventList() {
+  let sortedEvents = sortEvents(allEvents);
+
+  if (sortedEvents.length === 0) {
+    eventsContainer.innerHTML = `
+      <div class="no-results">
+        No events found.
+      </div>
+    `;
+    return;
+  }
+
+  displayEvents(sortedEvents);
+}
+
+function sortEvents(events) {
+  const sortedEvents = [...events];
+
+  if (currentSort === "date-asc") {
+    sortedEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+  }
+
+  if (currentSort === "date-desc") {
+    sortedEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  if (currentSort === "name-asc") {
+    sortedEvents.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  if (currentSort === "name-desc") {
+    sortedEvents.sort((a, b) => b.name.localeCompare(a.name));
+  }
+
+  if (currentSort === "venue-asc") {
+    sortedEvents.sort((a, b) => a.venue.localeCompare(b.venue));
+  }
+
+  return sortedEvents;
 }
 
 function getMonth(dateString) {
@@ -118,25 +213,63 @@ function formatTime(timeString) {
 
   const [hour, minute] = timeString.split(":");
   const date = new Date();
-  date.setHours(hour);
-  date.setMinutes(minute);
+
+  date.setHours(Number(hour));
+  date.setMinutes(Number(minute));
 
   return date.toLocaleString("en-US", {
     hour: "numeric",
-    minute: "2-digit"
+    minute: "2-digit",
   });
+}
+
+function showStatus(message) {
+  statusBox.style.display = "block";
+  statusBox.textContent = message;
 }
 
 function showError(message) {
   statusBox.style.display = "block";
   statusBox.textContent = message;
+  loadMoreWrap.classList.add("hidden");
+  hideSpinner();
 }
-eventSearch.addEventListener("input", updateEventList);
+
+function showSpinner() {
+  loadingSpinner.classList.remove("hidden");
+  loadMoreBtn.disabled = true;
+  loadMoreBtn.textContent = "Loading...";
+}
+
+function hideSpinner() {
+  loadingSpinner.classList.add("hidden");
+  loadMoreBtn.disabled = false;
+  loadMoreBtn.textContent = "Load More Events";
+}
+
+function escapeHTML(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+eventSearch.addEventListener("input", () => {
+  clearTimeout(searchTimer);
+
+  searchTimer = setTimeout(() => {
+    currentPage = 0;
+    fetchEvents({ reset: true });
+  }, 500);
+});
+
 sortButton.addEventListener("click", () => {
   sortMenu.classList.toggle("show");
 });
 
-sortMenu.querySelectorAll("button").forEach(button => {
+sortMenu.querySelectorAll("button").forEach((button) => {
   button.addEventListener("click", () => {
     currentSort = button.dataset.sort;
     sortButton.innerHTML = `${button.textContent} <span>⌄</span>`;
@@ -145,7 +278,7 @@ sortMenu.querySelectorAll("button").forEach(button => {
   });
 });
 
-document.addEventListener("click", event => {
+document.addEventListener("click", (event) => {
   if (!event.target.closest(".sort-dropdown")) {
     sortMenu.classList.remove("show");
   }
@@ -153,10 +286,17 @@ document.addEventListener("click", event => {
 
 addressSearchBtn.addEventListener("click", searchAddressLocation);
 
-addressInput.addEventListener("keydown", event => {
+addressInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     searchAddressLocation();
   }
+});
+
+loadMoreBtn.addEventListener("click", () => {
+  if (!hasMoreEvents || isLoading) return;
+
+  currentPage += 1;
+  fetchEvents({ reset: false });
 });
 
 async function getCityName(lat, lon) {
@@ -182,57 +322,6 @@ async function getCityName(lat, lon) {
   }
 }
 
-function updateEventList() {
-  const searchValue = eventSearch.value.toLowerCase();
-
-  let filteredEvents = allEvents.filter(event => {
-    return (
-      event.name.toLowerCase().includes(searchValue) ||
-      event.venue.toLowerCase().includes(searchValue) ||
-      event.city.toLowerCase().includes(searchValue)
-    );
-  });
-
-  filteredEvents = sortEvents(filteredEvents);
-
-  if (filteredEvents.length === 0) {
-    eventsContainer.innerHTML = `
-      <div class="no-results">
-        No events found for "${eventSearch.value}"
-      </div>
-    `;
-    return;
-  }
-
-  displayEvents(filteredEvents);
-}
-
-function sortEvents(events) {
-  const sortValue = currentSort;
-  const sortedEvents = [...events];
-
-  if (sortValue === "date-asc") {
-    sortedEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-  }
-
-  if (sortValue === "date-desc") {
-    sortedEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
-  }
-
-  if (sortValue === "name-asc") {
-    sortedEvents.sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  if (sortValue === "name-desc") {
-    sortedEvents.sort((a, b) => b.name.localeCompare(a.name));
-  }
-
-  if (sortValue === "venue-asc") {
-    sortedEvents.sort((a, b) => a.venue.localeCompare(b.venue));
-  }
-
-  return sortedEvents;
-}
 async function searchAddressLocation() {
   const address = addressInput.value.trim();
 
@@ -242,9 +331,9 @@ async function searchAddressLocation() {
   }
 
   try {
-    statusBox.style.display = "block";
-    statusBox.textContent = "Finding location...";
+    showStatus("Finding location...");
     eventsContainer.innerHTML = "";
+    loadMoreWrap.classList.add("hidden");
 
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
@@ -259,21 +348,21 @@ async function searchAddressLocation() {
 
     const location = data[0];
 
-    const lat = location.lat;
-    const lon = location.lon;
+    currentLat = location.lat;
+    currentLon = location.lon;
+    currentPage = 0;
 
     const displayName = location.display_name.split(",").slice(0, 2).join(",");
 
     locationText.textContent = `Showing events near ${displayName}`;
 
-    eventSearch.value = "";
-
-    fetchEvents(lat, lon);
+    fetchEvents({ reset: true });
   } catch (error) {
     console.error("Error searching address:", error);
     showError("Could not search that location.");
   }
 }
+
 function setupEventsTutorial() {
   const tutorial = document.getElementById("eventsTutorial");
   const closeBtn = document.getElementById("closeTutorial");
@@ -293,5 +382,3 @@ function setupEventsTutorial() {
     gotItBtn.addEventListener("click", closeTutorial);
   }
 }
-
-setupEventsTutorial();

@@ -613,3 +613,127 @@ body {
     width: 100%;
   }
 }
+/* ---------- Load More Button ---------- */
+
+.load-more-wrap {
+  width: min(100%, 1100px);
+  margin: 22px auto 0;
+  display: flex;
+  justify-content: center;
+}
+
+.load-more-btn {
+  width: 100%;
+  max-width: 360px;
+  padding: 15px 22px;
+  border: none;
+  border-radius: 14px;
+  background: #0057ff;
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 87, 255, 0.22);
+  transition: 0.2s ease;
+}
+
+.load-more-btn:hover {
+  background: #003fd1;
+  transform: translateY(-2px);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------- Loading Spinner ---------- */
+
+.loading-spinner-wrap {
+  width: min(100%, 1100px);
+  margin: 22px auto 0;
+  padding: 18px;
+  background: white;
+  border-radius: 16px;
+  text-align: center;
+  color: #555;
+  font-weight: 700;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+}
+
+.loading-spinner-wrap p {
+  margin-top: 12px;
+}
+
+/* Hide utility */
+.hidden {
+  display: none !important;
+}
+
+/* Pokeball-style loader */
+.pokeball-loader {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto;
+  border: 5px solid #111;
+  border-radius: 50%;
+  background: linear-gradient(
+    to bottom,
+    #ff1f1f 0%,
+    #ff1f1f 48%,
+    #111 48%,
+    #111 55%,
+    #ffffff 55%,
+    #ffffff 100%
+  );
+  animation: pokeballSpin 0.9s linear infinite;
+}
+
+.pokeball-center {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 4px solid #111;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pokeball-center::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #ddd;
+  border: 2px solid #111;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes pokeballSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .load-more-wrap,
+  .loading-spinner-wrap {
+    width: 100%;
+  }
+
+  .load-more-btn {
+    max-width: none;
+    width: 100%;
+  }
+}
