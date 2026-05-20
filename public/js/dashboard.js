@@ -317,3 +317,120 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadMyPosts();
 });
+/* ===== VanCooler Freeze Screen Easter Egg ===== */
+
+const profileEasterEgg = document.getElementById("profileEasterEgg");
+
+let profileClickCount = 0;
+let clickTimer;
+
+const secretCode = "vancooler";
+let typedCode = "";
+
+function activateFreezeEasterEgg() {
+  // Prevent the effect from stacking like a cursed CSS lasagna
+  if (document.querySelector(".freeze-overlay")) {
+    return;
+  }
+
+  document.body.classList.add("freeze-active");
+
+  const freezeOverlay = document.createElement("div");
+  freezeOverlay.classList.add("freeze-overlay");
+
+  freezeOverlay.innerHTML = `
+    <div class="frost frost-top-left"></div>
+    <div class="frost frost-top-right"></div>
+    <div class="frost frost-bottom-left"></div>
+    <div class="frost frost-bottom-right"></div>
+
+    <div class="ice-crack crack-one"></div>
+    <div class="ice-crack crack-two"></div>
+    <div class="ice-crack crack-three"></div>
+
+    <div class="snowflake snowflake-1">❄️</div>
+    <div class="snowflake snowflake-2">❄️</div>
+    <div class="snowflake snowflake-3">❄️</div>
+    <div class="snowflake snowflake-4">❄️</div>
+    <div class="snowflake snowflake-5">❄️</div>
+    <div class="snowflake snowflake-6">❄️</div>
+
+    <div class="freeze-message">
+      <button class="freeze-close" id="closeFreezeMode">×</button>
+
+      <h2>🥶 Ultra Chill Mode Activated</h2>
+
+      <p>Achievement unlocked: Shade Seeker</p>
+
+      <span>VanCooler has frozen the dashboard.</span>
+    </div>
+  `;
+
+  document.body.appendChild(freezeOverlay);
+
+  const closeFreezeMode = document.getElementById("closeFreezeMode");
+
+  closeFreezeMode.addEventListener("click", () => {
+    closeFreezeEasterEgg(freezeOverlay);
+  });
+
+  freezeOverlay.addEventListener("click", (event) => {
+    if (event.target === freezeOverlay) {
+      closeFreezeEasterEgg(freezeOverlay);
+    }
+  });
+
+  // Auto close after 7 seconds
+  setTimeout(() => {
+    if (document.body.contains(freezeOverlay)) {
+      closeFreezeEasterEgg(freezeOverlay);
+    }
+  }, 7000);
+}
+
+function closeFreezeEasterEgg(freezeOverlay) {
+  freezeOverlay.classList.add("freeze-leave");
+
+  setTimeout(() => {
+    freezeOverlay.remove();
+    document.body.classList.remove("freeze-active");
+  }, 400);
+}
+
+/* ===== Mobile Trigger: Tap Profile Picture 5 Times ===== */
+
+if (profileEasterEgg) {
+  profileEasterEgg.addEventListener("click", () => {
+    profileClickCount++;
+
+    profileEasterEgg.classList.add("easter-shake");
+
+    setTimeout(() => {
+      profileEasterEgg.classList.remove("easter-shake");
+    }, 350);
+
+    clearTimeout(clickTimer);
+
+    clickTimer = setTimeout(() => {
+      profileClickCount = 0;
+    }, 1500);
+
+    if (profileClickCount >= 5) {
+      activateFreezeEasterEgg();
+      profileClickCount = 0;
+    }
+  });
+}
+
+/* ===== Desktop Trigger: Type "vancooler" ===== */
+
+document.addEventListener("keydown", (event) => {
+  typedCode += event.key.toLowerCase();
+
+  typedCode = typedCode.slice(-secretCode.length);
+
+  if (typedCode === secretCode) {
+    activateFreezeEasterEgg();
+    typedCode = "";
+  }
+});
