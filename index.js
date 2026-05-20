@@ -35,9 +35,16 @@ const gemini_api_key = process.env.GEMINI_API_KEY;
 const { database } = include("databaseConnection");
 const userCollection = database.db(mongodb_user_database).collection("users");
 const postsCollection = database.db(mongodb_database).collection("posts");
+const easterEggCollection = database
+  .db(mongodb_database)
+  .collection("easterEgg");
 
 const { GridFSBucket } = require("mongodb");
 const fs = require("fs");
+
+async function getActiveEasterEgg() {
+  return await easterEggCollection.findOne({ expiresAt: { $gt: new Date() } });
+}
 
 async function uploadToGridFS(filePath, filename) {
   const bucket = new GridFSBucket(database.db(mongodb_database), {
@@ -48,10 +55,13 @@ async function uploadToGridFS(filePath, filename) {
   readStream.pipe(uploadStream);
   return new Promise((resolve, reject) => {
     uploadStream.on("finish", () => {
-      fs.unlink(filePath, () => {}); // delete local file after upload
+      fs.unlink(filePath, () => {});
       resolve(filename);
     });
-    uploadStream.on("error", reject);
+    uploadStream.on("error", (err) => {
+      fs.unlink(filePath, () => {});
+      reject(err);
+    });
   });
 }
 
@@ -164,12 +174,14 @@ async function postRateLimiter(req, res, next) {
   });
 
   if (recentPostCount >= 3) {
+    const easterEgg = await getActiveEasterEgg();
     return res.render("post", {
       title: "Post",
       css: ["post.css"],
       js: ["create-post.js"],
       navbar: false,
       mapApi: mapApi,
+      easterEgg: easterEgg ? easterEgg.environment : null,
       error: "You can only create 3 posts per hour. Please try again later.",
       success: null,
     });
@@ -538,7 +550,7 @@ app.get("/post", async (req, res) => {
   if (!req.session || !req.session.authenticated) {
     return res.redirect("/login");
   }
-
+  const easterEgg = await getActiveEasterEgg();
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
   const recentPostCount = await postsCollection.countDocuments({
     username: req.session.username,
@@ -556,6 +568,7 @@ app.get("/post", async (req, res) => {
         ? "You can only create 3 posts per hour. Please try again later."
         : null,
     success: null,
+    easterEgg: easterEgg ? easterEgg.environment : null,
   });
 });
 const axios = require("axios");
@@ -564,7 +577,7 @@ app.post("/post", postRateLimiter, upload.single("image"), async (req, res) => {
   if (!req.session || !req.session.authenticated) {
     return res.redirect("/login");
   }
-
+  const easterEgg = await getActiveEasterEgg();
   let location = req.body.location;
   let description = req.body.description;
   let environment = req.body.environment;
@@ -584,7 +597,12 @@ app.post("/post", postRateLimiter, upload.single("image"), async (req, res) => {
 
   if (validationResult.error || !imageFile) {
     return res.render("post", {
+      title: "Post",
+      css: ["post.css"],
+      js: ["create-post.js"],
+      navbar: false,
       mapApi: mapApi,
+      easterEgg: easterEgg ? easterEgg.environment : null,
       error: validationResult.error
         ? validationResult.error.message
         : "Image is required",
@@ -602,6 +620,7 @@ app.post("/post", postRateLimiter, upload.single("image"), async (req, res) => {
       js: ["create-post.js"],
       navbar: false,
       mapApi: mapApi,
+      easterEgg: easterEgg ? easterEgg.environment : null,
       error: "Please select a valid location from the dropdown.",
       success: null,
     });
@@ -621,7 +640,23 @@ app.post("/post", postRateLimiter, upload.single("image"), async (req, res) => {
     likedBy: [],
     dislikedBy: [],
   });
+  const lastTwo = await postsCollection
+    .find({})
+    .sort({ createdAt: -1 })
+    .limit(2)
+    .toArray();
 
+  if (
+    lastTwo.length === 2 &&
+    lastTwo[0].environment === lastTwo[1].environment
+  ) {
+    const env = lastTwo[0].environment;
+    await easterEggCollection.deleteMany({}); // clear old egg
+    await easterEggCollection.insertOne({
+      environment: env,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+    });
+  }
   res.redirect("/posts?success=1");
 });
 
@@ -629,7 +664,7 @@ app.get("/posts", async (req, res) => {
   if (!req.session || !req.session.authenticated) {
     return res.redirect("/login");
   }
-
+  const easterEgg = await getActiveEasterEgg();
   const search = req.query.search || "";
   const safeSearch = escapeRegex(search);
   const env = req.query.environment || "";
@@ -678,6 +713,7 @@ app.get("/posts", async (req, res) => {
     page,
     totalPages,
     success,
+    easterEgg: easterEgg ? easterEgg.environment : null,
   });
 });
 

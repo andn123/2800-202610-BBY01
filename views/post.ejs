@@ -53,5 +53,7 @@
 <script>
   window.mapApi = "<%= mapApi %>";
 </script>
-
+<% if (easterEgg) { %>
+  <div class="easter-egg-overlay easter-egg-<%= easterEgg %>"></div>
+<% } %>
 <%- include('partials/footer', { js: js }) %>
