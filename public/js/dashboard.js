@@ -319,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 /* ===== VanCooler Freeze Screen Easter Egg ===== */
 
-const profileEasterEgg = document.getElementById("profileEasterEgg");
+const profileEasterEgg = document.getElementById("currentProfileImage");
 
 let profileClickCount = 0;
 let clickTimer;
