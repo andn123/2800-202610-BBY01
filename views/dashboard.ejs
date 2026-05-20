@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="snow-flake.png" />
+  <link rel="icon" type="image/png" href="/snow-flake.png" />
   <title><%= title %></title>
 
   <% if (typeof css !== "undefined") { %>
@@ -12,187 +12,207 @@
     <% }) %>
   <% } %>
 </head>
+
 <body>
 <main class="dashboard">
 
-    <!-- Top Bar -->
-    <header class="top-bar">
-      
-      <div class="guide-toggle-wrap">
-        <span>Guide Mode</span>
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="guide-toggle-wrap">
+      <span>Guide Mode</span>
 
-        <label class="switch">
-         <input 
-  type="checkbox" 
-  id="guideToggle" 
-  <%= guideMode ? "checked" : "" %> 
-/>
-          <span class="slider"></span>
-        </label>
-      </div>
-    </header>
+      <label class="switch">
+        <input 
+          type="checkbox" 
+          id="guideToggle" 
+          <%= guideMode ? "checked" : "" %> 
+        />
+        <span class="slider"></span>
+      </label>
+    </div>
+  </header>
 
-    <!-- Main Profile + Weather Area -->
-    <section class="profile-weather-section">
+  <!-- Main Profile + Weather Area -->
+  <section class="profile-weather-section">
 
-      <div class="profile-img-wrap">
-  <img 
-    src="<%= user.profileImage %>" 
-    alt="Profile image" 
-    class="profile-img"
-    id="currentProfileImage"
-  />
-  <form 
-  action="/upload-profile-picture" 
-  method="POST" 
-  enctype="multipart/form-data"
-  class="upload-profile-form"
->
-  <label for="profilePicture" class="upload-profile-label">
-    Upload your own picture
-  </label>
+    <!-- Current Profile Picture -->
+    <div class="profile-img-wrap">
+      <img 
+        src="<%= user.profileImage %>" 
+        alt="Profile image" 
+        class="profile-img"
+        id="currentProfileImage"
+      />
+    </div>
 
-  <input 
-    type="file" 
-    id="profilePicture" 
-    name="profilePicture" 
-    accept="image/png, image/jpeg, image/jpg"
-    required
-  />
+    <!-- Opens profile modal -->
+    <button type="button" id="changeProfileBtn" class="change-profile-btn">
+      Change Profile Picture
+    </button>
 
-  <button type="submit" class="upload-profile-btn">
-    Save Picture
-  </button>
-</form>
-</div>
+    <!-- Profile Picture Modal -->
+    <div class="profile-modal-overlay" id="profileModalOverlay">
+      <div class="profile-modal">
 
-<button type="button" id="changeProfileBtn" class="change-profile-btn">
-  Change Profile Picture
-</button>
+        <button type="button" class="profile-modal-close" id="closeProfileModal">
+          ×
+        </button>
 
-<div class="profile-picker" id="profilePicker">
-  <h3>Choose Profile Picture</h3>
+        <img 
+          src="/img/Dpselector.png" 
+          alt="Profile selector"
+          class="dp-selector-img"
+        />
 
-  <div class="profile-options">
-    <% profileImages.forEach((image) => { %>
-      <button 
-        type="button" 
-        class="profile-option <%= user.profileImage === image ? 'selected' : '' %>"
-        data-image="<%= image %>"
-      >
-        <img src="<%= image %>" alt="Profile option">
-      </button>
-    <% }) %>
-  </div>
-</div>
+        <h3>Choose Profile Picture</h3>
 
-      <!-- Weather location from API -->
-      <p class="location" id="weatherLocation">Loading location...</p>
-
-      <!-- User name from MongoDB -->
-      <h1 class="user-name"><%= user.name %></h1>
-
-      <!-- Weather from API -->
-      <div class="weather-main">
-        <span class="temperature" id="weatherTemp">--°C</span>
-        <span class="sun-icon" id="weatherIcon">🌤️</span>
-      </div>
-
-      <p class="condition">
-        <span id="weatherCondition">Loading weather...</span>
-      </p>
-
-      <div class="forecast-row" id="forecastRow">
-        <div class="forecast-item">
-          <span>Loading forecast...</span>
+        <!-- Default Profile Options -->
+        <div class="profile-options">
+          <% profileImages.forEach((image) => { %>
+            <button 
+              type="button" 
+              class="profile-option <%= user.profileImage === image ? 'selected' : '' %>"
+              data-image="<%= image %>"
+            >
+              <img src="<%= image %>" alt="Profile option">
+            </button>
+          <% }) %>
         </div>
+
+        <!-- Upload Custom Picture -->
+        <form 
+          action="/upload-profile-picture" 
+          method="POST" 
+          enctype="multipart/form-data"
+          class="custom-profile-upload-form"
+        >
+          <input 
+            type="file" 
+            id="profilePicture" 
+            name="profilePicture" 
+            accept="image/png, image/jpeg, image/jpg"
+            hidden
+            onchange="this.form.submit()"
+          />
+
+          <label for="profilePicture" class="upload-profile-btn">
+            Upload Your Own Picture
+          </label>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- Weather location from API -->
+    <p class="location" id="weatherLocation">Loading location...</p>
+
+    <!-- User name from MongoDB -->
+    <h1 class="user-name"><%= user.name %></h1>
+
+    <!-- Weather from API -->
+    <div class="weather-main">
+      <span class="temperature" id="weatherTemp">--°C</span>
+      <span class="sun-icon" id="weatherIcon">🌤️</span>
+    </div>
+
+    <p class="condition">
+      <span id="weatherCondition">Loading weather...</span>
+    </p>
+
+    <div class="forecast-row" id="forecastRow">
+      <div class="forecast-item">
+        <span>Loading forecast...</span>
+      </div>
+    </div>
+
+    <form action="/logout" method="POST">
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+
+  </section>
+
+  <!-- Dashboard Options -->
+  <section class="dashboard-options">
+
+    <a href="/about" class="dashboard-card">
+      <div class="card-icon">ℹ️</div>
+
+      <div class="card-text">
+        <h3>About Us</h3>
+        <p>Learn more about the app and our team.</p>
       </div>
 
-      <form action="/logout" method="POST">
-  <button type="submit" class="logout-btn">Logout</button>
-</form>
+      <span class="card-arrow">›</span>
+    </a>
 
-    </section>
+    <a href="/events" class="dashboard-card">
+      <div class="card-icon">🎟️</div>
 
-    <!-- Dashboard Cards -->
-    <!-- Dashboard Options -->
-<section class="dashboard-options">
+      <div class="card-text">
+        <h3>Events Near You</h3>
+        <p>Find indoor events based on your current location.</p>
+      </div>
 
-  <a href="/about" class="dashboard-card">
-    <div class="card-icon">ℹ️</div>
+      <span class="card-arrow">›</span>
+    </a>
 
-    <div class="card-text">
-      <h3>About Us</h3>
-      <p>Learn more about the app and our team.</p>
+    <a href="/map" class="dashboard-card">
+      <div class="card-icon">🗺️</div>
+
+      <div class="card-text">
+        <h3>Map</h3>
+        <p>View nearby places and explore locations on the map.</p>
+      </div>
+
+      <span class="card-arrow">›</span>
+    </a>
+
+    <a href="/posts" class="dashboard-card">
+      <div class="card-icon">📰</div>
+
+      <div class="card-text">
+        <h3>Posts</h3>
+        <p>View user posts about different locations and social activities.</p>
+      </div>
+
+      <span class="card-arrow">›</span>
+    </a>
+
+    <a href="/info-center" class="dashboard-card">
+      <div class="card-icon">📘</div>
+
+      <div class="card-text">
+        <h3>Help Center</h3>
+        <p>Learn how to use the app features.</p>
+      </div>
+
+      <span class="card-arrow">›</span>
+    </a>
+
+  </section>
+
+  <!-- My Posts Section -->
+  <section class="my-posts-section">
+    <h2>My Posts</h2>
+    <div class="my-posts-grid" id="myPostsGrid">
+      <p class="posts-loading">Loading your posts...</p>
     </div>
+  </section>
 
-    <span class="card-arrow">›</span>
-  </a>
+  <!-- Delete Confirmation Popup -->
+  <div class="delete-overlay" id="deleteOverlay">
+    <div class="delete-popup">
+      <p>Are you sure you want to delete this post?</p>
 
-  <a href="/events" class="dashboard-card">
-    <div class="card-icon">🎟️</div>
-
-    <div class="card-text">
-      <h3>Events Near You</h3>
-      <p>Find indoor events based on your current location.</p>
-    </div>
-
-    <span class="card-arrow">›</span>
-  </a>
-
-  <a href="/map" class="dashboard-card">
-    <div class="card-icon">🗺️</div>
-
-    <div class="card-text">
-      <h3>Map</h3>
-      <p>View nearby places and explore locations on the map.</p>
-    </div>
-
-    <span class="card-arrow">›</span>
-  </a>
-
-  <a href="/posts" class="dashboard-card">
-    <div class="card-icon">📰</div>
-
-    <div class="card-text">
-      <h3>Posts</h3>
-      <p>View user posts about different locations and social activities.</p>
-    </div>
-
-    <span class="card-arrow">›</span>
-  </a>
-
-  <a href="/info-center" class="dashboard-card">
-    <div class="card-icon">📘</div>
-
-    <div class="card-text">
-      <h3>Help Center</h3>
-      <p>Learn how to use the app features.</p>
-    </div>
-
-    <span class="card-arrow">›</span>
-  </a>
-
-</section>
-<!-- My Posts Section -->
-<section class="my-posts-section">
-  <h2>My Posts</h2>
-  <div class="my-posts-grid" id="myPostsGrid">
-    <p class="posts-loading">Loading your posts...</p>
-  </div>
-</section>
-
-<!-- Delete Confirmation Popup -->
-<div class="delete-overlay" id="deleteOverlay">
-  <div class="delete-popup">
-    <p>Are you sure you want to delete this post?</p>
-    <div class="delete-popup-btns">
-      <button class="confirm-delete-btn" id="confirmDeleteBtn">Delete</button>
-      <button class="cancel-delete-btn" id="cancelDeleteBtn">Cancel</button>
+      <div class="delete-popup-btns">
+        <button class="confirm-delete-btn" id="confirmDeleteBtn">Delete</button>
+        <button class="cancel-delete-btn" id="cancelDeleteBtn">Cancel</button>
+      </div>
     </div>
   </div>
-</div>
+
 </main>
+
 <script src="/js/dashboard.js"></script>
 </body>
 </html>

@@ -1,151 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const guideToggle = document.getElementById("guideToggle");
-
-  if (!guideToggle) return;
-
-  // Make the page match the toggle state when dashboard first loads
-  document.body.classList.toggle("guide-mode", guideToggle.checked);
-
-  guideToggle.addEventListener("change", async () => {
-    const firstTimeMode = guideToggle.checked;
-
-    // Update page styling immediately
-    document.body.classList.toggle("guide-mode", firstTimeMode);
-
-    try {
-      const response = await fetch("/guide-mode", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstTimeMode: firstTimeMode,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        console.error("Guide mode update failed:", data.message);
-      }
-    } catch (error) {
-      console.error("Guide mode error:", error);
-    }
-  });
-});
-
-const menuButton = document.querySelector(".menu-btn");
-
-if (menuButton) {
-  menuButton.addEventListener("click", () => {
-    console.log("Menu clicked");
-  });
-}
-
-const weatherLocation = document.querySelector("#weatherLocation");
-const weatherTemp = document.querySelector("#weatherTemp");
-const weatherCondition = document.querySelector("#weatherCondition");
-const weatherIcon = document.querySelector("#weatherIcon");
-const forecastRow = document.querySelector("#forecastRow");
-
-function getWeatherEmoji(condition) {
-  const text = condition.toLowerCase();
-
-  if (text.includes("sun") || text.includes("clear")) return "☀️";
-  if (text.includes("cloud")) return "☁️";
-  if (text.includes("rain")) return "🌧️";
-  if (text.includes("snow")) return "❄️";
-  if (text.includes("thunder")) return "⛈️";
-  if (text.includes("fog") || text.includes("mist")) return "🌫️";
-
-  return "🌤️";
-}
-
-async function fetchDashboardWeather(lat, lon) {
-  try {
-    let url = "/api/dashboard-weather";
-
-    if (lat && lon) {
-      url = `/api/dashboard-weather?lat=${lat}&lon=${lon}`;
-    }
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.details || data.error || "Weather failed");
-    }
-
-    renderDashboardWeather(data);
-  } catch (error) {
-    console.error("Dashboard weather error:", error);
-
-    weatherLocation.textContent = "Vancouver, BC";
-    weatherTemp.textContent = "--°C";
-    weatherCondition.textContent = "Weather unavailable";
-    weatherIcon.textContent = "🌤️";
-
-    forecastRow.innerHTML = `
-      <div class="forecast-item">
-        <span>No forecast available</span>
-      </div>
-    `;
-  }
-}
-
-function renderDashboardWeather(data) {
-  weatherLocation.textContent = `${data.city}, ${data.region}`;
-  weatherTemp.textContent = `${data.temperature}°C`;
-  weatherCondition.textContent = data.condition;
-  weatherIcon.textContent = getWeatherEmoji(data.condition);
-
-  forecastRow.innerHTML = "";
-
-  data.forecast.forEach((day, index) => {
-    const date = new Date(day.date + "T00:00:00");
-
-    const dayName = date.toLocaleDateString("en-US", {
-      weekday: "short",
-    });
-
-    const item = document.createElement("div");
-    item.classList.add("forecast-item");
-
-    item.innerHTML = `
-      <span class="small-weather-icon">${getWeatherEmoji(day.condition)}</span>
-      <span>${dayName} ${day.maxTemp}°/${day.minTemp}°</span>
-    `;
-
-    forecastRow.appendChild(item);
-
-    if (index !== data.forecast.length - 1) {
-      const divider = document.createElement("div");
-      divider.classList.add("forecast-divider");
-      forecastRow.appendChild(divider);
-    }
-  });
-}
-
-if ("geolocation" in navigator) {
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      fetchDashboardWeather(
-        position.coords.latitude,
-        position.coords.longitude,
-      );
-    },
-    () => {
-      fetchDashboardWeather(); // fallback Vancouver
-    },
-  );
-} else {
-  fetchDashboardWeather(); // fallback Vancouver
-}
-document.addEventListener("DOMContentLoaded", () => {
+  /*
+    GUIDE MODE
+  */
   const guideToggle = document.getElementById("guideToggle");
 
   if (guideToggle) {
+    document.body.classList.toggle("guide-mode", guideToggle.checked);
+
     guideToggle.addEventListener("change", async () => {
+      document.body.classList.toggle("guide-mode", guideToggle.checked);
+
       try {
         const response = await fetch("/guide-mode", {
           method: "POST",
@@ -168,14 +32,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  /*
+    PROFILE PICTURE MODAL
+  */
   const changeProfileBtn = document.getElementById("changeProfileBtn");
-  const profilePicker = document.getElementById("profilePicker");
+  const profileModalOverlay = document.getElementById("profileModalOverlay");
+  const closeProfileModal = document.getElementById("closeProfileModal");
   const currentProfileImage = document.getElementById("currentProfileImage");
   const profileOptions = document.querySelectorAll(".profile-option");
 
-  if (changeProfileBtn && profilePicker) {
+  if (changeProfileBtn && profileModalOverlay) {
     changeProfileBtn.addEventListener("click", () => {
-      profilePicker.classList.toggle("show");
+      profileModalOverlay.classList.add("show");
+    });
+  }
+
+  if (closeProfileModal && profileModalOverlay) {
+    closeProfileModal.addEventListener("click", () => {
+      profileModalOverlay.classList.remove("show");
+    });
+  }
+
+  if (profileModalOverlay) {
+    profileModalOverlay.addEventListener("click", (event) => {
+      if (event.target === profileModalOverlay) {
+        profileModalOverlay.classList.remove("show");
+      }
     });
   }
 
@@ -209,28 +91,140 @@ document.addEventListener("DOMContentLoaded", () => {
 
         option.classList.add("selected");
 
-        if (profilePicker) {
-          profilePicker.classList.remove("show");
+        if (profileModalOverlay) {
+          profileModalOverlay.classList.remove("show");
         }
       } catch (err) {
         console.error("Profile picture error:", err);
       }
     });
   });
-});
 
-// My Posts
-document.addEventListener("DOMContentLoaded", () => {
+  /*
+    DASHBOARD WEATHER
+  */
+  const weatherLocation = document.querySelector("#weatherLocation");
+  const weatherTemp = document.querySelector("#weatherTemp");
+  const weatherCondition = document.querySelector("#weatherCondition");
+  const weatherIcon = document.querySelector("#weatherIcon");
+  const forecastRow = document.querySelector("#forecastRow");
+
+  function getWeatherEmoji(condition) {
+    const text = condition.toLowerCase();
+
+    if (text.includes("sun") || text.includes("clear")) return "☀️";
+    if (text.includes("cloud")) return "☁️";
+    if (text.includes("rain")) return "🌧️";
+    if (text.includes("snow")) return "❄️";
+    if (text.includes("thunder")) return "⛈️";
+    if (text.includes("fog") || text.includes("mist")) return "🌫️";
+
+    return "🌤️";
+  }
+
+  async function fetchDashboardWeather(lat, lon) {
+    try {
+      let url = "/api/dashboard-weather";
+
+      if (lat && lon) {
+        url = `/api/dashboard-weather?lat=${lat}&lon=${lon}`;
+      }
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.details || data.error || "Weather failed");
+      }
+
+      renderDashboardWeather(data);
+    } catch (error) {
+      console.error("Dashboard weather error:", error);
+
+      if (weatherLocation) weatherLocation.textContent = "Vancouver, BC";
+      if (weatherTemp) weatherTemp.textContent = "--°C";
+      if (weatherCondition) weatherCondition.textContent = "Weather unavailable";
+      if (weatherIcon) weatherIcon.textContent = "🌤️";
+
+      if (forecastRow) {
+        forecastRow.innerHTML = `
+          <div class="forecast-item">
+            <span>No forecast available</span>
+          </div>
+        `;
+      }
+    }
+  }
+
+  function renderDashboardWeather(data) {
+    if (!weatherLocation || !weatherTemp || !weatherCondition || !weatherIcon || !forecastRow) {
+      return;
+    }
+
+    weatherLocation.textContent = `${data.city}, ${data.region}`;
+    weatherTemp.textContent = `${data.temperature}°C`;
+    weatherCondition.textContent = data.condition;
+    weatherIcon.textContent = getWeatherEmoji(data.condition);
+
+    forecastRow.innerHTML = "";
+
+    data.forecast.forEach((day, index) => {
+      const date = new Date(day.date + "T00:00:00");
+
+      const dayName = date.toLocaleDateString("en-US", {
+        weekday: "short",
+      });
+
+      const item = document.createElement("div");
+      item.classList.add("forecast-item");
+
+      item.innerHTML = `
+        <span class="small-weather-icon">${getWeatherEmoji(day.condition)}</span>
+        <span>${dayName} ${day.maxTemp}°/${day.minTemp}°</span>
+      `;
+
+      forecastRow.appendChild(item);
+
+      if (index !== data.forecast.length - 1) {
+        const divider = document.createElement("div");
+        divider.classList.add("forecast-divider");
+        forecastRow.appendChild(divider);
+      }
+    });
+  }
+
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        fetchDashboardWeather(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
+      },
+      () => {
+        fetchDashboardWeather();
+      },
+    );
+  } else {
+    fetchDashboardWeather();
+  }
+
+  /*
+    MY POSTS
+  */
   const myPostsGrid = document.getElementById("myPostsGrid");
   const deleteOverlay = document.getElementById("deleteOverlay");
   const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
   const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+
   let pendingDeleteId = null;
   let currentPage = 1;
   const postsPerPage = 6;
   let allPosts = [];
 
   async function loadMyPosts() {
+    if (!myPostsGrid) return;
+
     try {
       const res = await fetch("/api/my-posts");
       allPosts = await res.json();
@@ -241,6 +235,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderPage(page) {
+    if (!myPostsGrid) return;
+
+    document.querySelector(".my-posts-pagination")?.remove();
+
     if (!allPosts.length) {
       myPostsGrid.innerHTML = "<p>You haven't made any posts yet.</p>";
       return;
@@ -253,67 +251,93 @@ document.addEventListener("DOMContentLoaded", () => {
     myPostsGrid.innerHTML = pagePosts
       .map(
         (post) => `
-      <div class="my-post-card" id="post-${post._id}">
-        <img src="/image/${post.image}" class="my-post-img" alt="post image">
-        <div class="my-post-info">
-          <p><strong>${post.location}</strong></p>
-          <p>${post.description}</p>
-          <p class="my-post-env">${post.environment}</p>
-          <p class="my-post-date">${post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}</p>
-        </div>
-        <button class="delete-post-btn" data-id="${post._id}">🗑 Delete</button>
-      </div>
-    `,
+          <div class="my-post-card" id="post-${post._id}">
+            <img src="/image/${post.image}" class="my-post-img" alt="post image">
+
+            <div class="my-post-info">
+              <p><strong>${post.location}</strong></p>
+              <p>${post.description}</p>
+              <p class="my-post-env">${post.environment}</p>
+              <p class="my-post-date">
+                ${post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
+              </p>
+            </div>
+
+            <button class="delete-post-btn" data-id="${post._id}">
+              🗑 Delete
+            </button>
+          </div>
+        `,
       )
       .join("");
 
-    // Pagination controls
     const paginationHTML = `
       <div class="my-posts-pagination">
-        <button class="my-page-btn" id="myPrevBtn" ${page === 1 ? "disabled" : ""}>Prev</button>
+        <button class="my-page-btn" id="myPrevBtn" ${page === 1 ? "disabled" : ""}>
+          Prev
+        </button>
+
         <span class="my-page-number">Page ${page} of ${totalPages}</span>
-        <button class="my-page-btn" id="myNextBtn" ${page === totalPages ? "disabled" : ""}>Next</button>
+
+        <button class="my-page-btn" id="myNextBtn" ${page === totalPages ? "disabled" : ""}>
+          Next
+        </button>
       </div>
     `;
 
     myPostsGrid.insertAdjacentHTML("afterend", paginationHTML);
 
     document.getElementById("myPrevBtn")?.addEventListener("click", () => {
-      document.querySelector(".my-posts-pagination")?.remove();
       currentPage--;
       renderPage(currentPage);
     });
 
     document.getElementById("myNextBtn")?.addEventListener("click", () => {
-      document.querySelector(".my-posts-pagination")?.remove();
       currentPage++;
       renderPage(currentPage);
     });
   }
 
-  myPostsGrid.addEventListener("click", (e) => {
-    const btn = e.target.closest(".delete-post-btn");
-    if (!btn) return;
-    pendingDeleteId = btn.dataset.id;
-    deleteOverlay.classList.add("show");
-  });
+  if (myPostsGrid && deleteOverlay) {
+    myPostsGrid.addEventListener("click", (e) => {
+      const btn = e.target.closest(".delete-post-btn");
 
-  confirmDeleteBtn.addEventListener("click", async () => {
-    if (!pendingDeleteId) return;
-    await fetch(`/posts/${pendingDeleteId}`, { method: "DELETE" });
-    allPosts = allPosts.filter((p) => p._id !== pendingDeleteId);
-    document.querySelector(".my-posts-pagination")?.remove();
-    const totalPages = Math.ceil(allPosts.length / postsPerPage);
-    if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
-    renderPage(currentPage);
-    pendingDeleteId = null;
-    deleteOverlay.classList.remove("show");
-  });
+      if (!btn) return;
 
-  cancelDeleteBtn.addEventListener("click", () => {
-    pendingDeleteId = null;
-    deleteOverlay.classList.remove("show");
-  });
+      pendingDeleteId = btn.dataset.id;
+      deleteOverlay.classList.add("show");
+    });
+  }
+
+  if (confirmDeleteBtn && deleteOverlay) {
+    confirmDeleteBtn.addEventListener("click", async () => {
+      if (!pendingDeleteId) return;
+
+      await fetch(`/posts/${pendingDeleteId}`, {
+        method: "DELETE",
+      });
+
+      allPosts = allPosts.filter((p) => p._id !== pendingDeleteId);
+
+      const totalPages = Math.ceil(allPosts.length / postsPerPage);
+
+      if (currentPage > totalPages) {
+        currentPage = Math.max(1, totalPages);
+      }
+
+      renderPage(currentPage);
+
+      pendingDeleteId = null;
+      deleteOverlay.classList.remove("show");
+    });
+  }
+
+  if (cancelDeleteBtn && deleteOverlay) {
+    cancelDeleteBtn.addEventListener("click", () => {
+      pendingDeleteId = null;
+      deleteOverlay.classList.remove("show");
+    });
+  }
 
   loadMyPosts();
 });
