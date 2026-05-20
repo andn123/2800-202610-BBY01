@@ -1,27 +1,26 @@
-* { 
-  box-sizing: border-box; 
-  margin: 0; 
-  padding: 0; 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-body { 
-  font-family: 
-  var(--font-sans); 
+body {
+  font-family: var(--font-sans);
 }
 
-.page { 
-  padding: 2rem 1.5rem; 
-  max-width: 760px; margin: 
-  0 auto; 
+.page {
+  padding: 2rem 1.5rem;
+  max-width: 760px;
+  margin: 0 auto 80px;
 }
 
 .hero {
   text-align: center;
   padding: 3rem 1.5rem 2.5rem;
-  background: linear-gradient(160deg, #E1F5EE 0%, #E6F1FB 100%);
+  background: linear-gradient(160deg, #e1f5ee 0%, #e6f1fb 100%);
   border-radius: 20px;
   margin-bottom: 2.5rem;
-  border: 0.5px solid #9FE1CB;
+  border: 0.5px solid #9fe1cb;
   position: relative;
   overflow: hidden;
 }
@@ -29,7 +28,7 @@ body {
   font-size: 2.5rem;
   display: block;
   margin-bottom: 0.75rem;
-  color: #0F6E56;
+  color: #0f6e56;
 }
 .hero h2 {
   font-size: 22px;
@@ -39,7 +38,7 @@ body {
 }
 .hero p {
   font-size: 15px;
-  color: #0F6E56;
+  color: #0f6e56;
   line-height: 1.7;
   max-width: 520px;
   margin: 0 auto;
@@ -63,7 +62,7 @@ body {
   gap: 8px;
 }
 .section-title::after {
-  content: '';
+  content: "";
   flex: 1;
   height: 0.5px;
   background: var(--color-border-tertiary);
@@ -86,11 +85,11 @@ body {
   transition: border-color 0.2s;
 }
 .feature-card:hover {
-  border-color: #5DCAA5;
+  border-color: #5dcaa5;
 }
 .feature-icon {
   font-size: 18px;
-  color: #1D9E75;
+  color: #1d9e75;
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -113,17 +112,19 @@ body {
   padding: 1.125rem 1rem;
   width: 130px;
   text-align: center;
-  transition: border-color 0.2s, transform 0.2s;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
 }
 .team-card:hover {
-  border-color: #5DCAA5;
+  border-color: #5dcaa5;
   transform: translateY(-3px);
 }
 .avatar {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #E1F5EE;
+  background: #e1f5ee;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,7 +132,7 @@ body {
   font-weight: 500;
   color: #085041;
   margin: 0 auto 10px;
-  border: 0.5px solid #9FE1CB;
+  border: 0.5px solid #9fe1cb;
 }
 .team-name {
   font-size: 13px;
@@ -201,6 +202,13 @@ body {
 
 .team-card .badge {
   margin-top: 8px;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  display: block;
+  margin: 10px auto;
 }
 
 @keyframes flash {

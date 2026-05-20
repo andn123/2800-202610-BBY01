@@ -1,0 +1,53 @@
+<%- include('partials/header', { title: title, css: css }) %>
+
+<!--
+confetti
+Copyright (c) 2023 by Wakana Y.K. (https://codepen.io/wakana-k/pen/gOqqWdY)
+
+Luxurious version : https://codepen.io/wakana-k/pen/mdvoQaV
+-->
+<!-- using three.js -->
+<div class="content-wrapper">
+  <h1>YOU HAVE FOUND OUR EASTER EGG!!!</h1>
+  <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+    <div class="hovereffect">
+        <img class="team-images" src="/img/Andrew_picture.png" alt="Andrew_picture">
+            <div class="overlay">
+            <h2>Andrew Ni</h2>
+			<p>Scrum Master</p>
+        </div>
+    </div>
+</div>
+<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+    <div class="hovereffect">
+        <img class="team-images" src="/img/Maneet_picture.png" alt="Maneet_picture">
+            <div class="overlay">
+            <h2>Maneet Singh</h2>
+			<p>Product Owner</p>
+        </div>
+    </div>
+</div>
+<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+    <div class="hovereffect">
+        <img id="jonathan-picture" class="team-images" src="/img/Jonathan_picture.png" alt="Jonathan_picture">
+            <div class="overlay">
+            <h2>Jonathan Lin</h2>
+			<p>Single Person</p>
+        </div>
+    </div>
+</div>
+  <button id="back-btn"><span>&larr;</span> Go Back</button>
+</div>
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js" crossorigin="anonymous"></script>
+<script type="importmap">
+  {
+    "imports": {      
+      "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.159.0/examples/jsm/"
+    }
+  }
+</script>
+
+<script type="module" src="/js/aboutUsEasterEgg.js"></script>
+</body>
+</html>

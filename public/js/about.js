@@ -1,3 +1,5 @@
+let click = 0;
+
 document.querySelectorAll(".team-card").forEach((card) => {
   card.addEventListener("click", () => {
     document.querySelectorAll(".team-card").forEach((c) => {
@@ -5,4 +7,10 @@ document.querySelectorAll(".team-card").forEach((card) => {
     });
     card.classList.toggle("flipped");
   });
+});
+
+document.getElementById("logo").addEventListener("click", () => {
+  click++;
+  if (click % 5 != 0) return;
+  window.location.href = "about_us_easter_egg";
 });

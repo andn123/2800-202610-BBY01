@@ -1206,6 +1206,13 @@ app.delete("/posts/:id", async (req, res) => {
   res.json({ success: true });
 });
 
+app.get("/about_us_easter_egg", (req, res) => {
+  res.render("aboutUsEasterEgg", {
+    title: "Easter Egg",
+    css: ["aboutUsEasterEgg.css"],
+  });
+});
+
 async function removeOldPosts() {
   const cutoff = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
   const result = await postsCollection.deleteMany({
