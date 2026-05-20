@@ -560,7 +560,7 @@ app.get("/post", async (req, res) => {
 });
 const axios = require("axios");
 
-app.post("/post", upload.single("image"), postRateLimiter, async (req, res) => {
+app.post("/post", postRateLimiter, upload.single("image"), async (req, res) => {
   if (!req.session || !req.session.authenticated) {
     return res.redirect("/login");
   }
