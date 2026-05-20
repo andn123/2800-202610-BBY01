@@ -1,6 +1,6 @@
 require("./utils.js");
 require("dotenv").config();
-const {shadeMapData} = require("./public/js/shadeServer");
+const { shadeMapData } = require("./public/js/shadeServer");
 const { ObjectId } = require("mongodb");
 const express = require("express");
 const session = require("express-session");
@@ -154,6 +154,30 @@ async function signupLimiter(req, res, next) {
   next();
 }
 
+async function postRateLimiter(req, res, next) {
+  const username = req.session.username;
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+  const recentPostCount = await postsCollection.countDocuments({
+    username: username,
+    createdAt: { $gt: oneHourAgo },
+  });
+
+  if (recentPostCount >= 3) {
+    return res.render("post", {
+      title: "Post",
+      css: ["post.css"],
+      js: ["create-post.js"],
+      navbar: false,
+      mapApi: mapApi,
+      error: "You can only create 3 posts per hour. Please try again later.",
+      success: null,
+    });
+  }
+
+  next();
+}
+
 // Home route
 app.get("/", (req, res) => {
   res.render("index", {
@@ -228,33 +252,33 @@ app.get("/map", async (req, res) => {
         }),
     };
 
-  res.render("map", {
-  posts: posts,
-  mapApi: mapApi,
-  locations,
-  title: "Map",
-  css: ["map.css", "back-button.css"],
-  js: ["map.js"],
-  navbar: false,
-  firstTimeMode: firstTimeMode,
+    res.render("map", {
+      posts: posts,
+      mapApi: mapApi,
+      locations,
+      title: "Map",
+      css: ["map.css", "back-button.css"],
+      js: ["map.js"],
+      navbar: false,
+      firstTimeMode: firstTimeMode,
 
-  backButton: true,
-  backButtonHref: "/dashboard",
-  backButtonClass: "map-back",
-});
+      backButton: true,
+      backButtonHref: "/dashboard",
+      backButtonClass: "map-back",
+    });
   } catch (err) {
     console.error(err);
     res.send("Error fetching events");
   }
 });
 
-app.get('/noShade', (req,res) =>{
+app.get("/noShade", (req, res) => {
   res.render("noShade", {
     title: "shademap",
     css: ["noShade.css"],
     js: ["noShade.js"],
   });
-})
+});
 
 app.get("/shademapLoad", async (req, res) => {
   res.render("shademapLoad", {
@@ -272,27 +296,27 @@ app.get("/shademap", async (req, res) => {
 
   try {
     const data = await shadeMapData(latitude, longitude);
-    const firstTime = (await userCollection.findOne(
-      { email: req.session.email },
-      { projection: { _id: 0, firstTimeMode: 1 } },
-    ))?.firstTimeMode
+    const firstTime = (
+      await userCollection.findOne(
+        { email: req.session.email },
+        { projection: { _id: 0, firstTimeMode: 1 } },
+      )
+    )?.firstTimeMode;
 
     res.render("shade", {
       title: "shademap",
       css: ["shade.css", "style.css"],
       js: ["shade.js"],
       latitude,
-      longitude,    
-      firstTime,    
+      longitude,
+      firstTime,
       navbar: false,
-      ...data
+      ...data,
     });
-
   } catch (error) {
     console.error(error.message);
-    res.redirect('/noShade');
+    res.redirect("/noShade");
   }
-
 });
 
 app.get("/about", (req, res) => {
@@ -510,24 +534,33 @@ app.post("/logout", (req, res) => {
   });
 });
 
-app.get("/post", (req, res) => {
+app.get("/post", async (req, res) => {
   if (!req.session || !req.session.authenticated) {
     return res.redirect("/login");
   }
+
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const recentPostCount = await postsCollection.countDocuments({
+    username: req.session.username,
+    createdAt: { $gt: oneHourAgo },
+  });
 
   res.render("post", {
     title: "Post",
     css: ["post.css"],
     js: ["create-post.js"],
     navbar: false,
-    error: null,
-    success: null,
     mapApi: mapApi,
+    error:
+      recentPostCount >= 3
+        ? "You can only create 3 posts per hour. Please try again later."
+        : null,
+    success: null,
   });
 });
 const axios = require("axios");
 
-app.post("/post", upload.single("image"), async (req, res) => {
+app.post("/post", postRateLimiter, upload.single("image"), async (req, res) => {
   if (!req.session || !req.session.authenticated) {
     return res.redirect("/login");
   }
@@ -824,7 +857,7 @@ app.get("/dashboard", async (req, res) => {
 
       await userCollection.updateOne(
         { email: req.session.email },
-        { $set: { profileImage: randomProfileImage } }
+        { $set: { profileImage: randomProfileImage } },
       );
 
       user.profileImage = randomProfileImage;
@@ -1007,23 +1040,23 @@ app.post("/shadeAI", async (req, res) => {
     const serverPrompts = {
       tree: {
         role: "system",
-        content:`
+        content: `
           Write 2-3 sentence description based on given tree information. Focus on explaining 
           how a given tree can contribute to shade. Build description from its common name,
           and scientific name, then use species trait like leaves and brancing pattern to explain
           if it can provide useful shade. Plain text only, no markdown, and maximum 45 words.
-        `
+        `,
       },
       spot: {
         role: "system",
-        content:`
+        content: `
           Write a 2-3 sentence description based on given information for a spot in a park. Focus 
           on the possible shade from number of trees. Plain text only, no markdown, 
           and maximum 45 words. Do not mention radius, tree characteristics, or buildings. Refrain from 
           mentioning downsides. In the user request, the values for number of trees, number of benches, 
           and number of picnic table are category labels: none=0, low=1-2, medium=3-5, high=6+. If none, say
           0 instead of low.
-        `
+        `,
       },
     };
 
@@ -1053,7 +1086,6 @@ app.post("/shadeAI", async (req, res) => {
     });
   }
 });
-
 
 app.get("/api/my-posts", async (req, res) => {
   if (!req.session.authenticated)
