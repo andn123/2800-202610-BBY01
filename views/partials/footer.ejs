@@ -1,25 +1,22 @@
-<% if (typeof navbar !== "undefined" && navbar === true) { %>
-  <nav class="bottom-nav">
-    <a href="/map" class="nav-item">
-      <img src="/img/map.png" alt="Map">
-    </a>
+       <% if(typeof navbar !== "undefined" && navbar === true){ %>} 
+        <nav class="bottom-nav">
+          <a href="/map" class="nav-item">
+            <img src="/img/map.png" alt="Map">
+          </a>
 
-    <a href="/events" class="nav-item">
-      <img src="/img/ticket.png" alt="Events">
-    </a>
+          <a href="/events" class="nav-item">
+            <img src="/img/ticket.png" alt="Events">
+          </a>
 
-    <a href="/post" class="nav-item">
-      <img src="/img/post.png" alt="Home">
-    </a>
+          <a href="/post" class="nav-item">
+            <img src="/img/post.png" alt="Home">
+          </a>
 
-    <a href="/dashboard" class="nav-item">
-      <img src="/img/user.png" alt="Dashboard">
-    </a>
-  </nav>
-<% } %>
-
-<% if (typeof js !== "undefined") { %>
+          <a href="/dashboard" class="nav-item">
+            <img src="/img/user.png" alt="Dashboard">
+          </a>
+        </nav>
+                
   <% js.forEach(file => { %>
-    <script src="/js/<%= file %>"></script>
-  <% }) %>
-<% } %>
+  <script src="/js/<%= file %>"></script>
+<% }) %>
