@@ -306,7 +306,7 @@ loadMoreBtn.addEventListener("click", async () => {
 
   currentPage += 1;
 
-  await fetchEvents({ reset: false, minimumLoadingTime: 4000 });
+  await fetchEvents({ reset: false, minimumLoadingTime: 2000 });
 });
 
 async function getCityName(lat, lon) {
