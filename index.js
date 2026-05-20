@@ -888,6 +888,30 @@ app.post("/profile-picture", async (req, res) => {
   }
 });
 
+app.post("/upload-profile-picture", upload.single("profilePicture"), async (req, res) => {
+  try {
+    if (!req.session.authenticated) {
+      return res.redirect("/login");
+    }
+
+    if (!req.file) {
+      return res.redirect("/dashboard");
+    }
+
+    const profileImagePath = "/uploads/" + req.file.filename;
+
+    await userCollection.updateOne(
+      { email: req.session.email },
+      { $set: { profileImage: profileImagePath } }
+    );
+
+    res.redirect("/dashboard");
+  } catch (err) {
+    console.error("Upload profile picture error:", err);
+    res.status(500).send("Server error uploading profile picture");
+  }
+});
+
 app.post("/guide-mode", async (req, res) => {
   try {
     if (!req.session.authenticated) {
