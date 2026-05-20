@@ -280,7 +280,7 @@ app.get("/shademap", async (req, res) => {
     res.render("shade", {
       title: "shademap",
       css: ["shade.css", "style.css"],
-      js: [],
+      js: ["shade.js"],
       latitude,
       longitude,    
       firstTime,    
