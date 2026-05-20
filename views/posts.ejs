@@ -29,7 +29,13 @@
       <option value="sunny" <%= env === "sunny" ? "selected" : "" %>>Sunny</option>
       <option value="indoors" <%= env === "indoors" ? "selected" : "" %>>Indoors</option>
     </select>
+
+    <a href="/post" class="btn btn-primary btn-lg" style="font-size: 1rem;">
+      Create Post
+    </a>
+
   </form>
+
 
   <% if (posts.length === 0) { %>
     <p>No posts found.</p>

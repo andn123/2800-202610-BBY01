@@ -1,6 +1,3 @@
-//vancouver coords latitude:49.xxxxxx longitude:-123.xxxxxx
-// gemini uses user/model
-
 /* ========================
     CONSTANT VARIABLES
 ======================== */
@@ -58,9 +55,202 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
     subdomains: 'abcd'
 }).addTo(map)
 
+const icons = {}
+
+/* ========================
+    HELPER FUNCTIONS 
+======================== */
+/**
+ * Determines shade score based on tree count and shelter count.
+ */
+function shadeScore(trees, shelter){
+    if(shelter > 0) {
+        return "high";
+    } else if (trees > 10) {
+        return "high";
+    } else if (trees > 2) {
+        return "medium";
+    } else {
+        return "low";
+    }
+}
 
 /**
- * Sends a request to /shadeAI route and returns its response.
+ * Categorizes number of trees, shelters and amenities to none, low, medium and high.
+ * 
+ * @param {number} count the number of items found within a radius
+ * @returns "none", "low", "medium", or "high"
+ */
+function countScore(count){
+    if(count == 0) {
+        return "none";
+    } else if (count < 3) {
+        return "low";
+    } else if (count < 6) {
+        return "medium";
+    } else if (count >= 6) {
+        return "high"
+    }
+}
+
+/**
+ * Converts two coordinates into a leaflet latlng object and calculates
+ * distance between.
+ * 
+ * coords1 and coords2 - must be {lat: ..., lng: ...}
+ * 
+ * @param {{lat: number, lng: number}} coords1 - is the first coordinate.
+ * @param {{lat: number, lng: number}} coords2 - Second coordinate to compare against.
+ * @returns {number} Distance between the two points in meters.
+ */
+function calculateDistance(coords1, coords2) {
+    const object1Coords = L.latLng(coords1.lat, coords1.lng);
+    const object2Coords = L.latLng(coords2.lat, coords2.lng);
+
+    return object1Coords.distanceTo(object2Coords)
+}
+
+/**
+ * Displays a temporary animated circle at the user's click location.
+ * 
+ * @param {L.latLng} latlng - coordinates of the user's click as a leaflet latlng object
+ * @param {number} radius - Radius of scan area in meters.
+ */
+function showClickRadius(latlng, radius) {
+    const circle = L.circle(latlng, {
+        radius: radius,
+        color: 'green',
+        fillColor: 'green',
+        fillOpacity: 0.2
+    }).addTo(map);
+
+    setTimeout(() => {
+        circle.getElement().classList.add('circle-fade');
+
+        setTimeout(() => {
+            circle.remove();
+        }, 1000);
+    }, 1000);
+}
+
+/**
+ * Counts nearby trees under a given radius and returns number found.
+ * 
+ * @param {{lat: number, lng: number}} clickCoords - coordinates of where the user clicks.
+ * @param {number} radius - Radius of search area in meters.
+ * @returns {number} - Number of trees within the radius.
+ */
+function countNearbyTrees(clickCoords, radius) {
+    let treeCount = 0;
+
+    treeArr.forEach(tree => {
+        const distance = calculateDistance(clickCoords, {lat: tree.lat, lng: tree.lng})
+        if (distance <= radius) {
+            treeCount++;
+        }
+    });
+
+    return treeCount;
+}
+
+/**
+ * Counts nearby shelters under a given radius and returns shelter type and number found.
+ * 
+ * @param {{lat: number, lng: number}} clickCoords - coordinates of where the user clicks.
+ * @param {number} radius - Radius of search area in meters.
+ * @returns {{number, string}} - number of shelters and shelter type.
+ */
+function scanNearbyShelters(clickCoords, radius) {
+    let shelterCount = 0;
+    let shelterType = "none";
+
+    shelterArr.forEach(shelter => {
+        const distance = calculateDistance(clickCoords, {lat: shelter.lat, lng: shelter.lng})
+        if (distance <= radius) {
+            shelterCount++;
+            shelterType = shelter.type;
+            console.log("shelter: " + shelterType);
+        }
+    });
+
+    return {shelterCount, shelterType};
+}
+
+/**
+ * Counts nearby benches and picnic tables as well as total amenities found.
+ * 
+ * @param {{lat: number, lng: number}} clickCoords - coordinates of where the user clicks.
+ * @param {number} radius - Radius of search area in meters.
+ * @returns {{number, number, number}} - number of amenities, benches, and picnic tables
+ */
+function scanNearbyAmenities(clickCoords, radius) {
+    let amenitiesCount = 0;
+    let benches = 0;
+    let picnicTables = 0;
+
+    amenitiesArr.forEach(amenity =>{
+        const distance = calculateDistance(clickCoords, {lat: amenity.lat, lng: amenity.lng})
+        if (distance <= radius) {
+            amenitiesCount++;
+            console.log("amenity: " + amenity.type);
+            if(amenity.type === 'bench'){
+                benches++;
+            } else if(amenity.type === 'picnic_table') {
+                picnicTables++;
+            }
+
+        }
+    });
+
+    return {amenitiesCount, benches, picnicTables};
+}
+
+/**
+ * Hides the first-time guide card and displays default information card.
+ */
+function hideGuideCard () {
+    document.getElementById('firstTimeView')?.style.setProperty('display', 'none');
+    document.getElementById('view').style.setProperty ('display', 'block');
+}
+
+/**
+ * Removes amenities on the map that are in very close proximity.
+ */
+function removeStackingAmenities() {
+    amenitiesArr.forEach((amenity, i) => {
+        if(!amenity.marker._map){
+            return;
+        }
+
+        for(let j = i + 1; j < amenitiesArr.length; j++){
+            const currentAmenity = {lat: amenity.lat, lng: amenity.lng};
+            const storedAmenity = {lat: amenitiesArr[j].lat, lng:  amenitiesArr[j].lng};
+            const distance = calculateDistance(currentAmenity, storedAmenity);
+            if(distance < 4){
+                amenitiesArr[j].marker.remove()
+            }
+        }
+    })
+}
+
+/* ========================
+    AI functions
+======================== */
+/**
+ * Requests an AI-generated description for a selected tree.
+ * 
+ * Sends tree information to the `/shadeAI` route and returns the
+ * generated response text.
+ */
+
+/**
+ * Requests an AI-generated description for a selected tree.
+ * 
+ * Sends tree information to the `/shadeAI` route and returns the
+ * generated response text.
+ * 
+ * @param {Object} tree - is an object container tree information queried from server side.
+ * @returns {string} AI-generated tree description.
  */
 async function groqTreeDetails(tree) {
     const prompt = `
@@ -90,7 +280,16 @@ async function groqTreeDetails(tree) {
 }
 
 /**
- * Sends a request to /shadeAI route and returns its response.
+ * Requests an AI-generated description for a selected spot.
+ * 
+ * Sends nearby shade-related information to the `/shadeAI` route and
+ * returns the generated response text.
+ * 
+ * @param {string} treeCount - Tree density category for the spot.
+ * @param {string} benches - Bench density category for the spot.
+ * @param {string} picnicTables - Picnic table density category for the spot.
+ * @param {string} shelterType - Shelter type found near the spot.
+ * @returns {string} AI-generated spot description.
  */
 async function groqSpotDescription(treeCount, benches, picnicTables, shelterType) {
     const prompt = `
@@ -121,81 +320,81 @@ async function groqSpotDescription(treeCount, benches, picnicTables, shelterType
     return data.reply;
 }
 
+/* ========================
+    Card/UI functions
+======================== */
 /**
- * Determines shade score based on tree count and shelter count.
+ * Updates information card description generated by AI. Uses cached description 
+ * instead if it exists for a selected spot.
+ * 
+ * @param {string} treeCount - Tree density category for the spot.
+ * @param {string} benches - Bench density category for the spot.
+ * @param {string} picnicTables - Picnic table density category for the spot.
+ * @param {string} shelterType - Shelter type found near the spot.
  */
-function shadeScore(trees, shelter){
-    if(shelter > 0) {
-        return "high";
-    } else if (trees > 10) {
-        return "high";
-    } else if (trees > 2) {
-        return "medium";
+async function updateSpotDescription (treeCount, benches, picnicTables, shelterType) {
+    const currentSpotKey = `${treeCount},${benches},${picnicTables},${shelterType}`;
+    const cached = spotDescriptionArr.find(item => item.spotKey === currentSpotKey);
+    if(!cached) {
+        document.getElementById('parkDescription').textContent = await groqSpotDescription(
+            treeCount, 
+            benches, 
+            picnicTables, 
+            shelterType
+        )
     } else {
-        return "low";
-    }
-}
-
-function countScore(count){
-    if(count == 0) {
-        return "none";
-    } else if (count < 3) {
-        return "low";
-    } else if (count < 6) {
-        return "medium";
-    } else if (count >= 6) {
-        return "high"
+        console.log("using description from array");
+        document.getElementById('parkDescription').textContent = cached.desc;
     }
 }
 
 /**
- * Creates markers for shademap
+ * Updates information card based on information passed as arguments.
+ * 
+ * @param {number} treeCount - Number of trees on the spot
+ * @param {number} shelterCount -  Number of shelters on the spot
  */
-function createMarkers() {
-    const treeIcon = L.icon({
-        iconUrl: '/img/shade/tree2.png',
-        iconSize: [24, 24],
-        iconAnchor: [12,24],
-        popupAnchor: [0, -24],
+async function updateSpotCard (treeCount, shelterCount) {
+    document.getElementById('shadevalue').textContent = shadeScore(treeCount, shelterCount);
+    document.getElementById('treesvalue').textContent = treeCount;
+    if (shelterCount == 0) {
+        document.getElementById('sheltervalue').textContent = "none";
+    } else {
+        document.getElementById('sheltervalue').textContent = shelter.tags.shelter_type;
+    }
+
+    hideGuideCard()
+}
+
+/* ========================
+    Map marker functions
+======================== */
+/**
+ * Creates tree, shelter, benches, and table icons for shademap
+ */
+function createIcons() {
+    const iconSet = [
+        { name: 'treeIcon', url: 'tree2',  iconSize: [24, 24], iconAnchor: [12, 24], popupAnchor: [0, -24]},
+        { name: 'shelterIcon', url: 'gazebo',  iconSize: [16, 16], iconAnchor: [8, 12], popupAnchor: [0, -16]},
+        { name: 'benchIcon', url: '/bench2',  iconSize: [16, 16], iconAnchor: [8, 16], popupAnchor: [0, -16]},
+        { name: 'tableIcon', url: 'table',  iconSize: [16, 16], iconAnchor: [8, 16], popupAnchor: [0, -16]}
+    ];
+
+    iconSet.forEach(item =>{
+        icons[item.name] = L.icon({
+            iconUrl: `/img/shade/${item.url}.png`,
+            iconSize: item.iconSize,
+            iconAnchor: item.iconAnchor,
+            popupAnchor: item.popupAnchor
+        })
     })
-
-    const shelterIcon = L.icon({
-        iconUrl: '/img/shade/gazebo.png',
-        iconSize: [16, 16],
-        iconAnchor: [8,12],
-        popupAnchor: [0, -16]
-    });
-
-    const benchIcon = L.icon({
-        iconUrl: '/img/shade/bench2.png',
-        iconSize: [16, 16],
-        iconAnchor: [8, 16],
-        popupAnchor: [0, -16]
-    });
-
-    const tableIcon = L.icon({
-        iconUrl: '/img/shade/table.png',
-        iconSize: [16, 16],
-        iconAnchor: [8, 16],
-        popupAnchor: [0, -16]
-    });
-
-    const icons = {treeIcon: treeIcon, shelterIcon: shelterIcon, benchIcon: benchIcon, tableIcon: tableIcon};
-    return icons 
-}
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const object1Coords = L.latLng(lat1, lon1);
-    const object2Coords = L.latLng(lat2, lon2);
-
-    return object1Coords.distanceTo(object2Coords)
 }
 
 /**
- * Populates shademap with markers using icons defined by createMarkers() and information from
- * queried data coming from overpassAPI and public trees dataset from city of Vancouver.
+ * Caches and creates tree markers on the map based on information queried 
+ * from server side.
  */
-function populateShadeMap(icons) {
+function createTreeMarkers() {
     trees.forEach(tree => {
         const treeMarker = L.marker([
             tree.geom.geometry.coordinates[1], 
@@ -209,32 +408,30 @@ function populateShadeMap(icons) {
         treeArr.push({
             common_name: tree.common_name,
             genus_name: tree.genus_name,
-            species_name: tree.species_name,
-            //height_name: tree.height_name,
-            //diameter_cm: tree.diameter_cm, 
+            species_name: tree.species_name, 
             lat: tree.geom.geometry.coordinates[1], 
             lng: tree.geom.geometry.coordinates[0],
             marker: treeMarker
         })
     });
+}
 
+/**
+ * Caches and creates shelter markers on the map based on information queried 
+ * from server side.
+ */
+function createShelterMarker() {
     if(shelter !== null) {
-        //Removes tree markers in close proximity of shelter
         treeArr.forEach(tree =>{
-            const distanceToShelter = calculateDistance(
-                shelter.center.lat, 
-                shelter.center.lon,
-                tree.lat,
-                tree.lng
-            )
+            const shelterCoords = {lat: shelter.center.lat, lng: shelter.center.lon};
+            const treeCoords = {lat: tree.lat, lng: tree.lng};
+            const distanceToShelter = calculateDistance(shelterCoords, treeCoords)
             if(distanceToShelter < 3) {
                 tree.marker.remove();
             }
         })
 
-        L.marker([
-            shelter.center.lat,
-            shelter.center.lon],
+        L.marker([shelter.center.lat, shelter.center.lon],
             {
                 icon: icons.shelterIcon, 
                 interactive: false,
@@ -242,159 +439,80 @@ function populateShadeMap(icons) {
             }
         ).addTo(map);
 
-        shelterArr.push({type:shelter.tags.shelter_type, lat: shelter.center.lat, lng: shelter.center.lon})
+        shelterArr.push({
+            type:shelter.tags.shelter_type, 
+            lat: shelter.center.lat, 
+            lng: shelter.center.lon
+        })
     }
-
-    amenities.forEach((item, i) =>{
-        const bench = 0;
-        const picnic_table = 0;
-        if(item.tags.amenity == 'bench'){
-            const marker = L.marker([
-                item.lat,    
-                item.lon],
-                {
-                    icon: icons.benchIcon, 
-                    zIndexOffset: 400
-                }
-            ).addTo(map);
-            amenitiesArr.push({type: item.tags.amenity, lat: item.lat, lng: item.lon, marker: marker})
-        } else if (item.tags.leisure == 'picnic_table') {
-            const marker = L.marker([
-                item.lat,    
-                item.lon],
-                {
-                    icon: icons.tableIcon, 
-                    interactive: false, 
-                    zIndexOffset: 400
-                }
-            ).addTo(map);
-            amenitiesArr.push({type: item.tags.amenity, lat: item.lat, lng: item.lon, marker: marker})
-       }
-    });
-
-    amenitiesArr.forEach((amenity, i) =>{
-        if(!amenity.marker._map){
-            return;
-        }
-
-        for(let j = i + 1; j < amenitiesArr.length; j++){
-            const distance = calculateDistance(amenity.lat, amenity.lng, amenitiesArr[j].lat, amenitiesArr[j].lng);
-            if(distance < 4){
-                console.log('An amenity marker has been removed from map')
-                amenitiesArr[j].marker.remove()
-            }
-        }
-    })
 }
 
 /**
- * Handles click events for spot Mode.
+ * Caches and creates amenity markers such as benches and picnic tables 
+ * on the map based on information queried from server side.
+ */
+function createAmenityMarkers() {
+    amenities.forEach(item => {
+        let icon = null;
+        let type = null;
+
+        if(item.tags.amenity == 'bench'){
+            icon = icons.benchIcon;
+            type = item.tags.amenity;
+        } 
+        else if (item.tags.leisure == 'picnic_table') {
+            icon = icons.tableIcon;
+            type = item.tags.leisure;
+        }    
+
+        const marker = L.marker([item.lat, item.lon],{
+            icon, 
+            interactive: false,
+            zIndexOffset: 400
+        }
+        ).addTo(map);
+
+        amenitiesArr.push({
+            type, 
+            lat: item.lat, 
+            lng: item.lon, 
+            marker: marker
+        })
+    });
+
+    removeStackingAmenities();
+}
+
+/* ========================
+    Event handlers
+======================== */
+/**
+ * Create an event handler for spot mode. The returned function does 
+ * the following
+ * - scan nearby trees, shelters, and amenities
+ * - display visual click radius
+ * - update information card based on found trees, shelters
+ * amenities.
+ * 
+ * @returns a click handler for spotMode().
  */
 function spotClickHandler() {
     const radius = 10;
 
     return async function(e) {
 
-        // Information used by groq
-        let treeCount = 0;
-        let picnicTables = 0;
-        let benches = 0
-        let shelterType = "none"
-        
-        //used by shadeScore
-        let shelterCount = 0;
-        let amenitiesCount = 0; 
+        let treeCount = countNearbyTrees(e.latlng, radius);
+        let {shelterCount, shelterType} = scanNearbyShelters(e.latlng, radius);
+        let {amenitiesCount, benches, picnicTables} = scanNearbyAmenities(e.latlng, radius);
 
-        const circle = L.circle(e.latlng, {
-            radius: radius,
-            color: 'green',
-            fillColor: 'green',
-            fillOpacity: 0.2
-        }).addTo(map);
+        showClickRadius(e.latlng, radius);
+        updateSpotCard(treeCount, shelterCount)
 
-        setTimeout(() => {
-            circle.getElement().classList.add('circle-fade');
-
-            setTimeout(() => {
-                circle.remove();
-            }, 1000);
-        }, 1000);
-
-        treeArr.forEach(tree => {
-            const distance = e.latlng.distanceTo(L.latLng(tree.lat, tree.lng));
-            if (distance <= radius) {
-                treeCount++;
-            }
-        });
-
-        shelterArr.forEach(shelter => {
-            const distance = e.latlng.distanceTo(L.latLng(shelter.lat, shelter.lng));
-            if (distance <= radius) {
-                shelterCount++;
-                shelterType = shelter.type;
-                console.log("shelter: " + shelterType);
-            }
-        });
-
-        amenitiesArr.forEach(amenity =>{
-            const distance = e.latlng.distanceTo(L.latLng(amenity.lat, amenity.lng));
-            if (distance <= radius) {
-                amenitiesCount++;
-                console.log("amenity: " + amenity.type);
-                if(amenity.type === 'bench'){
-                    benches++;
-                } else if(amenity.type = 'picnic_table') {
-                    picnicTables++;
-                }
-
-            }
-        });
-        console.log(`Found stuff in radius before conversion\n
-           treeCount: ${treeCount}\n
-           benches: ${benches}\n
-           picnicTables: ${picnicTables}\n
-           shelterType: ${shelterType}\n
-        `);
-        
-        // Erases guide card if it exists after click and displays view card.
-        document.getElementById('firstTimeView')?.style.setProperty('display', 'none');
-        document.getElementById('view').style.setProperty ('display', 'block');
-
-        //Updates the card with information found within radius.
-        document.getElementById('shadevalue').textContent = shadeScore(treeCount, shelterCount);
-        document.getElementById('treesvalue').textContent = treeCount;
-        if (shelterCount == 0) {
-            document.getElementById('sheltervalue').textContent = "none";
-        } else {
-            document.getElementById('sheltervalue').textContent = shelter.tags.shelter_type;
-        }
-
-        // Change count information to none, low, medium, high for groq to read.
         treeCount = countScore(treeCount);
         picnicTables =  countScore(picnicTables);
         benches = countScore(benches);
 
-        console.log(`Found stuff in radius\n
-           treeCount: ${treeCount}\n
-           benches: ${benches}\n
-           picnicTables: ${picnicTables}\n
-           shelterType: ${shelterType}\n
-        `);
-
-        // Checks if spot description already exists.
-        const spotKey = `${treeCount},${benches},${picnicTables},${shelterType}`;
-        const cached = spotDescriptionArr.find(item => item.spotKey === spotKey);
-        if(!cached) {
-            document.getElementById('parkDescription').textContent = await groqSpotDescription(
-                treeCount, 
-                benches, 
-                picnicTables, 
-                shelterType
-            )
-        } else {
-            console.log("using description from array");
-            document.getElementById('parkDescription').textContent = cached.desc;
-        }
+        updateSpotDescription(treeCount, benches, picnicTables, shelterType);
     };
 }
 
@@ -430,69 +548,91 @@ function treeClickHandler() {
     });
 }
 
+/* ========================
+    Mode Control functions
+======================== */
 /**
- * 
+ * Switches card to spot mode or tree mode depending on
+ * what the use clicks.
+ * @param {string} mode - string passed must be 'tree' or 'spot'.
  */
-function spotMode(spotClickHandler) {
-    treeArr.forEach(tree => {
-        tree.marker.getElement()?.classList.add('no-pointer');
-    });
+function switchCard(mode) {
+    if(mode === 'spot') {
+        document.querySelectorAll('.spotMode').forEach(element =>{
+            element.style.setProperty('display', 'block');
+        })
+        document.querySelectorAll('.treeMode').forEach(element =>{
+            element.style.setProperty('display', 'none');
+        })
+    } else if(mode === 'tree') {
+        document.querySelectorAll('.spotMode').forEach(element =>{
+            element.style.setProperty('display', 'none');
+        })
+        document.querySelectorAll('.treeMode').forEach(element =>{
+            element.style.setProperty('display', 'block');
+        })
+    }
+}
 
-    document.querySelectorAll('.spotMode').forEach(element =>{
-        element.style.setProperty('display', 'block');
-    })
-    document.querySelectorAll('.treeMode').forEach(element =>{
-        element.style.setProperty('display', 'none');
-    })
-
-    // checks if firstTimeView is enabled
-    // displayes guide card first
+/**
+ * Checks if firstTimeView card exists to see if guide mode is 
+ * enabled from dashboard.
+ */
+function setCardView() {
     if(document.getElementById('firstTimeView')) {
         document.getElementById('firstTimeView')?.style.setProperty('display', 'block');
         document.getElementById('view').style.setProperty ('display', 'none');
     } else {
         document.getElementById('view').style.setProperty ('display', 'block');
     }
+}
 
-    // Removes an existing click handler if it exists before attaching 
-    // a click handler.
+/**
+ * Changes the state of the map to spot mode, enabling spot clicks
+ * and disabling tree click handling.
+ * 
+ * @param {Function} spotClickHandler - is the function responsible for event handling.
+ */
+function spotMode(spotClickHandler) {
+    //removes old click handlers before attaching new ones
     map.off('click', spotClickHandler);
     map.on('click', spotClickHandler);
 
-    // Loops through tree markers and disables click events
-    treeArr.forEach(tree =>{
+    // Disables click for tree markers
+    treeArr.forEach(tree => {
+        tree.marker.getElement()?.classList.add('no-pointer');
         tree.marker.off('click');
     });
+
+    switchCard('spot');
+    setCardView();
 }
 
-
+/**
+ * Changes the state of the map to tree mode, enabling tree marker 
+ * interactions and disabling spot click handling.
+ * 
+ * @param {Function} spotClickHandler - spot mode click handlers
+ * to be removed.
+ */
 function treeMode(spotClickHandler) {
+    // removes old click handlers before attaching new ones
+    map.off('click', spotClickHandler);
+    treeClickHandler(treeArr, treeDescriptionArr);
+
+    // enables click for tree markers
     treeArr.forEach(tree => {
         tree.marker.getElement()?.classList.remove('no-pointer');
     });
 
-    document.querySelectorAll('.spotMode').forEach(element =>{
-        element.style.setProperty('display', 'none');
-    })
-    document.querySelectorAll('.treeMode').forEach(element =>{
-        element.style.setProperty('display', 'block');
-    })
-
-    if(document.getElementById('firstTimeView')) {
-        console.log('First time view displayed!!!')
-        document.getElementById('firstTimeView')?.style.setProperty('display', 'block');
-        document.getElementById('view').style.setProperty ('display', 'none');
-    } else {
-        document.getElementById('view').style.setProperty ('display', 'block');
-    }
-
-    // Handles event related features for treeMode
-    map.off('click', spotClickHandler);
-    treeClickHandler(treeArr, treeDescriptionArr);
+    switchCard('tree');
+    setCardView();
 }
 
 /**
+ * Attaches mode-switch button handlers for spot mode and tree mode.
  * 
+ * @param {*} spotClickHandler click handler passed to mode switch functions.
  */
 function switchMode(spotClickHandler) {
     const treeModeBtn = document.getElementById('tree-mode');
@@ -507,30 +647,28 @@ function switchMode(spotClickHandler) {
     });
 }
 
+/* ========================
+    Initialization
+======================== */
 /**
- * 
+ * Initializes shademap page.
  */
 function initShadeMap() {
     const spotHandler = spotClickHandler();
-    const icons = createMarkers();
-
-    populateShadeMap(icons);
-
-    // Default mode
-    spotMode(spotHandler);
-
-    // Allows switching to and from treeMode
-    switchMode(spotHandler);
 
     document.getElementById('backBtn').addEventListener('click', function (e){
         location.href = '/map';
     });
 
-    /*
-    amenitiesArr.forEach(amenity =>{
-        console.log("Amenities found: " + amenity.type);
-    })*/
+    createIcons();
+    createTreeMarkers();
+    createShelterMarker();
+    createAmenityMarkers();
 
+    // Default mode
+    spotMode(spotHandler);
+
+    switchMode(spotHandler);
 }
 
 initShadeMap();

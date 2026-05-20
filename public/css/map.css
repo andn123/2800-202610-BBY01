@@ -106,7 +106,6 @@ body {
   padding: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
-  animation: bubbleIn 0.2s;
 }
 
 .temp {
@@ -594,6 +593,7 @@ body {
     0 4px 12px rgba(29, 185, 84, 0.35),
     0 0 18px rgba(29, 185, 84, 0.15);
   transition: transform 0.2s ease;
+  overflow: hidden;
 }
 
 .explore-btn:hover {
