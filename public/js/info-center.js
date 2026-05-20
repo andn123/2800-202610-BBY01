@@ -1,11 +1,14 @@
 const helpSearch = document.getElementById("helpSearch");
 const tutorialSections = document.querySelectorAll(".tutorial-section");
 const featureCards = document.querySelectorAll(".feature-card");
+const categoryButtons = document.querySelectorAll(".category-btn");
+
+let currentCategory = "all";
 
 /*
   These are the pre-filled search recommendations.
   route = page to redirect to
-  section = section id on help center page
+  section = section id on info center page
 */
 const recommendations = [
   {
@@ -40,17 +43,30 @@ const recommendations = [
   },
 ];
 
-// Create recommendation dropdown
 const suggestionBox = document.createElement("div");
 suggestionBox.classList.add("suggestion-box");
-helpSearch.parentElement.appendChild(suggestionBox);
+
+if (helpSearch) {
+  helpSearch.parentElement.appendChild(suggestionBox);
+}
+
+function matchesCurrentCategory(element) {
+  const category = element.dataset.category;
+
+  return currentCategory === "all" || category === currentCategory;
+}
 
 function filterPage(searchValue) {
   tutorialSections.forEach((section) => {
     const title = section.dataset.title.toLowerCase();
     const text = section.innerText.toLowerCase();
 
-    if (title.includes(searchValue) || text.includes(searchValue)) {
+    const matchesSearch =
+      title.includes(searchValue) || text.includes(searchValue);
+
+    const matchesCategory = matchesCurrentCategory(section);
+
+    if (matchesSearch && matchesCategory) {
       section.classList.remove("hidden");
     } else {
       section.classList.add("hidden");
@@ -60,7 +76,10 @@ function filterPage(searchValue) {
   featureCards.forEach((card) => {
     const text = card.innerText.toLowerCase();
 
-    if (text.includes(searchValue)) {
+    const matchesSearch = text.includes(searchValue);
+    const matchesCategory = matchesCurrentCategory(card);
+
+    if (matchesSearch && matchesCategory) {
       card.classList.remove("hidden");
     } else {
       card.classList.add("hidden");
@@ -109,29 +128,46 @@ function showSuggestions(matches) {
   suggestionBox.classList.add("active");
 }
 
-helpSearch.addEventListener("input", function () {
-  const searchValue = helpSearch.value.toLowerCase().trim();
-
-  filterPage(searchValue);
-
-  const matches = getMatches(searchValue);
-  showSuggestions(matches);
-});
-
-helpSearch.addEventListener("focus", function () {
-  const searchValue = helpSearch.value.toLowerCase().trim();
-  showSuggestions(getMatches(searchValue));
-});
-
-helpSearch.addEventListener("keydown", function (event) {
-  if (event.key === "Enter") {
+if (helpSearch) {
+  helpSearch.addEventListener("input", function () {
     const searchValue = helpSearch.value.toLowerCase().trim();
-    const matches = getMatches(searchValue);
 
-    if (matches.length > 0) {
-      window.location.href = matches[0].route;
+    filterPage(searchValue);
+
+    const matches = getMatches(searchValue);
+    showSuggestions(matches);
+  });
+
+  helpSearch.addEventListener("focus", function () {
+    const searchValue = helpSearch.value.toLowerCase().trim();
+    showSuggestions(getMatches(searchValue));
+  });
+
+  helpSearch.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      const searchValue = helpSearch.value.toLowerCase().trim();
+      const matches = getMatches(searchValue);
+
+      if (matches.length > 0) {
+        window.location.href = matches[0].route;
+      }
     }
-  }
+  });
+}
+
+categoryButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    categoryButtons.forEach((btn) => {
+      btn.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    currentCategory = button.dataset.category;
+
+    const searchValue = helpSearch.value.toLowerCase().trim();
+    filterPage(searchValue);
+  });
 });
 
 document.addEventListener("click", function (event) {

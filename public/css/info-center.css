@@ -173,12 +173,25 @@ body {
   margin-top: 18px;
 }
 
-.support-tags span {
+.category-btn {
+  border: none;
   background: rgba(255, 255, 255, 0.16);
+  color: white;
   padding: 7px 14px;
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.category-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.category-btn.active {
+  background: white;
+  color: #4f35b7;
 }
 
 /* MAIN */
