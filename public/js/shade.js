@@ -55,6 +55,8 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
     subdomains: 'abcd'
 }).addTo(map)
 
+let icons;
+
 /* ========================
     HELPER FUNCTIONS 
 ======================== */
@@ -319,9 +321,9 @@ async function updateSpotCard (treeCount, shelterCount) {
 }
 
 /**
- * Creates markers for shademap
+ * Creates tree, shelter, benches, and table icons for shademap
  */
-function createMarkers() {
+function createIcons() {
     const treeIcon = L.icon({
         iconUrl: '/img/shade/tree2.png',
         iconSize: [24, 24],
@@ -350,15 +352,14 @@ function createMarkers() {
         popupAnchor: [0, -16]
     });
 
-    const icons = {treeIcon: treeIcon, shelterIcon: shelterIcon, benchIcon: benchIcon, tableIcon: tableIcon};
-    return icons 
+    icons = {treeIcon: treeIcon, shelterIcon: shelterIcon, benchIcon: benchIcon, tableIcon: tableIcon};
 }
 
 /**
- * Populates shademap with markers using icons defined by createMarkers() and information from
- * queried data coming from overpassAPI and public trees dataset from city of Vancouver.
+ * Stores Creates tree markers on the map based on information queried 
+ * from server side.
  */
-function populateShadeMap(icons) {
+function createTreeMarkers() {
     trees.forEach(tree => {
         const treeMarker = L.marker([
             tree.geom.geometry.coordinates[1], 
@@ -372,17 +373,21 @@ function populateShadeMap(icons) {
         treeArr.push({
             common_name: tree.common_name,
             genus_name: tree.genus_name,
-            species_name: tree.species_name,
-            //height_name: tree.height_name,
-            //diameter_cm: tree.diameter_cm, 
+            species_name: tree.species_name, 
             lat: tree.geom.geometry.coordinates[1], 
             lng: tree.geom.geometry.coordinates[0],
             marker: treeMarker
         })
     });
+}
 
+/**
+ * Stores and creates shelter markers on the map based on information queried 
+ * from server side.
+ */
+function createShelterMarker() {
+    //remove tree markers in close proximity of shelter.
     if(shelter !== null) {
-        //Removes tree markers in close proximity of shelter
         treeArr.forEach(tree =>{
             const shelterCoords = {lat: shelter.center.lat, lng: shelter.center.lon};
             const treeCoords = {lat: tree.lat, lng: tree.lng};
@@ -392,9 +397,7 @@ function populateShadeMap(icons) {
             }
         })
 
-        L.marker([
-            shelter.center.lat,
-            shelter.center.lon],
+        L.marker([shelter.center.lat, shelter.center.lon],
             {
                 icon: icons.shelterIcon, 
                 interactive: false,
@@ -408,10 +411,14 @@ function populateShadeMap(icons) {
             lng: shelter.center.lon
         })
     }
+}
 
+/**
+ * Stores and creates amenity markers such as benches and picnic tables 
+ * on the map based on information queried from server side.
+ */
+function createAmenityMarkers() {
     amenities.forEach((item, i) =>{
-        const bench = 0;
-        const picnic_table = 0;
         if(item.tags.amenity == 'bench'){
             const marker = L.marker([
                 item.lat,    
@@ -445,6 +452,7 @@ function populateShadeMap(icons) {
             })
        }
     });
+
 
     amenitiesArr.forEach((amenity, i) =>{
         if(!amenity.marker._map){
@@ -608,9 +616,12 @@ function switchMode(spotClickHandler) {
  */
 function initShadeMap() {
     const spotHandler = spotClickHandler();
-    const icons = createMarkers();
+    //const icons = createMarkers();
 
-    populateShadeMap(icons);
+    createIcons();
+    createTreeMarkers();
+    createShelterMarker();
+    createAmenityMarkers();
 
     // Default mode
     spotMode(spotHandler);
