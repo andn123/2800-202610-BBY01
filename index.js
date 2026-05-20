@@ -559,9 +559,9 @@ app.get("/post", async (req, res) => {
 
   res.render("post", {
     title: "Post",
-    css: ["post.css"],
+    css: ["post.css", "style.css"],
     js: ["create-post.js"],
-    navbar: false,
+    navbar: true,
     mapApi: mapApi,
     error:
       recentPostCount >= 3
