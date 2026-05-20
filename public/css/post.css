@@ -175,3 +175,25 @@ button:active {
   border-left: 3px solid #2e7d32;
   text-align: left;
 }
+
+.easter-egg-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.easter-egg-shaded {
+  background-image: url("/img/easter-egg-shaded.png");
+}
+
+.easter-egg-sunny {
+  background-image: url("/img/easter-egg-sunny.png");
+}
+
+.easter-egg-indoors {
+  background-image: url("/img/easter-egg-indoors.png");
+}
