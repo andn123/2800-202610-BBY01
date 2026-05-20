@@ -1006,3 +1006,51 @@ body.guide-mode .profile-weather-section::after {
     height: 170px;
   }
 }
+
+.upload-profile-form {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Upload label */
+.upload-profile-label {
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: 0.2s ease;
+}
+
+.upload-profile-label:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* File input */
+#profilePicture {
+  max-width: 220px;
+  color: white;
+  font-size: 0.8rem;
+}
+
+/* Save button */
+.upload-profile-btn {
+  border: none;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: #7dd3fc;
+  color: #082f49;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.upload-profile-btn:hover {
+  transform: translateY(-2px);
+  background: #38bdf8;
+}
