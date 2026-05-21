@@ -1,0 +1,58 @@
+body {
+    min-height: 100vh;
+}
+#map { 
+    height: 100vh; 
+}
+
+.no-pointer { pointer-events: none; }
+
+.circle-fade {
+    transition: stroke-opacity 1s, fill-opacity 1s;
+    stroke-opacity: 0;
+    fill-opacity: 0;
+}
+
+.shade-card{
+    z-index: 1000;
+    bottom: 20px;
+}
+
+#view {
+    display: none;
+}
+#firstTimeView {
+    display: none;
+}
+
+#backBtn {
+    z-index: 1000;
+    background: white;
+    font-size: 16px;
+}
+
+#backBtn:active {
+    transform: translateY(-1px);
+}
+
+.back-arrow {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.mode-button {
+    z-index: 1000;
+}
+
+.treeMarkers {
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.treeMarkerSelected {
+    transform: scale(1.25);
+    filter: 
+    drop-shadow(0 0 4px #4caf50)
+    drop-shadow(0 0 4px #4caf50)
+    drop-shadow(0 0 4px #4caf50)
+}

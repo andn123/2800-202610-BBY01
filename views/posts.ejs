@@ -1,0 +1,111 @@
+<%- include('partials/header', { title: title, css: css }) %>
+
+<div class="page-container">
+  <% if (success) { %>
+    <div class="alert success-alert">
+      Post submitted successfully!
+    </div>
+
+    <script>
+      setTimeout(function () {
+        document.querySelector(".success-alert").style.display = "none";
+      }, 3000);
+    </script>
+  <% } %>
+  <h2><strong>All Posts</strong></h2><br>
+
+  <form method="get" action="/posts" class="search-bar">
+    <input 
+      id="searchInput"
+      type="text" 
+      name="search" 
+      placeholder="Search by location or activities"
+      value="<%= search %>"
+    >
+
+    <select id="envSelect" name="environment">
+      <option value="">All environments</option>
+      <option value="shaded" <%= env === "shaded" ? "selected" : "" %>>Shaded</option>
+      <option value="sunny" <%= env === "sunny" ? "selected" : "" %>>Sunny</option>
+      <option value="indoors" <%= env === "indoors" ? "selected" : "" %>>Indoors</option>
+    </select>
+
+    <a href="/post" class="btn btn-primary btn-lg" style="font-size: 1rem;">
+      Create Post
+    </a>
+
+  </form>
+
+
+  <% if (posts.length === 0) { %>
+    <p>No posts found.</p>
+  <% } %>
+
+  <div class="posts-grid">
+    <% posts.forEach(post => { %>
+      <div class="post-card">
+        <img src="/image/<%= post.image %>" class="post-image">
+
+        <div class="post-info">
+          <p><strong>User:</strong> <%= post.username %></p>
+          <p><strong>Location:</strong> <%= post.location %></p>
+          <p><strong>Description:</strong></p>
+            <div class="description-scroll">
+              <p><%= post.description %></p>
+            </div>
+          <p><strong>Environment:</strong> <%= post.environment %></p>
+          <p class="timestamp"><%= post.createdAt ? post.createdAt.toLocaleString() : 'Date unknown' %></p>
+        </div>
+        <div class="like-bar">
+          <button class="like-btn" data-id="<%= post._id %>">
+          <i class="fas fa-thumbs-up"></i> 
+          <span><%= post.likes || 0 %></span>
+          </button>
+
+          <button class="dislike-btn" data-id="<%= post._id %>">
+          <i class="fas fa-thumbs-down fa-flip-horizontal"></i> 
+          <span><%= post.dislikes || 0 %></span>
+          </button>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <div class="pagination" id="paginationContainer">
+    <% if (page > 1) { %>
+      <a 
+        href="/posts?page=<%= page - 1 %>&search=<%= search %>&environment=<%= env %>" 
+        class="page-btn"
+      >
+        Previous
+      </a>
+    <% } %>
+
+    <span class="page-number">Page <%= page %> of <%= totalPages %></span>
+
+    <% if (page < totalPages) { %>
+      <a 
+        href="/posts?page=<%= page + 1 %>&search=<%= search %>&environment=<%= env %>" 
+        class="page-btn"
+      >
+        Next
+      </a>
+    <% } %>
+  </div>
+
+</div>
+<% if (easterEgg) { %>
+  <div class="easter-egg-overlay easter-egg-<%= easterEgg %>"></div>
+<style>
+  .page-number { color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+  h2, .page-number { 
+    color: white; 
+    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.25);
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+  }
+</style>
+<% } %>
+<%- include('partials/footer', { js: js }) %>

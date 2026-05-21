@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="snow-flake.png" />
+  <title><%= title %></title>
+
+  <% if (typeof css !== "undefined") { %>
+    <% css.forEach((file) => { %>
+      <link rel="stylesheet" href="/css/<%= file %>">
+    <% }) %>
+  <% } %>
+</head>
+<body>
+<main class="dashboard">
+
+    <!-- Top Bar -->
+    <header class="top-bar">
+      
+      <div class="guide-toggle-wrap">
+        <span>Guide Mode</span>
+
+        <label class="switch">
+         <input 
+  type="checkbox" 
+  id="guideToggle" 
+  <%= guideMode ? "checked" : "" %> 
+/>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Main Profile + Weather Area -->
+    <section class="profile-weather-section">
+
+      <div class="profile-img-wrap">
+  <img 
+    src="<%= user.profileImage %>" 
+    alt="Profile image" 
+    class="profile-img"
+    id="currentProfileImage"
+  />
+</div>
+
+<button type="button" id="changeProfileBtn" class="change-profile-btn">
+  Change Profile Picture
+</button>
+
+<div class="profile-picker" id="profilePicker">
+  <h3>Choose Profile Picture</h3>
+
+  <div class="profile-options">
+    <% profileImages.forEach((image) => { %>
+      <button 
+        type="button" 
+        class="profile-option <%= user.profileImage === image ? 'selected' : '' %>"
+        data-image="<%= image %>"
+      >
+        <img src="<%= image %>" alt="Profile option">
+      </button>
+    <% }) %>
+  </div>
+</div>
+
+      <!-- Weather location from API -->
+      <p class="location" id="weatherLocation">Loading location...</p>
+
+      <!-- User name from MongoDB -->
+      <h1 class="user-name"><%= user.name %></h1>
+
+      <!-- Weather from API -->
+      <div class="weather-main">
+        <span class="temperature" id="weatherTemp">--°C</span>
+        <span class="sun-icon" id="weatherIcon">🌤️</span>
+      </div>
+
+      <p class="condition">
+        <span id="weatherCondition">Loading weather...</span>
+      </p>
+
+      <div class="forecast-row" id="forecastRow">
+        <div class="forecast-item">
+          <span>Loading forecast...</span>
+        </div>
+      </div>
+
+      <form action="/logout" method="POST">
+  <button type="submit" class="logout-btn">Logout</button>
+</form>
+
+    </section>
+
+    <!-- Dashboard Cards -->
+<section class="dashboard-options">
+
+  <a href="/about" class="dashboard-card">
+    <div class="card-icon">ℹ️</div>
+
+    <div class="card-text">
+      <h3>About Us</h3>
+      <p>Learn more about the app and our team.</p>
+    </div>
+
+    <span class="card-arrow">›</span>
+  </a>
+
+  <a href="/events" class="dashboard-card">
+    <div class="card-icon">🎟️</div>
+
+    <div class="card-text">
+      <h3>Events Near You</h3>
+      <p>Find indoor events based on your current location.</p>
+    </div>
+
+    <span class="card-arrow">›</span>
+  </a>
+
+  <a href="/map" class="dashboard-card">
+    <div class="card-icon">🗺️</div>
+
+    <div class="card-text">
+      <h3>Map</h3>
+      <p>View nearby places and explore locations on the map.</p>
+    </div>
+
+    <span class="card-arrow">›</span>
+  </a>
+
+  <a href="/posts" class="dashboard-card">
+    <div class="card-icon">📰</div>
+
+    <div class="card-text">
+      <h3>Posts</h3>
+      <p>View user posts about different locations and social activities.</p>
+    </div>
+
+    <span class="card-arrow">›</span>
+  </a>
+
+  <a href="/info-center" class="dashboard-card">
+    <div class="card-icon">📘</div>
+
+    <div class="card-text">
+      <h3>Help Center</h3>
+      <p>Learn how to use the app features.</p>
+    </div>
+
+    <span class="card-arrow">›</span>
+  </a>
+
+</section>
+<!-- My Posts Section -->
+<section class="my-posts-section">
+  <h2>My Posts</h2>
+  <div class="my-posts-grid" id="myPostsGrid">
+    <p class="posts-loading">Loading your posts...</p>
+  </div>
+</section>
+
+<!-- Delete Confirmation Popup -->
+<div class="delete-overlay" id="deleteOverlay">
+  <div class="delete-popup">
+    <p>Are you sure you want to delete this post?</p>
+    <div class="delete-popup-btns">
+      <button class="confirm-delete-btn" id="confirmDeleteBtn">Delete</button>
+      <button class="cancel-delete-btn" id="cancelDeleteBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+</main>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

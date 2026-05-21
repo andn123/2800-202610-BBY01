@@ -1,0 +1,102 @@
+<%- include("partials/header", {css: css}) %>
+<%- include("partials/back-button") %>
+
+<!-- MAIN MAP + SIDE PANEL LAYOUT -->
+<div class="map-layout">
+
+  <!-- MAP SECTION (LEFT SIDE) -->
+  <div class="map-wrapper">
+
+  <!-- MAP LEGEND + FILTERS -->
+  <div class="map-legend">
+    <div class="legend-card">
+
+      <!-- WEATHER / LOCATION TYPE LEGEND -->
+      <div class="dot-legend">
+
+        <!-- Sunny location -->
+      <div class="legend-item">
+        <span class="legend-dot sunny-dot"></span> Sunny
+      </div>
+
+      <!-- Shaded location -->
+      <div class="legend-item">
+        <span class="legend-dot shaded-dot"></span> Shaded
+      </div>
+
+      <!-- Indoor location -->
+      <div class="legend-item">
+        <span class="legend-dot indoors-dot"></span> Indoors
+      </div>
+
+      <!-- Event location -->
+      <div class="legend-item">
+        <span class="legend-dot other-dot"></span> Events
+      </div>
+    </div>
+
+    <!-- FILTER BUTTONS -->
+    <div class="legend-buttons">
+      <button onclick="filterMarkers('all', this)">All</button>
+      <button onclick="filterMarkers('sunny', this)">☀️ Sunny</button>
+      <button onclick="filterMarkers('shaded', this)">🌳 Shaded</button>
+      <button onclick="filterMarkers('indoors', this)">🏠 Indoors</button>
+      <button onclick="filterMarkers('none', this)">🎉 Events</button>
+    </div>
+  </div>
+</div>
+
+    <!-- MAP -->
+    <div
+      id="map"
+      data-locations="<%= encodeURIComponent(JSON.stringify(locations)) %>"
+      data-posts="<%= encodeURIComponent(JSON.stringify(posts)) %>"
+    ></div>
+
+  </div>
+
+  <!-- PANEL (RIGHT SIDE) -->
+  <div class="side-panel" id="panelBox">
+    <div class="handle"></div>
+    <div class="d-flex flex-column border-bottom">
+      <ul class="nav nav-tabs w-100 nav-fill">
+
+        <!-- INFO TAB -->
+        <li class="nav-item">
+          <button class="nav-link active w-100" onclick="showTab('info', event)">
+            Info
+          </button>
+        </li>
+
+        <!-- POSTS TAB -->
+        <li class="nav-item">
+          <button class="nav-link w-100" onclick="showTab('post', event)">
+            Posts
+          </button>
+        </li>
+
+        <!-- AI CHATBOT TAB -->
+        <li class="nav-item">
+          <button class="nav-link w-100" onclick="showTab('ai', event)">
+            AI Chat Bot
+          </button>
+        </li>
+      </ul>
+    </div>
+    <div id="panel" class="panel-content">
+
+      <!-- Default message before selecting a location -->
+      <div>Click a location</div>
+
+      <!-- Loading spinner -->
+      <div id="loading" class="loader"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.mapApi = "<%- mapApi %>";
+  window.firstTimeMode = "<%- firstTimeMode %>";
+</script>
+
+<%- include("partials/footer") %>

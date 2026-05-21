@@ -1,3 +1,11 @@
 /node_modules
 package-lock.json
 .env
+diff
+test.css
+test.js
+backup.css
+backup.ejs
+backup.js
+trash
+trash.js

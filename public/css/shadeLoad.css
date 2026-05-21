@@ -1,0 +1,27 @@
+body {
+    min-height: 100vh;
+}
+#map { 
+    height: 100vh; 
+}
+
+.shade-card{
+    z-index: 1000;
+    bottom: 20px;
+}
+
+#backBtn {
+    z-index: 1000;
+    background: white;
+    font-size: 16px;
+}
+
+#backBtn:active {
+    transform: translateY(-1px);
+}
+
+.back-arrow {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}

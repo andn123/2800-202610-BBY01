@@ -1,0 +1,59 @@
+<%- include('partials/header', { title: title, css: css }) %>
+
+<div class="container">
+  <h2>Create a Post</h2><br>
+
+  <form method="post" action="/post" enctype="multipart/form-data">
+
+  <label class="input-label">Location</label>
+  <input id="locationInput" name="location" type="text" autocomplete="off"
+       placeholder="Enter the location address or name">
+
+  <div id="locationSuggestions"
+      style="
+          border:1px solid #ccc;
+          background:rgb(255, 252, 252);
+          display:none;
+          margin-top:4px;
+          width:100%;
+      ">
+  </div>
+
+    <!-- Hidden fields to store the chosen coordinates -->
+    <input type="hidden" id="latField" name="lat">
+    <input type="hidden" id="lngField" name="lng">
+
+    <label class="input-label">Image</label>
+    <input name="image" type="file" accept="image/*">
+
+    <label class="input-label">Description</label>
+    <textarea name="description" placeholder="What activities, details, or notes about this place?"></textarea>
+
+    <label class="input-label">Environment</label>
+    <div class="radio-group">
+      <label><input type="radio" name="environment" value="shaded"> Shaded</label>
+      <label><input type="radio" name="environment" value="sunny"> Sunny</label>
+      <label><input type="radio" name="environment" value="indoors"> Indoors</label>
+    </div>
+    <div class="expiry-notice">
+      ⚠️ Posts are automatically removed after 4 days.
+    </div>
+    <button>Submit Post</button>
+  </form>
+
+  <% if (error) { %>
+    <p class="error"><%= error %></p>
+  <% } %>
+    
+  <% if (success) { %>
+    <p class="success"><%= success %></p>
+  <% } %>
+</div>
+
+<script>
+  window.mapApi = "<%= mapApi %>";
+</script>
+<% if (easterEgg) { %>
+  <div class="easter-egg-overlay easter-egg-<%= easterEgg %>"></div>
+<% } %>
+<%- include('partials/footer', { js: js }) %>

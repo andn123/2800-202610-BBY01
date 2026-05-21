@@ -1,0 +1,27 @@
+<div id="firstTimeView" class="shade-card card shadow rounded-4 p-3 position-absolute start-0 end-0 m-3 border-0">
+    <div class="spotMode">
+        <div class="card-body text-center">
+            <div class="bg-success-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+            style="width:80px; height:80px;">
+                <img src="/img/shade/leaf.png" width="40">
+            </div>
+            <h5 class="fw-bold mb-3"> Press a spot to check details </h5>
+            <span class="text-muted fs-5 mb-0"> See shade score, shelter info, and nearby trees. </span>
+        </div>
+    </div>
+
+    <div class="treeMode">
+        <div class="card-body text-center">
+            <div class="bg-success-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+            style="width:80px; height:80px;">
+                <img src="/img/shade/tree1.png" width="40">
+            </div>
+            <h5 class="fw-bold mb-3"> Click a tree to check details </h5>
+            <span class="text-muted fs-5 mb-0">See tree information and shade estimate given by a tree</span>
+        </div>
+    </div>
+</div>    
+
+<div id="view" class="shade-card card shadow rounded-4 p-3 position-absolute start-0 end-0 m-3 border-0">
+    <%- include('shadeViewCard') %>
+</div>
