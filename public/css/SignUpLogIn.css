@@ -1,5 +1,4 @@
-/* Glassmorphism Login Form - Complete & Self-Contained */
-
+/* Some Login/sign up page styling sourced from https://github.com/puikinsh/login-forms. Modified by Adam */
 * {
     margin: 0;
     padding: 0;
@@ -371,34 +370,6 @@ body {
     margin-bottom: 32px;
     flex-wrap: wrap;
     gap: 12px;
-}
-
-.forgot-password {
-    color: #06b6d4;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-}
-
-.forgot-password::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 1px;
-    background: #06b6d4;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.forgot-password:hover::after {
-    width: 100%;
-}
-
-.forgot-password:hover {
-    color: white;
 }
 
 /* Login Button */
