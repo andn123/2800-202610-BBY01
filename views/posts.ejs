@@ -55,11 +55,13 @@
         </div>
         <div class="like-bar">
           <button class="like-btn" data-id="<%= post._id %>">
-          👍 <span><%= post.likes || 0 %></span>
+          <i class="fas fa-thumbs-up"></i> 
+          <span><%= post.likes || 0 %></span>
           </button>
 
           <button class="dislike-btn" data-id="<%= post._id %>">
-          👎 <span><%= post.dislikes || 0 %></span>
+          <i class="fas fa-thumbs-down fa-flip-horizontal"></i> 
+          <span><%= post.dislikes || 0 %></span>
           </button>
         </div>
       </div>
