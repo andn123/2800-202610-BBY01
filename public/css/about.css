@@ -6,6 +6,7 @@
 
 body {
   font-family: var(--font-sans);
+  background-color: #f0ede4;
 }
 
 .page {
@@ -17,7 +18,7 @@ body {
 .hero {
   text-align: center;
   padding: 3rem 1.5rem 2.5rem;
-  background: linear-gradient(160deg, #e1f5ee 0%, #e6f1fb 100%);
+  background: linear-gradient(160deg, #e1f5ee 0%, #9fe1cb 100%);
   border-radius: 20px;
   margin-bottom: 2.5rem;
   border: 0.5px solid #9fe1cb;
@@ -49,13 +50,11 @@ body {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-text-tertiary);
   margin-bottom: 0.5rem;
 }
 .section-title {
   font-size: 20px;
   font-weight: 500;
-  color: var(--color-text-primary);
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
@@ -65,7 +64,6 @@ body {
   content: "";
   flex: 1;
   height: 0.5px;
-  background: var(--color-border-tertiary);
 }
 
 .features-grid {
@@ -75,27 +73,24 @@ body {
   margin-bottom: 2.5rem;
 }
 .feature-card {
-  background: var(--color-background-primary);
-  border: 0.5px solid var(--color-border-tertiary);
-  border-radius: var(--border-radius-lg);
   padding: 1rem 1.125rem;
   display: flex;
   align-items: flex-start;
   gap: 10px;
   transition: border-color 0.2s;
+  background: linear-gradient(160deg, #e1f5ee 0%, #9fe1cb 100%);
+  border-radius: 20px;
+  color: #0f6e56;
 }
-.feature-card:hover {
-  border-color: #5dcaa5;
-}
+
 .feature-icon {
   font-size: 18px;
-  color: #1d9e75;
+  color: #0f6e56;
   flex-shrink: 0;
   margin-top: 1px;
 }
 .feature-text {
   font-size: 14px;
-  color: var(--color-text-primary);
   line-height: 1.5;
 }
 
@@ -104,17 +99,17 @@ body {
   flex-wrap: wrap;
   gap: 12px;
   justify-content: center;
+  margin-bottom: 30px;
 }
 .team-card {
-  background: var(--color-background-primary);
-  border: 0.5px solid var(--color-border-tertiary);
-  border-radius: var(--border-radius-lg);
   padding: 1.125rem 1rem;
   width: 130px;
   text-align: center;
   transition:
     border-color 0.2s,
     transform 0.2s;
+  background: linear-gradient(160deg, #e1f5ee 0%, #9fe1cb 100%) !important;
+  color: #0f6e56;
 }
 .team-card:hover {
   border-color: #5dcaa5;
@@ -137,7 +132,6 @@ body {
 .team-name {
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text-primary);
 }
 
 /* Team card base style */

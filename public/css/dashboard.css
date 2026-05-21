@@ -813,11 +813,20 @@ body.guide-mode .profile-weather-section::after {
 }
 
 .profile-option {
+  width: 86px;
+  height: 86px;
   border: 3px solid transparent;
   background: transparent;
   border-radius: 50%;
   padding: 4px;
   cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .profile-option img {
@@ -826,6 +835,7 @@ body.guide-mode .profile-weather-section::after {
   object-fit: cover;
   border-radius: 50%;
   display: block;
+  flex-shrink: 0;
 }
 
 .profile-option.selected {
@@ -1360,4 +1370,13 @@ body.guide-mode .profile-weather-section::after {
   .snowflake {
     font-size: 24px;
   }
+}
+.profile-img-wrap {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.profile-img {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
 }

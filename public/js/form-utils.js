@@ -1,3 +1,4 @@
+//Login/sign up page code sourced from https://github.com/puikinsh/login-forms. Modified by Adam 
 class FormUtils {
     static validateEmail(value) {
         if (!value) return { isValid: false, message: 'Email address is required' };
