@@ -1,32 +1,50 @@
 const mapApi = window.mapApi;
+const ENV_COLORS = {
+  sunny: "#FFD700",
+  shaded: "#228B22",
+  indoors: "#1E90FF",
+};
+const backBtn = document.getElementById("back-btn");
+const el = document.getElementById("map");
+const locations = JSON.parse(decodeURIComponent(el.dataset.locations));
+const posts = JSON.parse(decodeURIComponent(el.dataset.posts));
 let firstTimeMode = window.firstTimeMode === "true";
-
 let markers = [];
 let markersVisible = true;
 let userMarker = null;
-
 let markersByEnv = {
   sunny: [],
   shaded: [],
   indoors: [],
   none: [], // ✅ NEW: grey markers with no environment
 };
-
-const ENV_COLORS = {
-  sunny: "#FFD700",
-  shaded: "#228B22",
-  indoors: "#1E90FF",
-};
-
-const backBtn = document.getElementById("back-btn");
-
 let currentPosts = [];
+let chatHistory = [];
+let currentProps = {};
 let selectedLat = null;
 let selectedLon = null;
+let currentWeather = null;
+let hasInfo = false;
+let firstSystemPrompt = true;
+let unit = localStorage.getItem("tempUnit") || "C";
+let currentLocationName = "";
+let chatMode = "simple";
 
-// ── CHAT STATE ──────────────────────────────────────────────────
-let chatHistory = [];
-// ───────────────────────────────────────────────────────────────
+/* =======================
+   PANEL SETUP
+======================= */
+const panel = document.getElementById("panelBox");
+const COLLAPSED = 120;
+const HALF = window.innerHeight * 0.45;
+const FULL = window.innerHeight * 0.75;
+let currentHeight = COLLAPSED;
+
+/* =======================
+   DRAG SYSTEM (MOBILE ONLY)
+======================= */
+let isMobile = window.innerWidth <= 768;
+let startY = 0;
+let startHeight = 0;
 
 /* =======================
    SHADE FUNCTIONS AND LOGIC
@@ -61,22 +79,6 @@ const map = new maplibregl.Map({
 
 map.addControl(new maplibregl.NavigationControl());
 
-const el = document.getElementById("map");
-const locations = JSON.parse(decodeURIComponent(el.dataset.locations));
-const posts = JSON.parse(decodeURIComponent(el.dataset.posts));
-
-/* =======================
-   GLOBAL STATE
-======================= */
-let hasInfo = false;
-let firstSystemPrompt = true;
-
-let unit = localStorage.getItem("tempUnit") || "C";
-
-let currentWeather = null;
-let currentLocationName = "";
-let currentProps = {};
-let chatMode = "simple";
 const circle = document.createElement("div");
 circle.className = "circle-marker";
 
@@ -94,17 +96,6 @@ navigator.geolocation.getCurrentPosition((position) => {
     .setPopup(
       new maplibregl.Popup({ offset: 25 }).setHTML("Your current location"),
     )
-    .addTo(map);
-  const el = document.createElement("div");
-  el.className = "circle-marker";
-
-  const popup = new maplibregl.Popup({ offset: 10 }).setHTML(
-    "Your current location",
-  );
-
-  new maplibregl.Marker({ element: el })
-    .setLngLat([lon, lat])
-    .setPopup(popup)
     .addTo(map);
 });
 
@@ -128,17 +119,6 @@ document.addEventListener("change", (e) => {
     }
   }
 });
-
-/* =======================
-   PANEL SETUP
-======================= */
-const panel = document.getElementById("panelBox");
-
-const COLLAPSED = 120;
-const HALF = window.innerHeight * 0.45;
-const FULL = window.innerHeight * 0.75;
-
-let currentHeight = COLLAPSED;
 
 /* initial height */
 if (window.innerWidth <= 768) {
@@ -310,19 +290,10 @@ function setPanelHeight(value) {
   }
 }
 
-/* =======================
-   DRAG SYSTEM (MOBILE ONLY)
-======================= */
-let isMobile = window.innerWidth <= 768;
-
-let startY = 0;
-let startHeight = 0;
-
 function enableDrag() {
   panel.addEventListener("touchstart", touchStart);
   panel.addEventListener("touchmove", touchMove);
   panel.addEventListener("touchend", touchEnd);
-
   panel.addEventListener("mousedown", mouseDown);
 }
 
@@ -330,7 +301,6 @@ function disableDrag() {
   panel.removeEventListener("touchstart", touchStart);
   panel.removeEventListener("touchmove", touchMove);
   panel.removeEventListener("touchend", touchEnd);
-
   panel.removeEventListener("mousedown", mouseDown);
 }
 
@@ -343,7 +313,6 @@ function touchStart(e) {
 function touchMove(e) {
   const delta = startY - e.touches[0].clientY;
   let newHeight = startHeight + delta;
-
   setPanelHeight(newHeight);
 }
 
@@ -359,7 +328,6 @@ function mouseDown(e) {
   function move(e) {
     const delta = startY - e.clientY;
     let newHeight = startHeight + delta;
-
     setPanelHeight(newHeight);
   }
 
@@ -368,7 +336,6 @@ function mouseDown(e) {
     document.removeEventListener("mouseup", up);
     snap();
   }
-
   document.addEventListener("mousemove", move);
   document.addEventListener("mouseup", up);
 }
@@ -504,9 +471,7 @@ function showTab(tab, event) {
       })
       .join("");
   } else if (tab === "ai") {
-    // ── CHAT TAB ───────────────────────────────────────────────
     renderChat();
-    // ──────────────────────────────────────────────────────────
   }
 }
 
@@ -515,14 +480,6 @@ function switchToInfo() {
     .querySelectorAll(".nav-link")
     .forEach((btn) => btn.classList.remove("active"));
   document.querySelector(".nav-link").classList.add("active");
-}
-
-/* =======================
-   SAVE
-======================= */
-function saveLocation(name) {
-  savedLocations.push(name);
-  alert("Saved!");
 }
 
 /* =======================
@@ -594,15 +551,8 @@ async function loadMarkers(data) {
 
   items.forEach(({ coords, props }) => {
     // validate coordinates
-    if (
-      !coords ||
-      coords.length !== 2 ||
-      isNaN(coords[0]) ||
-      isNaN(coords[1])
-    ) {
-      console.log("Invalid coords:", props);
+    if (!coords || coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1]))
       return;
-    }
 
     const marker = new maplibregl.Marker({
       color: ENV_COLORS[props.environment] || "#6C757D",
