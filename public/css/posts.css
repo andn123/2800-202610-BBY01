@@ -160,6 +160,15 @@ h1 {
   animation: fadeIn 0.3s ease;
 }
 
+.description-scroll {
+  max-height: 60px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+}
+
 .easter-egg-overlay {
   position: fixed;
   inset: 0;

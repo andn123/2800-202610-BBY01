@@ -3,8 +3,10 @@ var envSelect = document.getElementById("envSelect");
 var postsGrid = document.querySelector(".posts-grid");
 var paginationContainer = document.getElementById("paginationContainer");
 
+// Typing timer for search
 var typingTimer = null;
 
+// Fetch new posts and update page
 function updatePosts() {
   var search = searchInput.value;
   var env = envSelect.value;
@@ -34,11 +36,13 @@ function updatePosts() {
     });
 }
 
+// Wait for user to stop typing before searching
 searchInput.addEventListener("input", function () {
   clearTimeout(typingTimer);
   typingTimer = setTimeout(updatePosts, 200);
 });
 
+// Update posts when filter changes
 envSelect.addEventListener("change", function () {
   updatePosts();
 });

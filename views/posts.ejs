@@ -49,17 +49,22 @@
         <div class="post-info">
           <p><strong>User:</strong> <%= post.username %></p>
           <p><strong>Location:</strong> <%= post.location %></p>
-          <p><strong>Description:</strong> <%= post.description %></p>
+          <p><strong>Description:</strong></p>
+            <div class="description-scroll">
+              <p><%= post.description %></p>
+            </div>
           <p><strong>Environment:</strong> <%= post.environment %></p>
           <p class="timestamp"><%= post.createdAt ? post.createdAt.toLocaleString() : 'Date unknown' %></p>
         </div>
         <div class="like-bar">
           <button class="like-btn" data-id="<%= post._id %>">
-          👍 <span><%= post.likes || 0 %></span>
+          <i class="fas fa-thumbs-up"></i> 
+          <span><%= post.likes || 0 %></span>
           </button>
 
           <button class="dislike-btn" data-id="<%= post._id %>">
-          👎 <span><%= post.dislikes || 0 %></span>
+          <i class="fas fa-thumbs-down fa-flip-horizontal"></i> 
+          <span><%= post.dislikes || 0 %></span>
           </button>
         </div>
       </div>
