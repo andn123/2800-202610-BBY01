@@ -1,4 +1,3 @@
-// Some Login/sign up page code sourced from https://github.com/puikinsh/login-forms. Modified by Adam
 class GlassmorphismLoginForm extends FormUtils.LoginFormBase {
     constructor() {
         super({
