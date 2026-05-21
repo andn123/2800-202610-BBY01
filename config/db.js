@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { database } = require("../databaseConnection");
+const { database } = require("./databaseConnection");
 
 const mongodb_user_database = process.env.MONGODB_USER_DATABASE;
 const mongodb_database = process.env.MONGODB_DATABASE;
