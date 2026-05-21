@@ -9,6 +9,7 @@ document.querySelectorAll(".team-card").forEach((card) => {
   });
 });
 
+// Easter egg shows when the click is divisible by 5
 document.getElementById("logo").addEventListener("click", () => {
   click++;
   if (click % 5 != 0) return;
