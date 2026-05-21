@@ -5,8 +5,10 @@ const suggestionsBox = document.getElementById("locationSuggestions");
 const latField = document.getElementById("latField");
 const lngField = document.getElementById("lngField");
 
+// Tracks whether the user selected a location from dropdown
 let chosen = false;
 
+// Listen for input changes and fetch location suggestions
 input.addEventListener("input", async function () {
   const query = input.value.trim();
   chosen = false;
@@ -16,6 +18,7 @@ input.addEventListener("input", async function () {
     return;
   }
 
+  // Build MapTiler geocoding URL with Vancouver bias
   const url =
     "https://api.maptiler.com/geocoding/" +
     encodeURIComponent(query) +
@@ -25,10 +28,12 @@ input.addEventListener("input", async function () {
     "&types=address,street,poi" +
     "&proximity=-123.1207,49.2827"; // Vancouver bias
 
+  // Fetch location suggestions from MapTiler API
   try {
     const res = await fetch(url);
     const data = await res.json();
 
+    // Clear and show suggestions
     suggestionsBox.innerHTML = "";
     suggestionsBox.style.display = "block";
 
@@ -45,6 +50,7 @@ input.addEventListener("input", async function () {
         return "<strong>" + match + "</strong>";
       });
 
+      // Populate the input and lat/lng fields
       div.addEventListener("click", function () {
         input.value = feature.place_name;
         latField.value = feature.center[1];
