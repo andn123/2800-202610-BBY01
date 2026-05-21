@@ -672,6 +672,11 @@ body {
   font-weight: 500;
 }
 
+.chat-feed {
+  overflow-y: scroll;
+  touch-action: pan-y;
+}
+
 /* Desktop panel height */
 @media (min-width: 769px) {
   .side-panel {

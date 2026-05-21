@@ -449,6 +449,7 @@ function disableDrag() {
 
 // Touch start in mobile view
 function touchStart(e) {
+  if (e.target.closest("#chatFeed")) return;
   map.dragPan.disable();
   startY = e.touches[0].clientY;
   startHeight = panel.offsetHeight;
@@ -456,6 +457,7 @@ function touchStart(e) {
 
 // Scrolling in mobile view
 function touchMove(e) {
+  if (e.target.closest("#chatFeed")) return;
   const delta = startY - e.touches[0].clientY;
   let newHeight = startHeight + delta;
   setPanelHeight(newHeight);
@@ -463,6 +465,7 @@ function touchMove(e) {
 
 // Touch end in mobile view
 function touchEnd(e) {
+  if (e.target.closest("#chatFeed")) return;
   map.dragPan.enable();
   snap();
 }
@@ -668,6 +671,40 @@ function setChatMode(mode, btn) {
   btn.classList.add("active");
 }
 
+// Convert the AI response to HTML
+function markdownToHtml(text) {
+  return (
+    text
+      // Code blocks (must come before inline code)
+      .replace(/```[\w]*\n?([\s\S]*?)```/g, "<pre><code>$1</code></pre>")
+      // Inline code
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      // Headers
+      .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+      .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+      .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+      // Bold + italic combined
+      .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+      // Bold
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      // Italic
+      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+      // Unordered lists
+      .replace(/^\s*[-*+] (.+)$/gm, "<li>$1</li>")
+      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+      // Ordered lists
+      .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
+      // Blockquotes
+      .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
+      // Horizontal rule
+      .replace(/^---$/gm, "<hr>")
+      // Links
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+      // Line breaks (after block elements are handled)
+      .replace(/\n/g, "<br>")
+  );
+}
+
 // Render AI chat
 function renderChat() {
   const panelContent = document.getElementById("panel");
@@ -861,7 +898,7 @@ ${modeInstruction} No markdown formatting. Once you have greeted the user, do no
     // Persist the assistant reply and replace the typing indicator with the real text
     state.chatHistory.push({ role: "assistant", content: reply });
     typingBubble.innerHTML = "";
-    typingBubble.textContent = reply;
+    typingBubble.innerHTML = markdownToHtml(reply);
   } catch (err) {
     // Network or server error — show a friendly fallback in the same bubble
     typingBubble.textContent =
