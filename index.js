@@ -97,6 +97,13 @@ app.get("/info-center", (req, res) => {
   });
 });
 
+app.get("/about_us_easter_egg", (req, res) => {
+  res.render("aboutUsEasterEgg", {
+    title: "Easter Egg",
+    css: ["aboutUsEasterEgg.css"],
+  });
+});
+
 // Cleanup old posts
 async function removeOldPosts() {
   const cutoff = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
