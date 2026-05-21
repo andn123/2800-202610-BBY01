@@ -450,16 +450,12 @@ function disableDrag() {
 // Touch start in mobile view
 function touchStart(e) {
   map.dragPan.disable();
-  e.preventDefault();
-  e.stopPropagation();
   startY = e.touches[0].clientY;
   startHeight = panel.offsetHeight;
 }
 
 // Scrolling in mobile view
 function touchMove(e) {
-  e.stopPropagation();
-  e.preventDefault();
   const delta = startY - e.touches[0].clientY;
   let newHeight = startHeight + delta;
   setPanelHeight(newHeight);
@@ -468,7 +464,6 @@ function touchMove(e) {
 // Touch end in mobile view
 function touchEnd(e) {
   map.dragPan.enable();
-  e.stopPropagation();
   snap();
 }
 
