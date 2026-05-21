@@ -49,7 +49,10 @@
         <div class="post-info">
           <p><strong>User:</strong> <%= post.username %></p>
           <p><strong>Location:</strong> <%= post.location %></p>
-          <p><strong>Description:</strong> <%= post.description %></p>
+          <p><strong>Description:</strong></p>
+            <div class="description-scroll">
+              <p><%= post.description %></p>
+            </div>
           <p><strong>Environment:</strong> <%= post.environment %></p>
           <p class="timestamp"><%= post.createdAt ? post.createdAt.toLocaleString() : 'Date unknown' %></p>
         </div>
