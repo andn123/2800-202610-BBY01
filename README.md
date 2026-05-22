@@ -13,12 +13,6 @@ VanCooler is a web app that helps people find places and social activities based
 ## Usage
 Access the deployed app here: https://two800-202610-bby01-68cw.onrender.com/
 
-Use the demo account below to access all features:
-```
-Email: user@email.com
-Password: user-of-VanCooler
-```
-
 ## Project Structure
 ```
 2800-202610-BBY01
