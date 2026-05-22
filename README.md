@@ -3,6 +3,13 @@
 ## Project Description
 VanCooler is a web app that helps people find places and social activities based on their preference for sunny, shaded, or indoor environments, helping them stay cool, comfortable and active in hot weather.
 
+## Core Features
+- **Create and View Posts**: Users can create posts about locations and explore posts made by others on the map or the posts page.
+- **Interactive Map**: A map that shows parks, trees, posts, and events.
+- **AI Assistant**: A built‑in chatbot that helps users choose activities and provides additional information about locations or events.
+- **Weather Integration**: Current weather conditions are displayed to help users plan outdoor activities.
+- **Local Events**: Users can browse Vancouver events to find social activities.
+
 ## Technologies Used
 
 - **Frontend**: HTML, CSS, Bootstrap, JavaScript, EJS
@@ -23,11 +30,29 @@ This section explains everything a new developer needs in order to clone, instal
 - **Other Tools**: Git
 
 ### Required APIs and Third‑Party Services
-
+- Overpass
+- Leaflet
+- Groq
+- WeatherAPI
+- MapLibre
+- Ticketmaster
 
 ### Environment Variables (API Keys Required)
-
-
+Create a .env file in the project root with the following format:
+```
+MONGODB_HOST=cluster0.abcd123.mongodb.net
+MONGODB_USER=dummyUser
+MONGODB_PASSWORD=dummyPassword123
+MONGODB_USER_DATABASE=userDB
+MONGODB_DATABASE=mainDB
+MONGODB_SESSION_DATABASE=sessionDB
+MONGODB_SESSION_SECRET=sessionSecret123
+NODE_SESSION_SECRET=nodeSessionSecret123
+WEATHER_API=dummyWeatherKey123
+MAP_API=dummyMapKey123
+TICKETMASTER_API_KEY=dummyTicketmasterKey123
+GROQ_API_KEY=dummyGroqKey123
+```
 ### Installation Steps
 **1. Clone the repository:**
 ```
@@ -52,12 +77,6 @@ nodemon index.js
 *(You must install nodemon globally first: ```npm install -g nodemon```)
 
 **5. Open your browser and go to:** ```http://localhost:3000/```
-
-
-### Configuration Notes
-
-
-
 
 ## Project Structure
 ```
@@ -200,9 +219,9 @@ nodemon index.js
             shadeViewCard.ejs       
 ```
 
-## Contributors
-- Adam Locke
-- Andrew Ni
-- Jonathan Lin
-- Tracee Miasco
-- Maneet Singh
+## Contact Information
+- Adam Locke - adalocke2@gmail.com
+- Andrew Ni - ani5@my.bcit.ca
+- Jonathan Lin - ylin297@my.bcit.ca
+- Tracee Miasco - tmiasco@my.bcit.ca
+- Maneet Singh - msingh411@my.bcit.ca
