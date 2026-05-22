@@ -1,4 +1,4 @@
-# VanCooler
+# VanCooler ❄️
 
 ## Project Description
 VanCooler is a web app that helps people find places and social activities based on their preference for sunny, shaded, or indoor environments, helping them stay cool, comfortable and active in hot weather.
