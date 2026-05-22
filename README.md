@@ -13,6 +13,52 @@ VanCooler is a web app that helps people find places and social activities based
 ## Usage
 Access the deployed app here: https://two800-202610-bby01-68cw.onrender.com/
 
+## Setup Guide
+This section explains everything a new developer needs in order to clone, install, configure, and run VanCooler locally.
+
+### Required Software
+- **Languages and Runtime**: Node.js, npm
+- **IDE**: Visual Studio Code
+- **Database**: MongoDB Atlas
+- **Other Tools**: Git
+
+### Required APIs and Third‑Party Services
+
+
+### Environment Variables (API Keys Required)
+
+
+### Installation Steps
+**1. Clone the repository:**
+```
+git clone https://github.com/andn123/2800-202610-BBY01.git
+cd 2800-202610-BBY01
+```
+
+**2. Install dependencies:**
+```
+npm install
+```
+**3. Add your .env file in the root directory.**
+
+**4. Start the server:**
+```
+node index.js
+```
+Or, if you prefer automatic restarts using nodemon:
+```
+nodemon index.js
+```
+*(You must install nodemon globally first: ```npm install -g nodemon```)
+
+**5. Open your browser and go to:** ```http://localhost:3000/```
+
+
+### Configuration Notes
+
+
+
+
 ## Project Structure
 ```
 2800-202610-BBY01
