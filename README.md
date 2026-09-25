@@ -18,7 +18,9 @@ VanCooler is a web app that helps people find places and social activities based
 - **APIs**: Groq (AI chat), MapLibre, Leaflet, Overpass API (park data), WeatherAPI, Ticketmaster API
 
 ## Usage
-Access the deployed app here: https://two800-202610-bby01-68cw.onrender.com/
+Access the deployed app here: 
+- https://vancooler.vercel.app/
+- https://two800-202610-bby01-68cw.onrender.com/
 
 ## Setup Guide
 This section explains everything a new developer needs in order to clone, install, configure, and run VanCooler locally.
