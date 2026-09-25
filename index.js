@@ -32,6 +32,7 @@ const node_session_secret = process.env.NODE_SESSION_SECRET;
 const mongoStore = MongoStore.create({
   mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_session_database}`,
   crypto: { secret: mongodb_session_secret },
+  stringify: true,
 });
 
 app.use(
